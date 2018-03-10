@@ -1,0 +1,26 @@
+{
+  "name": "botbuilder-wolf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index",
+  "typings": "dist/index",
+  "scripts": {
+    "build": "tsc",
+    "bulld:watch": "tsc -w",
+    "build:dev": "tsc --p tsconfig.example.json",
+    "build:dev:watch": "tsc --p tsconfig.example.json -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "botbuilder",
+    "Microsoft Bot Framework"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "botbuilder": "^4.0.0-m1.10",
+    "botbuilder-node": "^4.0.0-m1.10",
+    "botbuilder-services": "^4.0.0-m1.10",
+    "restify": "^6.3.4"
+  }
+}
