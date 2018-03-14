@@ -38,12 +38,13 @@ server.post('/api/messages', adapter.listen())
 interface Slot {
   entity: string,
   query: string,
-  type: string
+  type: string,
+  acknowledge?: (value: any) => string
 }
 
 interface Intent { // Topic or SGroup
   name: string,
-  slots: Slot[] 
+  slots: Slot[]
 }
 
 interface IntakeResult extends NlpResult {
@@ -118,13 +119,19 @@ function getActions(wolfState: WolfState, result: IntakeResult) {
     const slotObj = slots.find((slot) => slot.entity === entity.entity)
     return () => {
       set(wolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
-      return slotObj.acknowledge(entity.value)
+      
+      return slotObj.acknowledge? slotObj.acknowledge(entity.value) : null
     }
   })
 }
 
 function runActions(reply, actions) {
-  actions.forEach((action) => reply(action()))
+  actions.forEach((action) => {
+    const message = action()
+    if (message) {
+      reply(message)
+    }
+  })
 }
 
 function evaluate(convoState: Object, wolfState: WolfState) {

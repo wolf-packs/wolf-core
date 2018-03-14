@@ -26,8 +26,7 @@ export default [
       {
         entity: 'alarmName',
         type: 'string',
-        query: 'What is the name of the alarm you would like to remove?',
-        acknowledge: (value) => `${value} alarm has been removed.`
+        query: 'What is the name of the alarm you would like to remove?'
       }
     ]
   }
