@@ -15,7 +15,6 @@ const ksl = {
   removeAlarm
 }
 
-import slots from './slots'
 import intents from './intents'
 
 const get = require('lodash.get')
@@ -44,7 +43,7 @@ interface Slot {
 
 interface Intent { // Topic or SGroup
   name: string,
-  slots: string[] 
+  slots: Slot[] 
 }
 
 interface IntakeResult extends NlpResult {
@@ -53,7 +52,8 @@ interface IntakeResult extends NlpResult {
 
 interface EvaluateResult {
   type: string,
-  name: string
+  name: string,
+  currentIntent: string
 }
 
 // interface Outtake {
@@ -114,6 +114,7 @@ function getActions(wolfState: WolfState, result: IntakeResult) {
   }
 
   return result.entities.map(entity => {
+    const {slots} = intents.find(intent => intent.name === result.intent)
     const slotObj = slots.find((slot) => slot.entity === entity.entity)
     return () => {
       set(wolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
@@ -131,42 +132,29 @@ function evaluate(convoState: Object, wolfState: WolfState) {
   const {currentIntent, pendingData} = wolfState
   const intentObj = intents.find((intent) => intent.name === currentIntent)
   const currentPendingData = pendingData[currentIntent]
-  const missingSlots = difference(intentObj.slots, Object.keys(currentPendingData))
+  const missingSlots = difference(intentObj.slots.map(slot => slot.entity), Object.keys(currentPendingData))
   if (missingSlots.length === 0) { // no missingSlot
     const completedObj = ksl[currentIntent]
     wolfState.currentIntent = null
     return {
       type: 'userAction',
-      name: currentIntent
+      name: currentIntent,
+      currentIntent
     }
-    // return {
-    //   replyText: () => {
-    //     return completedObj.acknowledge(currentPendingData)
-    //   },
-    //   mutate: () => {
-    //     return completedObj.submit(pendingData[currentIntent], convoState)
-    //   }
-    // }
-  }
+  } 
 
+  const {slots} = intentObj
   const pendingSlot = slots.find(slot => slot.entity === missingSlots[0])
   return {
     type: 'slot',
-    name: pendingSlot.entity
+    name: pendingSlot.entity,
+    currentIntent
   }
-  // return {
-  //   replyText: () => {
-  //     return pendingSlot.query
-  //   },
-  //   mutate: () => {
-  //     const waitingForValue = pendingSlot.entity
-  //     return set(convoState, 'wolf.waitingFor', waitingForValue)
-  //   }
-  // } // slots[missingSlots[0]] // {query} 
 }
 
 function outtake(state: BotState, reply, result: EvaluateResult) {
   if (result.type === 'slot') {
+    const {slots} = intents.find((intent) => intent.name === result.currentIntent)
     const slot = slots.find((slot) => slot.entity === result.name)
     state.conversation.wolf.waitingFor = slot.entity
     reply(slot.query)
