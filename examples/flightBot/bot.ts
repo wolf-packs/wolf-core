@@ -1,5 +1,6 @@
 import { Bot, MemoryStorage, BotStateManager } from 'botbuilder'
 import { BotFrameworkAdapter } from 'botbuilder-services'
+import * as wolf from '../../src'
 const restify = require('restify')
 
 // Create server
@@ -22,7 +23,7 @@ new Bot(adapter)
       if (context.request.type !== 'message') {
         return
       }
-      
+       
       context.reply('hi')
     }
 )
