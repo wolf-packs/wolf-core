@@ -17,10 +17,6 @@ export default [
     ]
   },
   {
-    name: 'listAlarms',
-    slots: []
-  },
-  {
     name: 'removeAlarm',
     slots: [
       {
@@ -29,5 +25,13 @@ export default [
         query: 'What is the name of the alarm you would like to remove?'
       }
     ]
+  },
+  {
+    name: 'listAlarms',
+    slots: []
+  },
+  {
+    name: 'listAbilities',
+    slots: []
   }
 ]

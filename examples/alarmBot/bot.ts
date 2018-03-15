@@ -6,13 +6,15 @@ import nlp, { NlpResult } from './nlp'
 import difference from 'lodash.difference'
 
 import * as addAlarm from './addAlarm'
-import * as listAlarms from './listAlarms'
 import * as removeAlarm from './removeAlarm'
+import * as listAlarms from './listAlarms'
+import * as listAbilities from './listAbilities'
 
 const ksl = {
   addAlarm,
+  removeAlarm,
   listAlarms,
-  removeAlarm
+  listAbilities
 }
 
 import abilityList from './abilities'
@@ -81,6 +83,16 @@ interface State {
   wolf: WolfState
 }
 
+interface getStateFunctionGeneric {
+  (): any
+}
+
+interface getStateFunctions {
+  getBotState: getStateFunctionGeneric,
+  getSgState?: getStateFunctionGeneric,
+  getSubmittedData: getStateFunctionGeneric
+}
+
 // type Action = (result: NlpResult, state: WolfState, next: () => Action) => void
 
 function intake(wolfState: WolfState, message: string): IntakeResult {
@@ -99,13 +111,22 @@ function intake(wolfState: WolfState, message: string): IntakeResult {
     }
     wolfState.waitingFor = null
 
-  } else {
-    const nlpObj = nlp(message)
+  } 
+  
+  const nlpObj = nlp(message)
+  if (nlpObj.intent) {
   
     if (!wolfState.activeAbility) {
       wolfState.activeAbility = nlpObj.intent
     }
 
+    intakeResult = nlpObj
+  } else {
+    // no nlp intent found
+    // must specify a starting/goto ability such as 'listActivities' or 'did not understand'
+    // user defined handle
+    nlpObj.intent = 'listAbilities'
+    wolfState.activeAbility = nlpObj.intent
     intakeResult = nlpObj
   }
   return intakeResult
@@ -174,12 +195,18 @@ function outtake(state: BotState, reply, result: EvaluateResult) {
     const ability = abilities.find((ability) => ability.name === result.name)
     const userAction = ksl[ability.name]
     const data = state.conversation.wolf.pendingData[ability.name]
-    const prev = state.conversation[userAction.props.name]
-    state.conversation[userAction.props.name] = userAction.submit(prev, data)
-    const ackObj = {
+    
+    const ackObj: getStateFunctions = {
       getBotState: () => state,  // user defined
-      getSgState: () => state.conversation[userAction.props.name], 
-      getSubmittedData: () => data}
+      getSubmittedData: () => data
+    }
+
+    if (userAction.props && userAction.props.name) {
+      const prev = state.conversation[userAction.props.name]
+      state.conversation[userAction.props.name] = userAction.submit(prev, data)
+      ackObj.getSgState = () => state.conversation[userAction.props.name]
+    }
+
     reply(userAction.acknowledge(ackObj))
     // remove pendingData
     state.conversation.wolf.activeAbility = null

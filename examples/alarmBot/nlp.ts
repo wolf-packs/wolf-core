@@ -14,6 +14,7 @@ export interface NlpResult {
 const addAlarmTester = new RegExp('add')
 const listAlarmsTester = new RegExp('list')
 const removeAlarmTester = new RegExp('remove')
+const listAbilitiesTester = new RegExp('what')
 
 const testers = [
   {
@@ -32,6 +33,12 @@ const testers = [
     name: 'removeAlarm',
     tester: (input) => {
       return removeAlarmTester.test(input)
+    }
+  },
+  {
+    name: 'listAbilities',
+    tester: (input) => {
+      return listAbilitiesTester.test(input)
     }
   }
 ]
