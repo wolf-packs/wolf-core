@@ -15,7 +15,7 @@ const ksl = {
   removeAlarm
 }
 
-import intents from './intents'
+import intentList from './intents'
 
 const get = require('lodash.get')
 const set = require('lodash.set')
@@ -56,6 +56,8 @@ interface EvaluateResult {
   name: string,
   currentIntent: string
 }
+
+const intents: Intent[] = intentList
 
 // interface Outtake {
 //   type: 'slot' | 'submit',
