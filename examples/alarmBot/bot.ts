@@ -15,7 +15,7 @@ const ksl = {
   removeAlarm
 }
 
-import intentList from './intents'
+import abilityList from './abilities'
 
 const get = require('lodash.get')
 const set = require('lodash.set')
@@ -42,7 +42,7 @@ interface Slot {
   acknowledge?: (value: any) => string
 }
 
-interface Intent { // Topic or SGroup
+interface Ability { // Topic or SGroup
   name: string,
   slots: Slot[]
 }
@@ -54,10 +54,10 @@ interface IntakeResult extends NlpResult {
 interface EvaluateResult {
   type: string,
   name: string,
-  currentIntent: string
+  activeAbility: string
 }
 
-const intents: Intent[] = intentList
+const abilities: Ability[] = abilityList
 
 // interface Outtake {
 //   type: 'slot' | 'submit',
@@ -66,7 +66,7 @@ const intents: Intent[] = intentList
 // }
 
 interface WolfState {
-  currentIntent: string, //addAlarm
+  activeAbility: string, //addAlarm
   waitingFor: string, //addAlarm.alarmTime
   pendingData: {
     [key: string]: any 
@@ -88,7 +88,7 @@ function intake(wolfState: WolfState, message: string): IntakeResult {
   if (wolfState.waitingFor) { // bot asked for a question
     // set(wolfState.pendingData, wolfState.waitingFor, message ) // validator => extractor
     intakeResult = {
-      intent: wolfState.currentIntent,
+      intent: wolfState.activeAbility,
       entities: [
         {
           entity: wolfState.waitingFor,
@@ -102,8 +102,8 @@ function intake(wolfState: WolfState, message: string): IntakeResult {
   } else {
     const nlpObj = nlp(message)
   
-    if (!wolfState.currentIntent) {
-      wolfState.currentIntent = nlpObj.intent
+    if (!wolfState.activeAbility) {
+      wolfState.activeAbility = nlpObj.intent
     }
 
     intakeResult = nlpObj
@@ -117,7 +117,7 @@ function getActions(wolfState: WolfState, result: IntakeResult) {
   }
 
   return result.entities.map(entity => {
-    const {slots} = intents.find(intent => intent.name === result.intent)
+    const {slots} = abilities.find(ability => ability.name === result.intent)
     const slotObj = slots.find((slot) => slot.entity === entity.entity)
     return () => {
       set(wolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
@@ -138,32 +138,32 @@ function runActions(reply, actions) {
 
 function evaluate(convoState: Object, wolfState: WolfState) {
   // simplest non-graph implementation
-  const {currentIntent, pendingData} = wolfState
-  const intentObj = intents.find((intent) => intent.name === currentIntent)
-  const currentPendingData = pendingData[currentIntent]
-  const missingSlots = difference(intentObj.slots.map(slot => slot.entity), Object.keys(currentPendingData))
+  const {activeAbility, pendingData} = wolfState
+  const abilityObj = abilities.find((ability) => ability.name === activeAbility)
+  const currentPendingData = pendingData[activeAbility]
+  const missingSlots = difference(abilityObj.slots.map(slot => slot.entity), Object.keys(currentPendingData))
   if (missingSlots.length === 0) { // no missingSlot
-    const completedObj = ksl[currentIntent]
-    wolfState.currentIntent = null
+    const completedObj = ksl[activeAbility]
+    wolfState.activeAbility = null
     return {
       type: 'userAction',
-      name: currentIntent,
-      currentIntent
+      name: activeAbility,
+      activeAbility
     }
   } 
 
-  const {slots} = intentObj
+  const {slots} = abilityObj
   const pendingSlot = slots.find(slot => slot.entity === missingSlots[0])
   return {
     type: 'slot',
     name: pendingSlot.entity,
-    currentIntent
+    activeAbility
   }
 }
 
 function outtake(state: BotState, reply, result: EvaluateResult) {
   if (result.type === 'slot') {
-    const {slots} = intents.find((intent) => intent.name === result.currentIntent)
+    const {slots} = abilities.find((ability) => ability.name === result.activeAbility)
     const slot = slots.find((slot) => slot.entity === result.name)
     state.conversation.wolf.waitingFor = slot.entity
     reply(slot.query)
@@ -171,9 +171,9 @@ function outtake(state: BotState, reply, result: EvaluateResult) {
   }
   
   if (result.type === 'userAction') {
-    const intent = intents.find((intent) => intent.name === result.name)
-    const userAction = ksl[intent.name]
-    const data = state.conversation.wolf.pendingData[intent.name]
+    const ability = abilities.find((ability) => ability.name === result.name)
+    const userAction = ksl[ability.name]
+    const data = state.conversation.wolf.pendingData[ability.name]
     const prev = state.conversation[userAction.props.name]
     state.conversation[userAction.props.name] = userAction.submit(prev, data)
     const ackObj = {
@@ -182,8 +182,8 @@ function outtake(state: BotState, reply, result: EvaluateResult) {
       getSubmittedData: () => data}
     reply(userAction.acknowledge(ackObj))
     // remove pendingData
-    state.conversation.wolf.currentIntent = null
-    state.conversation.wolf.pendingData[intent.name] = undefined
+    state.conversation.wolf.activeAbility = null
+    state.conversation.wolf.pendingData[ability.name] = undefined
   }
   // state.conversation = mutate() // returns the state
   // reply(replyText())
@@ -205,7 +205,7 @@ new Bot(adapter)
         }
 
         context.state.conversation.wolf = {
-          currentIntent: null,
+          activeAbility: null,
           waitingFor: null,
           pendingData: {},
           // intake: null,
