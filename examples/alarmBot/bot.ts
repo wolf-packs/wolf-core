@@ -147,14 +147,22 @@ function getActions(wolfState: WolfState, result: IntakeResult) {
   result.entities.forEach((slotEntity) => {
     const slotObj = slots.find((slot) => slot.entity === slotEntity.entity)
     if(slotObj.validate) {
-      let result = slotObj.validate(slotEntity.value)
+      let validateResult = slotObj.validate(slotEntity.value)
       
-      if (result.valid) { // valid: true
+      if (validateResult.valid) { // valid: true
         validResults.entities.push(slotEntity)
         wolfState.waitingFor = null
       } else { // valid: false
-        wolfState.messageQueue.push(result.reason)
-        wolfState.messageQueue.push(slotObj.retryQuery(wolfState.waitingFor.turnCount))
+        wolfState.messageQueue.push(validateResult.reason)
+        if (!wolfState.waitingFor) {
+          wolfState.waitingFor = {
+            slotName: slotObj.entity,
+            turnCount: 0
+          }
+        }
+        if (slotObj.retryQuery) {
+          wolfState.messageQueue.push(slotObj.retryQuery(wolfState.waitingFor.turnCount))
+        }
         wolfState.waitingFor.turnCount++
       }
     } else {
