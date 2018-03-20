@@ -137,7 +137,7 @@ function intake(wolfState: WolfState, message: string): IntakeResult {
   return intakeResult
 }
 
-function getActions(wolfState: WolfState, result: IntakeResult) {
+function validateSlots(wolfState: WolfState, result: IntakeResult) {
   const validResults: IntakeResult = {
     intent: result.intent,
     entities: []
@@ -170,10 +170,10 @@ function getActions(wolfState: WolfState, result: IntakeResult) {
       wolfState.waitingFor = null
     }
   })
+  return validResults
+}
 
-  // update results with entities that pass the slot validator
-  result = validResults
-
+function getActions(wolfState: WolfState, result: IntakeResult) {
   const pendingPath = `pendingData.${result.intent}`
   if (! get(wolfState, `pendingData.${result.intent}`)) {
     wolfState.pendingData[result.intent] = {}
@@ -316,7 +316,8 @@ new Bot(adapter)
         const intakeResult: IntakeResult = intake(wolfState, message)
 
         // Actions
-        const actions = getActions(wolfState, intakeResult) // [('path', value) => string, ]
+        const validatedResults = validateSlots(wolfState, intakeResult)
+        const actions = getActions(wolfState, validatedResults) // [('path', value) => string, ]
         runActions(wolfState, context.reply.bind(context), actions)
 
         // Evaluate
