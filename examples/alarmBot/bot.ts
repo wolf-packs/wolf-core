@@ -2,6 +2,7 @@ import { Bot, MemoryStorage, BotStateManager } from 'botbuilder'
 import { BotFrameworkAdapter } from 'botbuilder-services'
 import * as wolf from '../../src'
 import nlp, { NlpResult, Entity } from './nlp'
+import {findAbilityByName, findSlotByEntityName} from './helpers'
 
 import difference from 'lodash.difference'
 
@@ -37,28 +38,27 @@ const adapter = new BotFrameworkAdapter(
 
 server.post('/api/messages', adapter.listen())
 
-interface Slot {
+interface SlotValidation {
+  valid: boolean,
+  reason?: string
+}
+
+export interface Slot {
   entity: string,
   query: string,
   type: string,
   retryQuery?: (turnCount: number) => string,
-  validate?: (value: string) => { valid: boolean, reason?: string } 
+  validate?: (value: string) => SlotValidation
   acknowledge?: (value: any) => string
 }
 
-interface Ability { // Topic or SGroup
+export interface Ability { // Topic or SGroup
   name: string,
   slots: Slot[]
 }
 
 interface IntakeResult extends NlpResult {
 
-}
-
-interface ValidateResult {
-  intent: string,
-  entities: Entity[],
-  wolfPendingState: Object
 }
 
 interface EvaluateResult {
@@ -68,12 +68,6 @@ interface EvaluateResult {
 }
 
 const abilities: Ability[] = abilityList
-
-// interface Outtake {
-//   type: 'slot' | 'submit',
-
-//   funcs?: Object
-// }
 
 interface WolfState {
   activeAbility: string, //addAlarm
@@ -143,66 +137,82 @@ function intake(wolfState: WolfState, message: string): IntakeResult {
   return intakeResult
 }
 
-function validateSlots(wolfState: WolfState, result: IntakeResult) {
-  const validateResult: ValidateResult = {
-    intent: result.intent,
-    entities: [],
-    wolfPendingState: {}
-  }
+interface ValidatedEntity extends Entity {
+  validated: SlotValidation
+}
 
-  const {slots} = abilities.find(ability => ability.name === result.intent)
+interface ValidatedEntitiesResult {
+  validResults: ValidatedEntity[], 
+  invalidResults: ValidatedEntity[]
+}
 
-  // filter slots with no validator to pass through
-  const hasNoValidator = (element: Entity) => !(slots.find((slot) => slot.entity === element.entity).validate)
-  const entitiesWithoutValidators = result.entities.filter(hasNoValidator)
-  // check if any entity matches the slot wolf is waiting for
-  if (wolfState.waitingFor) {
-    const entityMatch = entitiesWithoutValidators.find((entity) => entity.entity === wolfState.waitingFor.slotName)
-    if(entityMatch) {
-      wolfState.waitingFor = null
+type ValidateEntities = (entities: Entity[]) => ValidatedEntitiesResult
+
+function validateSlots(wolfState: WolfState, result: IntakeResult): IntakeResult {
+  const currentAbility = findAbilityByName(result.intent, abilityList)
+  const {slots} = currentAbility
+  // execute validators on slots
+  const validatedEntities: ValidatedEntity[] = result.entities.map((entity: Entity) => {
+    const slot = findSlotByEntityName(entity.entity, slots)
+    if (!slot.validate) {
+      return {
+        ...entity,
+        validated: {
+          valid: true
+        }
+      }
     }
-  }
+    const result = slot.validate(entity.value)
+    return {
+      ...entity,
+      validated: result
+    }
+  })
+  
+  // filter entities with valid values: true && no validator
+  const validatorTrue = (element: ValidatedEntity) => element.validated.valid === true  
+  const entitiesWithValidValues = validatedEntities.filter(validatorTrue)
 
-  // filter slots with validators to execute
-  const hasValidator = (element: Entity) => slots.find((slot) => slot.entity === element.entity).validate
-  let entitiesWithValidators = result.entities.filter(hasValidator)
-  const executeValidators = (element: Entity) => {
-    const slotObj = slots.find((slot) => slot.entity === element.entity)
-    
-    let validateResult = slotObj.validate(element.value)
-    
-    // valid: false
-    if(!validateResult.valid) {
+  // filter entities with invalid values: false
+  const entitiesWithInvalidValues = validatedEntities.filter((entity: ValidatedEntity) => !validatorTrue(entity))
+
+  const processInvalidEntities = (wolfState, entitiesWithInvalidValues: ValidatedEntity[]) : void => {
+    entitiesWithInvalidValues.forEach((element) => {
       // push reason to messageQueue
-      if(validateResult.reason) {
-        wolfState.messageQueue.push(validateResult.reason)
+      if(element.validated.reason) {
+        wolfState.messageQueue.push(element.validated.reason)
       }
       // create waitingFor object if does not exist (retry purposes)
       if (!wolfState.waitingFor) {
         wolfState.waitingFor = {
-          slotName: slotObj.entity,
+          slotName: element.entity,
           turnCount: 0
         }
       }
       // run slot retry function
-      if (slotObj.retryQuery) {
-        wolfState.messageQueue.push(slotObj.retryQuery(wolfState.waitingFor.turnCount))
+      const slot = findSlotByEntityName(element.entity, slots)
+      if (slot.retryQuery) {
+        wolfState.messageQueue.push(slot.retryQuery(wolfState.waitingFor.turnCount))
       }
       wolfState.waitingFor.turnCount++
-      return undefined
+    })
+  }
+  
+  const processValidEntities = (wolfState: WolfState, entitiesWithValidValues) : IntakeResult  => {
+    // check if any entity matches the slot wolf is waiting for
+    const waitingForAnEntity = entitiesWithValidValues.some((entity) => entity.entity === wolfState.waitingFor.slotName)
+    if (wolfState.waitingFor && waitingForAnEntity) {
+      wolfState.waitingFor = null
     }
 
-    // validator is true
-    wolfState.waitingFor = null
-    return {
-      entity: element.entity,
-      value: element.value,
-      string: element.string
-    }
+    return entitiesWithValidValues.map((entity) => {
+      delete entity.validated
+      return entity
+    })
   }
-  entitiesWithValidators = entitiesWithValidators.map(executeValidators).filter((element) => element)
-  validateResult.entities = [...entitiesWithoutValidators, ...entitiesWithValidators]
-  return validateResult
+  
+  processInvalidEntities(wolfState, entitiesWithInvalidValues)
+  return processValidEntities(wolfState, entitiesWithValidValues)
 }
 
 function getActions(wolfState: WolfState, result: IntakeResult) {

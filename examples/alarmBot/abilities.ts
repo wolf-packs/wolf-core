@@ -1,3 +1,4 @@
+import {randomElement} from './helpers'
 export default [
   {
     name: 'addAlarm',
@@ -14,7 +15,7 @@ export default [
           return phrase[turnCount]
         },
         validate: (value) => {
-          if (value === 'hao' || value === 'Hao') {
+          if (value.toLowerCase() === 'hao') {
             return { valid: false, reason: `${value} is not a good name.`}
           }
           return { valid: true, reason: null }
@@ -25,6 +26,21 @@ export default [
         entity: 'alarmTime',
         type: 'string',
         query: 'What is the time you want to set?',
+        retryQuery: (turn) => {
+          const phrases: string[] = ['let\'s try again', 'what is the time you want to set?']
+          return randomElement(phrases)
+        },
+        validate: (value: string) => {
+          if (!value.toLowerCase().endsWith('pm') || !value.toLowerCase().endsWith('am')) {
+            return {
+              valid: false,
+              reason: 'Needs to set PM or AM',
+            }
+          }
+          return {
+            valid: true
+          }
+        },
         acknowledge: (value) => `ok! time is set to ${value}.`
       }
     ]
