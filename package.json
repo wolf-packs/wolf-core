@@ -40,6 +40,7 @@
     "typescript": "^2.7.2"
   },
   "dependencies": {
+    "immutable": "^3.8.2",
     "lodash.difference": "^4.5.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2"

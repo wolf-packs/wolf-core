@@ -4,7 +4,7 @@ import * as wolf from '../../src'
 import nlp, { NlpResult, Entity } from './nlp'
 import {findAbilityByName, findSlotByEntityName} from './helpers'
 
-import difference from 'lodash.difference'
+// import difference from 'lodash.difference'
 
 import * as addAlarm from './addAlarm'
 import * as removeAlarm from './removeAlarm'
@@ -57,25 +57,62 @@ export interface Ability { // Topic or SGroup
   slots: Slot[]
 }
 
-interface IntakeResult extends NlpResult {
+interface PendingWolfState extends WolfState {
 
+}
+
+interface IntakeResult {
+  pendingWolfState: PendingWolfState,
+  nlpResult: NlpResult
+}
+
+interface ValidateSlotsResult {
+  pendingWolfState: PendingWolfState,
+  validateResult: NlpResult
+}
+
+interface FillSlotsResult extends PendingWolfState {
+  
 }
 
 interface EvaluateResult {
-  type: string,
+  pendingWolfState: PendingWolfState,
+  type: string, // 'slot' 'userAction'
   name: string,
-  activeAbility: string
 }
+
+interface ActionResult extends PendingWolfState {
+
+}
+
+type OuttakeResult = void
 
 const abilities: Ability[] = abilityList
 
+interface WaitingFor {
+  slotName: string | null,
+  turnCount: number, // initial = 0
+}
+
+enum MessageType {
+  validateReason,
+  retryMessage,
+  queryMessage,
+  slotFillMessage,
+  abilityMessage
+}
+
+interface MessageQueueItem {
+  message: string,
+  type: MessageType,
+  slotName?: string,
+  abilityName?: string
+}
+
 interface WolfState {
   activeAbility: string, //addAlarm
-  waitingFor: {
-    slotName: string,
-    turnCount: number,
-  },
-  messageQueue: string[],
+  waitingFor: WaitingFor,
+  messageQueue: MessageQueueItem[],
   pendingData: {
     [key: string]: any 
     // addAlarm: {
@@ -101,40 +138,40 @@ interface getStateFunctions {
 
 // type Action = (result: NlpResult, state: WolfState, next: () => Action) => void
 
-function intake(wolfState: WolfState, message: string): IntakeResult {
-  let intakeResult: IntakeResult
-  if (wolfState.waitingFor) { // bot asked for a question
-    // set(wolfState.pendingData, wolfState.waitingFor, message ) // validator => extractor
-    intakeResult = {
-      intent: wolfState.activeAbility,
+function getActiveAbility(defaultAbility: string, activeAbility: string | undefined, intent: string | undefined)
+: string {
+  if (activeAbility) {
+    return activeAbility
+  }
+  return intent ? intent : defaultAbility
+}
+
+function intake(wolfState: PendingWolfState, message: string): IntakeResult {
+  const pendingWolfState = Object.assign({}, wolfState)
+  const activeAbility: string = pendingWolfState.activeAbility as string
+  let nlpResult: NlpResult
+  if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
+    nlpResult = {
+      intent: activeAbility,
       entities: [
         {
-          entity: wolfState.waitingFor.slotName,
+          entity: pendingWolfState.waitingFor.slotName,
           value: message,
           string: message
         }
       ]
     }
-    return intakeResult
-  } 
-  
-  const nlpObj = nlp(message)
-  if (nlpObj.intent) {
-  
-    if (!wolfState.activeAbility) {
-      wolfState.activeAbility = nlpObj.intent
-    }
-
-    intakeResult = nlpObj
+    // return intakeResult
   } else {
-    // no nlp intent found
-    // must specify a starting/goto ability such as 'listActivities' or 'did not understand'
-    // user defined handle
-    nlpObj.intent = 'listAbilities'
-    wolfState.activeAbility = nlpObj.intent
-    intakeResult = nlpObj
+    nlpResult = nlp(message)
   }
-  return intakeResult
+  
+  const newActiveAbility = getActiveAbility('listAlarms', activeAbility, nlpResult.intent)
+  const pendingWithNewActiveAbility = Object.assign({}, pendingWolfState, {activeAbility: newActiveAbility})
+  return {
+    pendingWolfState: pendingWithNewActiveAbility,
+    nlpResult
+  }
 }
 
 interface ValidatedEntity extends Entity {
@@ -148,7 +185,8 @@ interface ValidatedEntitiesResult {
 
 type ValidateEntities = (entities: Entity[]) => ValidatedEntitiesResult
 
-function validateSlots(wolfState: WolfState, result: IntakeResult): IntakeResult {
+function validateSlots(intakeResult: IntakeResult): ValidateSlotsResult {
+  const {nlpResult: result, pendingWolfState} = intakeResult
   const currentAbility = findAbilityByName(result.intent, abilityList)
   const {slots} = currentAbility
   // execute validators on slots
@@ -176,15 +214,19 @@ function validateSlots(wolfState: WolfState, result: IntakeResult): IntakeResult
   // filter entities with invalid values: false
   const entitiesWithInvalidValues = validatedEntities.filter((entity: ValidatedEntity) => !validatorTrue(entity))
 
-  const processInvalidEntities = (wolfState, entitiesWithInvalidValues: ValidatedEntity[]) : void => {
+  const processInvalidEntities = (pendingWolfState: PendingWolfState, entitiesWithInvalidValues: ValidatedEntity[]) : void => {
     entitiesWithInvalidValues.forEach((element) => {
       // push reason to messageQueue
       if(element.validated.reason) {
-        wolfState.messageQueue.push(element.validated.reason)
+        pendingWolfState.messageQueue.push({
+          message: element.validated.reason,
+          type: MessageType.validateReason,
+          slotName: element.entity
+        })
       }
       // create waitingFor object if does not exist (retry purposes)
-      if (!wolfState.waitingFor) {
-        wolfState.waitingFor = {
+      if (!pendingWolfState.waitingFor.slotName) {
+        pendingWolfState.waitingFor = {
           slotName: element.entity,
           turnCount: 0
         }
@@ -192,17 +234,24 @@ function validateSlots(wolfState: WolfState, result: IntakeResult): IntakeResult
       // run slot retry function
       const slot = findSlotByEntityName(element.entity, slots)
       if (slot.retryQuery) {
-        wolfState.messageQueue.push(slot.retryQuery(wolfState.waitingFor.turnCount))
+        pendingWolfState.messageQueue.push({
+          message: slot.retryQuery(pendingWolfState.waitingFor.turnCount),
+          type: MessageType.retryMessage,
+          slotName: slot.entity
+        })
       }
-      wolfState.waitingFor.turnCount++
+      pendingWolfState.waitingFor.turnCount++
     })
   }
   
-  const processValidEntities = (wolfState: WolfState, entitiesWithValidValues) : IntakeResult  => {
+  const processValidEntities = (pendingWolfState: PendingWolfState, entitiesWithValidValues): Entity[]  => {
     // check if any entity matches the slot wolf is waiting for
-    const waitingForAnEntity = entitiesWithValidValues.some((entity) => entity.entity === wolfState.waitingFor.slotName)
-    if (wolfState.waitingFor && waitingForAnEntity) {
-      wolfState.waitingFor = null
+    const waitingForAnEntity = entitiesWithValidValues.some((entity) => entity.entity === pendingWolfState.waitingFor.slotName)
+    if (waitingForAnEntity) {
+      pendingWolfState.waitingFor = {
+        slotName: null,
+        turnCount: 0
+      }
     }
 
     return entitiesWithValidValues.map((entity) => {
@@ -211,85 +260,88 @@ function validateSlots(wolfState: WolfState, result: IntakeResult): IntakeResult
     })
   }
   
-  processInvalidEntities(wolfState, entitiesWithInvalidValues)
-  return processValidEntities(wolfState, entitiesWithValidValues)
+  processInvalidEntities(pendingWolfState, entitiesWithInvalidValues)
+  const validEntities = processValidEntities(pendingWolfState, entitiesWithValidValues)
+  return {
+    pendingWolfState,
+    validateResult: {
+      intent: result.intent,
+      entities: validEntities
+    }
+  }
 }
 
-function getActions(wolfState: WolfState, result: IntakeResult) {
+function fillSlots(validateSlotResult: ValidateSlotsResult): FillSlotsResult {
+  const {pendingWolfState, validateResult: result} = validateSlotResult
   const pendingPath = `pendingData.${result.intent}`
-  if (! get(wolfState, `pendingData.${result.intent}`)) {
-    wolfState.pendingData[result.intent] = {}
+  if (! get(pendingWolfState, `pendingData.${result.intent}`)) {
+    pendingWolfState.pendingData[result.intent] = {}
   }
 
-  return result.entities.map(entity => {
+  const setSlots = (entity: Entity) => {
     const {slots} = abilities.find(ability => ability.name === result.intent)
     const slotObj = slots.find((slot) => slot.entity === entity.entity)
-    return () => {
-      set(wolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
-      
-      return slotObj.acknowledge? slotObj.acknowledge(entity.value) : null
-    }
-  })
+    set(pendingWolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
+    pendingWolfState.messageQueue.push({
+      message: slotObj.acknowledge ? slotObj.acknowledge(entity.value) : null,
+      type: MessageType.slotFillMessage,
+      slotName: entity.entity
+    })
+  }
+  result.entities.forEach(setSlots)
+  return pendingWolfState
 }
 
-function runActions(wolfState, reply, actions) {
-  actions.forEach((action) => {
-    const message = action()
-    if (message) {
-      wolfState.messageQueue.push(message)
-    }
-  })
-}
-
-function evaluate(convoState: Object, wolfState: WolfState) {
+function evaluate(result: FillSlotsResult): EvaluateResult {
   // simplest non-graph implementation
-  const {activeAbility, pendingData} = wolfState
+  const pendingWolfState = result
+  const {activeAbility, pendingData} = pendingWolfState
   const abilityObj = abilities.find((ability) => ability.name === activeAbility)
   const currentPendingData = pendingData[activeAbility]
   const missingSlots = difference(abilityObj.slots.map(slot => slot.entity), Object.keys(currentPendingData))
   if (missingSlots.length === 0) { // no missingSlot
     const completedObj = ksl[activeAbility]
-    wolfState.activeAbility = null
+    pendingWolfState.activeAbility = null
     return {
+      pendingWolfState,
       type: 'userAction',
-      name: activeAbility,
-      activeAbility
+      name: activeAbility
     }
   } 
 
   const {slots} = abilityObj
   const pendingSlot = slots.find(slot => slot.entity === missingSlots[0])
   return {
+    pendingWolfState,
     type: 'slot',
-    name: pendingSlot.entity,
-    activeAbility
+    name: pendingSlot.entity
   }
 }
 
-function outtake(state: BotState, reply, result: EvaluateResult) {
+function action(state: BotState, result: EvaluateResult): ActionResult {
+  const { pendingWolfState } = result
   if (result.type === 'slot') {
-    const {slots} = abilities.find((ability) => ability.name === result.activeAbility)
+    const {slots} = abilities.find((ability) => ability.name === pendingWolfState.activeAbility)
     const slot = slots.find((slot) => slot.entity === result.name)
 
-    if (!state.conversation.wolf.waitingFor) {
-      state.conversation.wolf.waitingFor = {
+    if (!pendingWolfState.waitingFor.slotName) {
+      pendingWolfState.waitingFor = {
         slotName: slot.entity,
         turnCount: 0
       }
-      state.conversation.wolf.messageQueue.push(slot.query)
+      pendingWolfState.messageQueue.push({
+        message: slot.query,
+        type: MessageType.queryMessage,
+        slotName: slot.entity
+      })
     }
-
-    state.conversation.wolf.messageQueue.forEach(element => {
-      reply(element)
-    })
-    state.conversation.wolf.messageQueue = []
-    return
+    return pendingWolfState
   }
   
   if (result.type === 'userAction') {
     const ability = abilities.find((ability) => ability.name === result.name)
     const userAction = ksl[ability.name]
-    const data = state.conversation.wolf.pendingData[ability.name]
+    const data = pendingWolfState.pendingData[ability.name]
     
     const ackObj: getStateFunctions = {
       getBotState: () => state,  // user defined
@@ -302,18 +354,56 @@ function outtake(state: BotState, reply, result: EvaluateResult) {
       ackObj.getSgState = () => state.conversation[userAction.props.name]
     }
 
-    state.conversation.wolf.messageQueue.push(userAction.acknowledge(ackObj))
-    state.conversation.wolf.messageQueue.forEach(element => {
-      reply(element)
+    pendingWolfState.messageQueue.push({
+      message: userAction.acknowledge(ackObj),
+      type: MessageType.abilityMessage,
+      abilityName: ability.name
     })
-    state.conversation.wolf.messageQueue = []
 
     // remove pendingData
-    state.conversation.wolf.activeAbility = null
-    state.conversation.wolf.pendingData[ability.name] = undefined
+    pendingWolfState.activeAbility = null
+    pendingWolfState.pendingData[ability.name] = undefined
+    return pendingWolfState
   }
-  // state.conversation = mutate() // returns the state
-  // reply(replyText())
+}
+
+function outtake(convoState: {[key: string]: any}, reply, result: ActionResult): OuttakeResult {
+  const pendingWolfState = result
+  // order and format messageQueue
+  // slotFillMessage  "I have captured x, y, z..."
+  // abilityMessage   "I have completed ability x, y, z..."
+  // validateReason   "Reasons for retry messages"
+  // retryMessage     "retry x, y, z..."
+
+  const createMessage = (messageQueue, messageType) => {
+    const queue = messageQueue.filter(message => message.type === messageType)
+    const messages = `${queue.map(_ => _.message).join(', ')}`
+    return messages
+  }
+
+  const slotFillMessage = createMessage(pendingWolfState.messageQueue, MessageType.slotFillMessage)
+  const abilityMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityMessage)
+  const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
+  const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
+  
+  // display messageQueue
+  if (slotFillMessage) {
+    reply(slotFillMessage)
+  }
+  if (abilityMessage) {
+    reply(abilityMessage)
+  }
+  if (validateMessage) {
+    reply(validateMessage)
+  }
+  if (retryMessage) {
+    reply(retryMessage)
+  }
+  
+  pendingWolfState.messageQueue = []
+  
+  // update wolfState with pendingWolfState
+  convoState.wolf = pendingWolfState
 }
 
 new Bot(adapter)
@@ -333,7 +423,10 @@ new Bot(adapter)
 
         context.state.conversation.wolf = {
           activeAbility: null,
-          waitingFor: null,
+          waitingFor: {
+            slotName: null,
+            turnCount: 0
+          },
           messageQueue: [],
           pendingData: {},
           // intake: null,
@@ -352,21 +445,22 @@ new Bot(adapter)
         }
 
         const message = context.request.text
-        const wolfState: WolfState = context.state.conversation.wolf
 
         // Intake
-        const intakeResult: IntakeResult = intake(wolfState, message)
+        const intakeResult: IntakeResult = intake(context.state.conversation.wolf, message)
 
-        // Actions
-        const validatedResults = validateSlots(wolfState, intakeResult)
-        const actions = getActions(wolfState, validatedResults) // [('path', value) => string, ]
-        runActions(wolfState, context.reply.bind(context), actions)
+        // FillSlot
+        const validatedResults: ValidateSlotsResult = validateSlots(intakeResult)
+        const pendingWolfState: FillSlotsResult = fillSlots(validatedResults)
 
         // Evaluate
-        const evaluateResult: EvaluateResult = evaluate(context.state.conversation, wolfState)
+        const evaluateResult: EvaluateResult = evaluate(pendingWolfState)
         
+        // Action
+        const actionResult: ActionResult = action(context.state, evaluateResult)
+
         // Outtake
-        outtake(context.state, context.reply.bind(context), evaluateResult)
+        outtake(context.state.conversation, context.reply.bind(context), actionResult)
 
       } catch (err) {
         console.error(err)
