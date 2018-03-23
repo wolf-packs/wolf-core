@@ -369,11 +369,6 @@ function action(state: BotState, result: EvaluateResult): ActionResult {
 
 function outtake(convoState: {[key: string]: any}, reply, result: ActionResult): OuttakeResult {
   const pendingWolfState = result
-  // order and format messageQueue
-  // slotFillMessage  "I have captured x, y, z..."
-  // abilityMessage   "I have completed ability x, y, z..."
-  // validateReason   "Reasons for retry messages"
-  // retryMessage     "retry x, y, z..."
 
   const createMessage = (messageQueue, messageType) => {
     const queue = messageQueue.filter(message => message.type === messageType)
@@ -381,6 +376,7 @@ function outtake(convoState: {[key: string]: any}, reply, result: ActionResult):
     return messages
   }
 
+  // order and format messageQueue
   const slotFillMessage = createMessage(pendingWolfState.messageQueue, MessageType.slotFillMessage)
   const abilityMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityMessage)
   const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
