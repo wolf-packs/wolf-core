@@ -385,6 +385,7 @@ function outtake(convoState: {[key: string]: any}, reply, result: ActionResult):
   const abilityMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityMessage)
   const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
   const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
+  const queryMessage = createMessage(pendingWolfState.messageQueue, MessageType.queryMessage)
   
   // display messageQueue
   if (slotFillMessage) {
@@ -398,6 +399,9 @@ function outtake(convoState: {[key: string]: any}, reply, result: ActionResult):
   }
   if (retryMessage) {
     reply(retryMessage)
+  }
+  if (queryMessage) {
+    reply(queryMessage)
   }
   
   pendingWolfState.messageQueue = []
