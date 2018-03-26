@@ -7,7 +7,7 @@ export const props = {
   name: 'alarms'
 }
 
-export const submit = (prev: Alarm[] = [], value) => {
+export const submit = (prev: any = [], value) => {
   return prev.filter(alarm => alarm.alarmName !== value.alarmName)
 }
 

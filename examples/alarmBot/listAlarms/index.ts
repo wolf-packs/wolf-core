@@ -2,12 +2,12 @@ export const props = {
   name: 'alarms'
 }
 
-export const submit = (prev = []) => {
+export const submit = (prev) => {
   return prev
 }
 
 export const acknowledge = ({getSgState}) => {
-  const alarms = getSgState()
+  const alarms = getSgState() || []
   if (alarms.length === 0) {
     return `You do not have any alarms!`
   }

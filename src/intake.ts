@@ -24,13 +24,21 @@ function getActiveAbility(defaultAbility: string, activeAbility: string | undefi
   return intent ? intent : defaultAbility
 }
 
-export default function intake(wolfState: PendingWolfState, nlpResult: NlpResult, defaultAbility: string): IntakeResult {
+export default function intake(
+  wolfState: PendingWolfState,
+  nlpResult: NlpResult,
+  defaultAbility: string
+): IntakeResult {
   const pendingWolfState = Object.assign({}, wolfState)
   const prevActiveAbility = pendingWolfState.activeAbility
   
-
   const newActiveAbility = getActiveAbility(defaultAbility, prevActiveAbility, nlpResult.intent)
-  const pendingWithNewActiveAbility = Object.assign({}, pendingWolfState, {activeAbility: newActiveAbility, abilityCompleted: false})
+  const pendingWithNewActiveAbility = Object.assign(
+    {},
+    pendingWolfState,
+    {activeAbility: newActiveAbility, abilityCompleted: false}
+  )
+  
   return {
     pendingWolfState: pendingWithNewActiveAbility,
     nlpResult

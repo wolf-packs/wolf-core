@@ -3,11 +3,16 @@ import { ActionResult } from './actions'
 
 export type OuttakeResult = void
 
-export default function outtake(convoState: {[key: string]: any}, reply: (message: string) => void, result: ActionResult): OuttakeResult {
+export default function outtake(
+  convoState: {[key: string]: any},
+  reply: (message: string) => void,
+  result: ActionResult
+): OuttakeResult {
   const pendingWolfState = result
 
   const createMessage = (messageQueue: MessageQueueItem[], messageType: MessageType) => {
-    const queue = messageQueue.filter((message: MessageQueueItem) => message.type === messageType)
+    const queue = messageQueue
+      .filter((message: MessageQueueItem) => message.type === messageType)
     const messages = `${queue.map((_: MessageQueueItem) => _.message).join(', ')}`
     return messages
   }

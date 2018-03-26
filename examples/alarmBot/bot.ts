@@ -2,8 +2,14 @@ import { Bot, MemoryStorage, BotStateManager } from 'botbuilder'
 import { BotFrameworkAdapter } from 'botbuilder-services'
 import * as wolf from '../../src'
 import nlp from './nlp'
+
 import intake, {NlpResult, Entity} from '../../src/intake'
+import { validateSlots, fillSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/fillSlot'
+import evaluate, { EvaluateResult } from '../../src/evaluate'
+import action, { ActionResult } from '../../src/actions'
 import outtake from '../../src/outtake'
+
+import { Ability, AbilityFunctionMap } from '../../src/types'
 // import difference from 'lodash.difference'
 
 import * as addAlarm from './addAlarm'
@@ -11,7 +17,7 @@ import * as removeAlarm from './removeAlarm'
 import * as listAlarms from './listAlarms'
 import * as listAbilities from './listAbilities'
 
-const ksl = {
+const ksl: AbilityFunctionMap = {
   addAlarm,
   removeAlarm,
   listAlarms,
@@ -81,7 +87,7 @@ new Bot(adapter)
         let nlpResult: NlpResult
         if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
           nlpResult = {
-            intent: activeAbility,
+            intent: pendingWolfState.activeAbility,
             entities: [
               {
                 entity: pendingWolfState.waitingFor.slotName,
@@ -96,22 +102,22 @@ new Bot(adapter)
         }
 
         // Intake
-        const intakeResult = intake(context.state.conversation.wolf, nlpResult, 'listAlarms')
+        const intakeResult = intake(context.state.conversation.wolf, nlpResult, 'listAbilities')
 
         // FillSlot
-        const validatedResults: ValidateSlotsResult = validateSlots(intakeResult)
-        const fillSlotResult: FillSlotsResult = fillSlots(validatedResults)
+        const validatedResults: ValidateSlotsResult = validateSlots(abilities, intakeResult)
+        const fillSlotResult: FillSlotsResult = fillSlots(abilities, validatedResults)
 
         // Evaluate
-        const evaluateResult: EvaluateResult = evaluate(fillSlotResult)
+        const evaluateResult: EvaluateResult = evaluate(abilities, ksl, fillSlotResult)
         
         // Action
-        const actionResult: ActionResult = action(context.state, evaluateResult)
+        const actionResult: ActionResult = action(abilities, ksl, context.state, evaluateResult)
 
         // Outtake
         outtake(context.state.conversation, context.reply.bind(context), actionResult)
 
       } catch (err) {
-        console.error(err)
+        console.error(err.stack)
       }
     })

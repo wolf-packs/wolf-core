@@ -55,6 +55,10 @@ export interface AbilityFunction {
   props: {
     name: string
   },
-  submit: <T>(prev: T, value: any) => T,
+  submit: <T>(prev: T|T[], value: any) => T|T[],
   acknowledge: (funcs: any) => string
+}
+
+export interface AbilityFunctionMap {
+  [key: string]: AbilityFunction
 }

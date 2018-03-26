@@ -55,7 +55,10 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   // filter entities with invalid values: false
   const entitiesWithInvalidValues = validatedEntities.filter((entity: ValidatedEntity) => !validatorTrue(entity))
 
-  const processInvalidEntities = (pendingWolfState: PendingWolfState, entitiesWithInvalidValues: ValidatedEntity[]) : void => {
+  const processInvalidEntities = (
+    pendingWolfState: PendingWolfState,
+    entitiesWithInvalidValues: ValidatedEntity[]
+  ) : void => {
     entitiesWithInvalidValues.forEach((element) => {
       // push reason to messageQueue
       if(element.validated.reason) {
@@ -85,9 +88,14 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
     })
   }
   
-  const processValidEntities = (pendingWolfState: PendingWolfState, entitiesWithValidValues: ValidatedEntity[]): Entity[]  => {
+  const processValidEntities = (
+    pendingWolfState: PendingWolfState,
+    entitiesWithValidValues: ValidatedEntity[]
+  ): Entity[]  => {
     // check if any entity matches the slot wolf is waiting for
-    const waitingForAnEntity = entitiesWithValidValues.some((entity) => entity.entity === pendingWolfState.waitingFor.slotName)
+    const waitingForAnEntity = entitiesWithValidValues
+      .some((entity) => entity.entity === pendingWolfState.waitingFor.slotName)
+
     if (waitingForAnEntity) {
       pendingWolfState.waitingFor = {
         slotName: null,
@@ -112,7 +120,10 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   }
 }
 
-export function fillSlots(abilityDataDef: Ability[], validateSlotResult: ValidateSlotsResult): FillSlotsResult {
+export function fillSlots(
+  abilityDataDef: Ability[],
+  validateSlotResult: ValidateSlotsResult
+): FillSlotsResult {
   const {pendingWolfState, validateResult: result} = validateSlotResult
   const pendingPath = `pendingData.${result.intent}`
   if (! get(pendingWolfState, `pendingData.${result.intent}`)) {
