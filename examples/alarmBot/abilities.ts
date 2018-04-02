@@ -8,7 +8,7 @@ export default [
         type: 'string',
         query: 'What is the name of the alarm?',
         retryQuery: (turnCount) => {
-          const phrase = ['retry1', 'retry2', 'retry3']
+          const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
           if (turnCount > phrase.length - 1) {
             return phrase[phrase.length - 1]
           }
