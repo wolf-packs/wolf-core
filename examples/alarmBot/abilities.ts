@@ -1,4 +1,4 @@
-import {randomElement} from './helpers'
+import {randomElement} from '../../src/helpers'
 export default [
   {
     name: 'addAlarm',

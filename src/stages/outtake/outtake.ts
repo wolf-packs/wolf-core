@@ -1,5 +1,5 @@
-import { MessageType, MessageQueueItem} from './types'
-import { ActionResult } from './actions'
+import { MessageType, MessageQueueItem} from '../../types'
+import { ActionResult } from '../actions'
 
 export type OuttakeResult = void
 
