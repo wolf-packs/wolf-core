@@ -6,7 +6,7 @@
   "typings": "dist/index",
   "scripts": {
     "build": "tsc",
-    "bulld:watch": "tsc -w",
+    "build:watch": "tsc -w",
     "build:dev": "tsc --p tsconfig.example.json",
     "build:dev:watch": "tsc --p tsconfig.example.json -w",
     "test": "jest"
