@@ -4,7 +4,8 @@ import { ActionResult } from '../actions'
 export type OuttakeResult = void
 
 export default function outtake(
-  convoState: {[key: string]: any},
+  // TODO: changed to set wolfstate
+  conversationState: {[key: string]: any},
   reply: (message: string) => void,
   result: ActionResult
 ): OuttakeResult {
@@ -44,5 +45,5 @@ export default function outtake(
   pendingWolfState.messageQueue = []
   
   // update wolfState with pendingWolfState
-  convoState.wolf = pendingWolfState
+  conversationState.wolf = pendingWolfState
 }

@@ -1,6 +1,6 @@
 import { PendingWolfState, MessageType, Ability, AbilityFunction, Slot, AbilityFunctionMap } from '../../types'
 import { EvaluateResult } from '../evaluate'
-import { BotStateManager } from 'botbuilder'
+import { ConversationState } from 'botbuilder'
 const get = require('lodash.get')
 const set = require('lodash.set')
 
@@ -13,7 +13,7 @@ interface getStateFunctionGeneric {
 }
 
 interface getStateFunctions {
-  getBotState: getStateFunctionGeneric,
+  getConversationState: getStateFunctionGeneric,
   getSgState?: getStateFunctionGeneric,
   getSubmittedData: getStateFunctionGeneric
 }
@@ -21,7 +21,7 @@ interface getStateFunctions {
 export default function action(
   abilityList: Ability[],
   abilityFunctions: AbilityFunctionMap,
-  state: BotState,
+  conversationState: Object,
   result: EvaluateResult
 ): ActionResult {
   const { pendingWolfState } = result
@@ -53,14 +53,14 @@ export default function action(
     const data = pendingWolfState.pendingData[ability.name]
     
     const ackObj: getStateFunctions = {
-      getBotState: () => state,  // user defined
+      getConversationState: () => conversationState,  // user defined
       getSubmittedData: () => data
     }
 
     if (userAction.props && userAction.props.name) {
-      const prev = get(state.conversation, userAction.props.name)
-      set(state.conversation, userAction.props.name, userAction.submit(prev, data))
-      ackObj.getSgState = () => get(state.conversation, userAction.props.name)
+      const prev = get(conversationState, userAction.props.name)
+      set(conversationState, userAction.props.name, userAction.submit(prev, data))
+      ackObj.getSgState = () => get(conversationState, userAction.props.name)
     }
 
     pendingWolfState.messageQueue.push({

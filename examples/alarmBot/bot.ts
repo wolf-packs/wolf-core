@@ -55,11 +55,11 @@ const abilities: Ability[] = abilityList
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, (context) => {
     try {
-      if (context.request.type !== 'message') {
+      if (context.activity.type !== 'message') {
         return
       }
 
-      const message = context.request.text
+      const message = context.activity.text
       
       const state = conversationState.get(context)
       const pendingWolfState = state.wolf
@@ -95,90 +95,10 @@ server.post('/api/messages', (req, res) => {
       const actionResult: ActionResult = action(abilities, ksl, state, evaluateResult)
 
       // Outtake
-      outtake(state, context.reply.bind(context), actionResult)
+      outtake(state, context.sendActivity.bind(context), actionResult)
 
     } catch (err) {
       console.error(err.stack)
     }
   })
 })
-
-// Old code below
-// new Bot(adapter)
-//     .use(new MemoryStorage())
-//     .use(new BotStateManager())
-//     .use({
-//       contextCreated: (context: BotContext, next) => {
-//         const conversationState = context.state.conversation
-        
-//         if (conversationState && conversationState.wolf) {
-//           return next()
-//         }
-
-//         if (!conversationState) {
-//           context.state.conversation = {}
-//         }
-        
-//         context.state.conversation.wolf = {
-//           abilityCompleted: false,
-//           activeAbility: '', // default abilityName
-//           waitingFor: {
-//             slotName: null,
-//             turnCount: 0
-//           },
-//           messageQueue: [],
-//           pendingData: {},
-//           data: {}
-//         }
-        
-        
-//         return next()
-//       }
-//     })
-//     .onReceive((context: BotContext) => {
-//       try {
-//         if (context.request.type !== 'message') {
-//           return
-//         }
-
-//         const message = context.request.text
-
-//         const pendingWolfState = context.state.conversation.wolf
-        
-//         let nlpResult: NlpResult
-//         if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
-//           nlpResult = {
-//             intent: pendingWolfState.activeAbility,
-//             entities: [
-//               {
-//                 entity: pendingWolfState.waitingFor.slotName,
-//                 value: message,
-//                 string: message
-//               }
-//             ]
-//           }
-//           // return intakeResult
-//         } else {
-//           nlpResult = nlp(message)
-//         }
-
-//         // Intake
-//         const intakeResult = intake(context.state.conversation.wolf, nlpResult, 'listAbilities')
-
-//         // FillSlot
-//         const validatedResults: ValidateSlotsResult = validateSlots(abilities, intakeResult)
-//         const fillSlotResult: FillSlotsResult = fillSlots(abilities, validatedResults)
-
-//         // Evaluate
-//         const evaluateResult: EvaluateResult = evaluate(abilities, ksl, fillSlotResult)
-        
-//         // Action
-//         const actionResult: ActionResult = action(abilities, ksl, context.state, evaluateResult)
-
-//         // Outtake
-//         outtake(context.state.conversation, context.reply.bind(context), actionResult)
-
-//       } catch (err) {
-//         console.error(err.stack)
-//       }
-//     })
