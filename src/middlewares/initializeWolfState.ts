@@ -1,10 +1,10 @@
 import { ConversationState, TurnContext } from 'botbuilder'
 
 /**
-* Initialize wolf state
-* 
-* @return Promise<>
-*/
+ * Initialize wolf state
+ * 
+ * @return Promise<>
+ */
 
 export default function initializeWolfState(conversationState: ConversationState) {
   return {
@@ -13,7 +13,7 @@ export default function initializeWolfState(conversationState: ConversationState
       const state = conversationState.get(context) || {}
 
       // Check if wolf state exists
-      if(state.wolf) {
+      if (state.wolf) {
         await next()
         return
       }

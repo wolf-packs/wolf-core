@@ -3,7 +3,7 @@ import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilde
 import nlp from './nlp'
 
 // import * as wolf from '../../src'
-import intake, {NlpResult, Entity} from '../../src/stages/intake'
+import intake, { NlpResult, Entity } from '../../src/stages/intake'
 import { validateSlots, fillSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/stages/fillSlot'
 import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
 import action, { ActionResult } from '../../src/stages/actions'
