@@ -1,4 +1,4 @@
-import {randomElement} from './helpers'
+import { randomElement } from '../../src/helpers'
 export default [
   {
     name: 'addAlarm',
@@ -31,7 +31,7 @@ export default [
           return randomElement(phrases)
         },
         validate: (value: string) => {
-          if (!value.toLowerCase().endsWith('pm') || !value.toLowerCase().endsWith('am')) {
+          if (!value.toLowerCase().endsWith('pm') && !value.toLowerCase().endsWith('am')) {
             return {
               valid: false,
               reason: 'Needs to set PM or AM',

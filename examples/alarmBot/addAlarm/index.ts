@@ -7,7 +7,7 @@ export const props = {
   name: 'alarms'
 }
 
-export const submit = (prev: Alarm[] = [], alarm: Alarm) => {
+export const submit = (prev = [], alarm) => {
   const alarms = [
     ...prev,
     alarm

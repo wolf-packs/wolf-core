@@ -74,7 +74,10 @@ const recognizers: recognizer[] = [
 function nlp(input: string): NlpResult {
   const found = {...testers.find((tester) => tester.tester(input))}
   if (!found) {
-    return null
+    return {
+      intent: null,
+      entities: []
+    }
   }
   const {name: intent} = found
 

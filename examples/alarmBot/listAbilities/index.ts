@@ -1,6 +1,10 @@
 import abilityList from '../abilities'
 
-export const submit = (prev = []) => {
+export const props = {
+  name: ''
+}
+
+export const submit = (prev) => {
   return prev
 }
 
