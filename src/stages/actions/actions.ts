@@ -26,18 +26,27 @@ export default function action(
 ): ActionResult {
   const { pendingWolfState } = result
   if (result.type === 'slot') {
+    // Next action: gather information to fill slot (determined by eval stage)
+
+    // Load slots base don ability
     const { slots } = abilityList.find((ability) => ability.name === pendingWolfState.activeAbility) as Ability
+    // Select slot defined by evaluate result
     const slot = slots.find((slot) => slot.entity === result.name)
 
+    // Safety null check - eval stage should catch
     if (!slot) {
+      // No pending slot found based on result.name
       return pendingWolfState
     }
-
+    
+    // Not currently waiting for a response to a prompt
     if (!pendingWolfState.waitingFor.slotName) {
+      // Change into a waiting state (slot prompt will be added to queue)
       pendingWolfState.waitingFor = {
         slotName: slot.entity,
         turnCount: 0
       }
+      // Add slot prompt onto messageQueue to prompt user
       pendingWolfState.messageQueue.push({
         message: slot.query,
         type: MessageType.queryMessage,
