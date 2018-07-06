@@ -1,4 +1,4 @@
-import { PendingWolfState } from './types'
+import { PendingWolfState } from '../../types'
 
 export interface IntakeResult {
   pendingWolfState: PendingWolfState,

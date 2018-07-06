@@ -1,6 +1,5 @@
-import { PendingWolfState, Ability, AbilityFunctionMap, Slot } from './types'
-import { FillSlotsResult } from './fillSlot'
-
+import { PendingWolfState, Ability, AbilityFunctionMap, Slot } from '../../types'
+import { FillSlotsResult } from '../fillSlot'
 const get = require('lodash.get')
 const difference = require('lodash.difference')
 

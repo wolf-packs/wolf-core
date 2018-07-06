@@ -1,6 +1,5 @@
-import { Bot, MemoryStorage, BotStateManager } from 'botbuilder'
-import { BotFrameworkAdapter } from 'botbuilder-services'
-import * as wolf from '../../src'
+import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
+
 const restify = require('restify')
 
 // Create server
@@ -10,20 +9,19 @@ server.listen(process.env.port || 3978, () => {
 })
 
 // Create connector
-const adapter = new BotFrameworkAdapter(
-  { appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD }
-)
+const adapter = new BotFrameworkAdapter({
+  appId: process.env.MICROSOFT_APP_ID,
+  appPassword: process.env.MICROSOFT_APP_PASSWORD
+})
 
-server.post('/api/messages', adapter.listen())
-
-new Bot(adapter)
-    .use(new MemoryStorage())
-    .use(new BotStateManager())
-    .onReceive((context: BotContext) => {
-      if (context.request.type !== 'message') {
+server.post('/api/messages', (req, res) => {
+  adapter.processActivity(req, res, (context) => {
+    try {
+      if (context.activity.type !== 'message') {
         return
       }
-       
-      context.reply('hi')
+    } catch (err) {
+      context.sendActivity('hello')
     }
-)
+  })
+})

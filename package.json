@@ -6,7 +6,7 @@
   "typings": "dist/index",
   "scripts": {
     "build": "tsc",
-    "bulld:watch": "tsc -w",
+    "build:watch": "tsc -w",
     "build:dev": "tsc --p tsconfig.example.json",
     "build:dev:watch": "tsc --p tsconfig.example.json -w",
     "test": "jest"
@@ -30,7 +30,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^22.2.0",
-    "botbuilder": "^4.0.0-m1.10",
+    "botbuilder": "^4.0.0-preview1.2",
     "botbuilder-node": "^4.0.0-m1.10",
     "botbuilder-services": "^4.0.0-m1.10",
     "bravey": "^0.1.5",
