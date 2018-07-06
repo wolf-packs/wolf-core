@@ -3,7 +3,7 @@ import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 
 import nlp from './nlp'
 
 // import * as wolf from '../../src'
-import intake, { NlpResult, Entity } from '../../src/stages/intake'
+import intake, { NlpResult } from '../../src/stages/intake'
 import { validateSlots, fillSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/stages/fillSlot'
 import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
 import action, { ActionResult } from '../../src/stages/actions'
@@ -12,7 +12,7 @@ import outtake from '../../src/stages/outtake'
 // import Wolf middleware
 import initializeWolfState from '../../src/middlewares/initializeWolfState'
 
-import { Ability, AbilityFunctionMap, PendingWolfState } from '../../src/types'
+import { Ability, AbilityFunctionMap } from '../../src/types'
 // import difference from 'lodash.difference'
 
 import abilityList from './abilities'
