@@ -21,7 +21,7 @@ interface GetStateFunctions {
 export default function action(
   abilityList: Ability[],
   abilityFunctions: AbilityFunctionMap,
-  conversationState: Object,
+  convoState: Object,
   result: EvaluateResult
 ): ActionResult {
   const { pendingWolfState } = result
@@ -53,14 +53,14 @@ export default function action(
     const data = pendingWolfState.pendingData[ability.name]
     
     const ackObj: GetStateFunctions = {
-      getConversationState: () => conversationState,  // user defined
+      getConversationState: () => convoState,  // user defined
       getSubmittedData: () => data
     }
 
     if (userAction.props && userAction.props.name) {
-      const prev = get(conversationState, userAction.props.name)
-      set(conversationState, userAction.props.name, userAction.submit(prev, data))
-      ackObj.getSgState = () => get(conversationState, userAction.props.name)
+      const prev = get(convoState, userAction.props.name)
+      set(convoState, userAction.props.name, userAction.submit(prev, data))
+      ackObj.getSgState = () => get(convoState, userAction.props.name)
     }
 
     pendingWolfState.messageQueue.push({

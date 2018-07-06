@@ -6,19 +6,20 @@ import { ConversationState, TurnContext } from 'botbuilder'
  * @return Promise<>
  */
 
-export default function initializeWolfState(conversationState: ConversationState) {
+export default function initializeWolfState(conversationStore: ConversationState) {
   return {
     onTurn: async (context: TurnContext, next: () => any) => {
-      // This simple middleware reports the activity type and if we responded
-      const state = conversationState.get(context) || {}
+      // Load convo state from the store
+      const convoState = conversationStore.get(context) || {}
 
       // Check if wolf state exists
-      if (state.wolf) {
+      if (convoState.wolf) {
         await next()
         return
       }
 
-      state.wolf = {
+      // Initialize with a default wolf state
+      convoState.wolf = {
         abilityCompleted: false,
         activeAbility: '', // default abilityName
         waitingFor: {

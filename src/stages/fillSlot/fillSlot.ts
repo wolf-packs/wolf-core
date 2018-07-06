@@ -58,10 +58,10 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   const processInvalidEntities = (
     pendingWolfState: PendingWolfState,
     entitiesWithInvalidValues: ValidatedEntity[]
-  ) : void => {
+  ): void => {
     entitiesWithInvalidValues.forEach((element) => {
       // push reason to messageQueue
-      if(element.validated.reason) {
+      if (element.validated.reason) {
         pendingWolfState.messageQueue.push({
           message: element.validated.reason,
           type: MessageType.validateReason,

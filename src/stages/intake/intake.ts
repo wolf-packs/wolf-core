@@ -36,7 +36,7 @@ export default function intake(
   const pendingWithNewActiveAbility = Object.assign(
     {},
     pendingWolfState,
-    {activeAbility: newActiveAbility, abilityCompleted: false}
+    { activeAbility: newActiveAbility, abilityCompleted: false }
   )
   
   return {
