@@ -1,6 +1,5 @@
 import { PendingWolfState, MessageType, Ability, AbilityFunction, Slot, AbilityFunctionMap } from '../../types'
 import { EvaluateResult } from '../evaluate'
-import { ConversationState } from 'botbuilder'
 const get = require('lodash.get')
 const set = require('lodash.set')
 

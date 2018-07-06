@@ -6,7 +6,7 @@ import nlp from './nlp'
 import intake, { NlpResult } from '../../src/stages/intake'
 import { validateSlots, fillSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/stages/fillSlot'
 import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
-import action, { ActionResult } from '../../src/stages/actions'
+import action, { ActionResult } from '../../src/stages/action'
 import outtake from '../../src/stages/outtake'
 
 // import Wolf middleware
