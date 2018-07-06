@@ -5,6 +5,7 @@ export type OuttakeResult = string[]
 
 export default function outtake(
   // TODO: changed to set wolfstate
+  // TODO: remove reply (argument 2)
   conversationState: {[key: string]: any},
   reply: (message: string) => void,
   result: ActionResult
