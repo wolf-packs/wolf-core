@@ -55,10 +55,11 @@ ___
 `Evaluate` looks for the next slot to ask for the user if there is any slots that is not filled.  If all slots are filled, `Evalutes` marks the ability "complete".
 
 ### **Action**
-`Action` inspects the result of the `Evaluate`, and takes the appropriate action.  If there are missing slots, 
+`Action` inspects the result of the `Evaluate`, and takes the appropriate action.  If there are missing slot(s), action adjusts the wolf state for the next turn.  If the slots are filled, `Action` runs the user-defined `submit` function on the specific ability. 
 
 ### **Outtake**
-TODO
+`Outtake` organizes the message queue, and outputs an array of messages that the bot should send to the user.
+
 ___
 ## How to use
 ### Install
