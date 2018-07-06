@@ -1,7 +1,7 @@
-import { MessageType, MessageQueueItem} from '../../types'
+import { MessageType, MessageQueueItem } from '../../types'
 import { ActionResult } from '../actions'
 
-export type OuttakeResult = void
+export type OuttakeResult = string[]
 
 export default function outtake(
   // TODO: changed to set wolfstate
@@ -24,26 +24,20 @@ export default function outtake(
   const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
   const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
   const queryMessage = createMessage(pendingWolfState.messageQueue, MessageType.queryMessage)
+
+  const messageArray = [
+    slotFillMessage,
+    abilityMessage,
+    validateMessage,
+    retryMessage,
+    queryMessage
+  ].filter((message) => message) // remove all undefined messages
   
-  // display messageQueue
-  if (slotFillMessage) {
-    reply(slotFillMessage)
-  }
-  if (abilityMessage) {
-    reply(abilityMessage)
-  }
-  if (validateMessage) {
-    reply(validateMessage)
-  }
-  if (retryMessage) {
-    reply(retryMessage)
-  }
-  if (queryMessage) {
-    reply(queryMessage)
-  }
-  
+  // clear messageQueue for next turn
   pendingWolfState.messageQueue = []
   
   // update wolfState with pendingWolfState
   conversationState.wolf = pendingWolfState
+
+  return messageArray
 }

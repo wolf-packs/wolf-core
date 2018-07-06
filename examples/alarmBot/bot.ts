@@ -1,4 +1,4 @@
-import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
+import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 'botbuilder'
 // import { BotFrameworkAdapter } from 'botbuilder-services'
 import nlp from './nlp'
 
@@ -53,7 +53,7 @@ adapter.use(initializeWolfState(conversationState))
 const abilities: Ability[] = abilityList
 
 server.post('/api/messages', (req, res) => {
-  adapter.processActivity(req, res, (context) => {
+  adapter.processActivity(req, res, async (context) => {
     try {
       if (context.activity.type !== 'message') {
         return
@@ -95,7 +95,14 @@ server.post('/api/messages', (req, res) => {
       const actionResult: ActionResult = action(abilities, ksl, state, evaluateResult)
 
       // Outtake
-      outtake(state, context.sendActivity.bind(context), actionResult)
+      const messageArray = outtake(state, context.sendActivity.bind(context), actionResult)
+
+      // User defined logic to display messages
+      const messages: Partial<Activity>[] = messageArray.map((msg) => ({
+        type: 'message',
+        text: msg
+      }))
+      await context.sendActivities(messages)
 
     } catch (err) {
       console.error(err.stack)
