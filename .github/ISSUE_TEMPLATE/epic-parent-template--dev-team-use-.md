@@ -6,5 +6,5 @@ labels: epic
 
 **Description:**
 
-**Features**: 
+**Tasks**: 
 - [ ] <feature child issue here>
