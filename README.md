@@ -5,17 +5,17 @@ ___
 ## Purpose
 Developing intelligent chatbots often lead to complex dialog trees which results in prompting the user for many pieces of information. Most frameworks require you to keep track of the state yourself as well as hard-coding static dialog flows to gather these pieces of information. Development often turns into creating a complex state machine where you must check the current state to determine which prompt the chatbot should issue next.
 
-Wolf aims to provide a highly flexible and convenient framework for enabling state driven dynamic prompt flow. Simply define all the `slots` to be filled (information required from the user, prompts to issue, and actions to take after the information is fulfilled) and Wolf will handle the rest to ensure all information is collected. `Slot` prompting order can also be enforced by the developer (parent/child relationships) if desired.
+Wolf aims to provide a highly flexible and convenient framework for enabling state driven dynamic prompt flow. Simply define all the `slots` to be filled (information required from the user, prompts to issue, and actions to take after the information is fulfilled) and Wolf will handle the rest to ensure all information is collected. `Slot` can be defined as dependencies on other `slots` if desired.
 ___
 
 ## Concepts
 __*Slot*__: A slot is structure that represents any piece of information that is required from the user and obtained through conversation or a system. This can be the user's name, address, etc.. A slot structure has a few properties which allows Wolf to dynamically search for possible matches. Anatomy of a slot:
-- _entity_: name of slot.
-- _type_: value type.
-- _query_: string to prompt user to obtain information.
-- _retryQuery_: string(s) to prompt user if validator does not pass.
-- _validate_: function to test if the information is valid before fulfilling.
-- _acknowledge_: function that returns string to present to user on slot fulfill.
+- `entity`: name of slot.
+- `type`: value type.
+- `query`: string to prompt user to obtain information.
+- `retryQuery`: string(s) to prompt user if validator does not pass.
+- `validate`: function to test if the information is valid before fulfilling.
+- `acknowledge`: function that returns string to present to user on slot fulfill.
 
 Here is an example of a slot:
 ```js
@@ -40,7 +40,7 @@ validate: (value) => {
 acknowledge: (value) => `ok! name is set to ${value}.`
 ```
 
-__*Fulfilling Slots*__: On every turn, Wolf will check if the user input can possibly fulfill any slots in a 'pending' state. This check is done using NLP (*Natural Language Processing*) and user defined criteria and test functions. If a slot is identified as a match, the slot state will change from 'pending' to 'fulfilled' and the slot action will be run, such as store the value to state.
+__*Fulfilling Slots*__: On every turn, Wolf will check if the user input can possibly fulfill any slots in a 'pending' state. This check is done using NLP (*Natural Language Processing*) and user defined criteria and test functions. If a slot is identified as a match, the slot state will change from 'pending' to 'fulfilled' and the slot action will run, such as storing the value to the state.
 ___
 ## Wolf Stages:
 ### Intake
