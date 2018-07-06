@@ -49,13 +49,13 @@ ___
 `Intake` determines which ability is being "focused on" this turn based on the previous wolf state and the nlp result of the current user message.
 
 ### **FillSlot**
-`FillSlot` Stage validates and fills the slot(s) based on the user message in the ability determined by `intake`. If there is any information that is invalid, the bot will attempt to retry
+`FillSlot` Stage validates and fills the slot(s) based on the user message in the ability determined by `intake`. If there is any information that is invalid, as determined by the validators, the bot will prompt for a retry.
 
 ### **Evaluate**
-`Evaluate` looks for the next slot to ask for the user if there is any slots that is not filled.  If all slots are filled, `Evalutes` marks the ability "complete".
+`Evaluate` determines the next slot to be filled (next item to prompt the user) within the active ability.  If all slots are filled, `Evalutes` marks the ability "complete".
 
 ### **Action**
-`Action` inspects the result of the `Evaluate`, and takes the appropriate action.  If there are missing slot(s), action adjusts the wolf state for the next turn.  If the slots are filled, `Action` runs the user-defined `submit` function on the specific ability. 
+`Action` inspects the result of the `Evaluate`, and takes the appropriate action.  If there are missing slot(s), action adjusts the wolf state for the next turn.  If the slots are filled, `Action` runs the user-defined `submit` function on the specific ability.
 
 ### **Outtake**
 `Outtake` organizes the message queue, and outputs an array of messages that the bot should send to the user.
