@@ -3,10 +3,10 @@ import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 
 import nlp from './nlp'
 
 // import * as wolf from '../../src'
-import intake, { NlpResult, Entity } from '../../src/stages/intake'
+import intake, { NlpResult } from '../../src/stages/intake'
 import { validateSlots, fillSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/stages/fillSlot'
 import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
-import action, { ActionResult } from '../../src/stages/actions'
+import action, { ActionResult } from '../../src/stages/action'
 import outtake from '../../src/stages/outtake'
 
 // import Wolf middleware
@@ -29,10 +29,10 @@ const ksl: AbilityFunctionMap = {
   listAbilities
 }
 
-import restify from 'restify'
+const restify = require('restify')
 
 // Create server
-let server = restify.createServer()
+let server =  restify.createServer()
 server.listen(process.env.port || 3978, () => {
   console.log(`${server.name} listening to ${server.url}`)
 })
@@ -43,11 +43,11 @@ const adapter = new BotFrameworkAdapter({
   appPassword: process.env.MICROSOFT_APP_PASSWORD
 })
 
-const conversationState = new ConversationState(new MemoryStorage())
+const conversationStore = new ConversationState(new MemoryStorage())
 
-adapter.use(conversationState)
+adapter.use(conversationStore)
 // Wolf middleware
-adapter.use(initializeWolfState(conversationState))
+adapter.use(initializeWolfState(conversationStore))
 
 // for wolf..
 const abilities: Ability[] = abilityList
@@ -59,30 +59,17 @@ server.post('/api/messages', (req, res) => {
         return
       }
 
-      const message = context.activity.text
+      const userMessage = context.activity.text
       
-      const state = conversationState.get(context)
-      const pendingWolfState = state.wolf
-      
-      let nlpResult: NlpResult
-      if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
-        nlpResult = {
-          intent: pendingWolfState.activeAbility,
-          entities: [
-            {
-              entity: pendingWolfState.waitingFor.slotName,
-              value: message,
-              string: message
-            }
-          ]
-        }
-        // return intakeResult
-      } else {
-        nlpResult = nlp(message)
-      }
+      // Load convo state from the store
+      const convoState = conversationStore.get(context)
+
+      // User defined NLP logic
+      // Requirement: user passes an NlpResult object into intake()
+      let nlpResult: NlpResult = nlp(userMessage)
 
       // Intake
-      const intakeResult = intake(state.wolf, nlpResult, 'listAbilities')
+      const intakeResult = intake(convoState.wolf, nlpResult, userMessage, 'listAbilities')
 
       // FillSlot
       const validatedResults: ValidateSlotsResult = validateSlots(abilities, intakeResult)
@@ -92,10 +79,10 @@ server.post('/api/messages', (req, res) => {
       const evaluateResult: EvaluateResult = evaluate(abilities, ksl, fillSlotResult)
       
       // Action
-      const actionResult: ActionResult = action(abilities, ksl, state, evaluateResult)
+      const actionResult: ActionResult = action(abilities, ksl, convoState, evaluateResult)
 
       // Outtake
-      const messageArray = outtake(state, actionResult)
+      const messageArray = outtake(convoState, actionResult)
 
       // User defined logic to display messages
       const messages: Partial<Activity>[] = messageArray.map((msg) => ({

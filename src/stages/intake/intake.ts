@@ -1,4 +1,4 @@
-import { PendingWolfState } from '../../types'
+import { PendingWolfState, WolfState } from '../../types'
 
 export interface IntakeResult {
   pendingWolfState: PendingWolfState,
@@ -25,18 +25,35 @@ function getActiveAbility(defaultAbility: string, activeAbility: string | undefi
 }
 
 export default function intake(
-  wolfState: PendingWolfState,
+  wolfState: WolfState,
   nlpResult: NlpResult,
+  userMessage: string,
   defaultAbility: string
 ): IntakeResult {
-  const pendingWolfState = Object.assign({}, wolfState)
+  // Load pendingWolfState from stored wolfState (from previous turn)
+  // By updating pendingWolfState throughout stages, we can avoid mutations until last stage (to update)
+  const pendingWolfState = Object.assign({}, wolfState) as PendingWolfState
+
+  if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
+    nlpResult = {
+      intent: pendingWolfState.activeAbility,
+      entities: [
+        {
+          entity: pendingWolfState.waitingFor.slotName,
+          value: userMessage,
+          string: userMessage
+        }
+      ]
+    }
+  }
+
   const prevActiveAbility = pendingWolfState.activeAbility
   
   const newActiveAbility = getActiveAbility(defaultAbility, prevActiveAbility, nlpResult.intent)
   const pendingWithNewActiveAbility = Object.assign(
     {},
     pendingWolfState,
-    {activeAbility: newActiveAbility, abilityCompleted: false}
+    { activeAbility: newActiveAbility, abilityCompleted: false }
   )
   
   return {

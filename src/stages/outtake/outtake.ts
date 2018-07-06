@@ -1,11 +1,10 @@
 import { MessageType, MessageQueueItem } from '../../types'
-import { ActionResult } from '../actions'
+import { ActionResult } from '../action'
 
 export type OuttakeResult = string[]
 
 export default function outtake(
-  // TODO: changed to set wolfstate
-  state: {[key: string]: any},
+  convoState: {[key: string]: any},
   result: ActionResult
 ): OuttakeResult {
   const pendingWolfState = result
@@ -35,8 +34,8 @@ export default function outtake(
   // clear messageQueue for next turn
   pendingWolfState.messageQueue = []
   
-  // update wolfState with pendingWolfState
-  state.wolf = pendingWolfState
+  // update wolfState with changes from pendingWolfState
+  convoState.wolf = pendingWolfState
 
   return messageArray
 }
