@@ -1,9 +1,6 @@
 node_modules
 build
 dist
-<<<<<<< HEAD
-=======
 .env
 .vscode
->>>>>>> development
 .vs
