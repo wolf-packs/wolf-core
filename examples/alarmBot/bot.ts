@@ -59,34 +59,17 @@ server.post('/api/messages', (req, res) => {
         return
       }
 
-      const message = context.activity.text
+      const userMessage = context.activity.text
       
       // Load convo state from the store
       const convoState = conversationStore.get(context)
 
-      // TODO: pendingWolfState and wolfState should not have a reference outside of stages
-      // TODO: refactor nlp inside of intake
-      const pendingWolfState: PendingWolfState = convoState.wolf
-      
-      let nlpResult: NlpResult
-      if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
-        nlpResult = {
-          intent: pendingWolfState.activeAbility,
-          entities: [
-            {
-              entity: pendingWolfState.waitingFor.slotName,
-              value: message,
-              string: message
-            }
-          ]
-        }
-        // return intakeResult
-      } else {
-        nlpResult = nlp(message)
-      }
+      // User defined NLP logic
+      // Requirement: user passes an NlpResult object into intake()
+      let nlpResult: NlpResult = nlp(userMessage)
 
       // Intake
-      const intakeResult = intake(convoState.wolf, nlpResult, 'listAbilities')
+      const intakeResult = intake(convoState.wolf, nlpResult, userMessage, 'listAbilities')
 
       // FillSlot
       const validatedResults: ValidateSlotsResult = validateSlots(abilities, intakeResult)
