@@ -8,14 +8,14 @@ export interface ActionResult extends PendingWolfState {
 
 }
 
-interface getStateFunctionGeneric {
+interface GetStateFunctionGeneric {
   (): any
 }
 
-interface getStateFunctions {
-  getConversationState: getStateFunctionGeneric,
-  getSgState?: getStateFunctionGeneric,
-  getSubmittedData: getStateFunctionGeneric
+interface GetStateFunctions {
+  getConversationState: GetStateFunctionGeneric,
+  getSgState?: GetStateFunctionGeneric,
+  getSubmittedData: GetStateFunctionGeneric
 }
 
 export default function action(
@@ -52,7 +52,7 @@ export default function action(
     const userAction = abilityFunctions[ability.name]
     const data = pendingWolfState.pendingData[ability.name]
     
-    const ackObj: getStateFunctions = {
+    const ackObj: GetStateFunctions = {
       getConversationState: () => conversationState,  // user defined
       getSubmittedData: () => data
     }
