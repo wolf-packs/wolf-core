@@ -5,9 +5,7 @@ export type OuttakeResult = string[]
 
 export default function outtake(
   // TODO: changed to set wolfstate
-  // TODO: remove reply (argument 2)
-  conversationState: {[key: string]: any},
-  reply: (message: string) => void,
+  state: {[key: string]: any},
   result: ActionResult
 ): OuttakeResult {
   const pendingWolfState = result
@@ -38,7 +36,7 @@ export default function outtake(
   pendingWolfState.messageQueue = []
   
   // update wolfState with pendingWolfState
-  conversationState.wolf = pendingWolfState
+  state.wolf = pendingWolfState
 
   return messageArray
 }

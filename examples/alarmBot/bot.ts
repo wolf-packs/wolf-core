@@ -15,6 +15,8 @@ import initializeWolfState from '../../src/middlewares/initializeWolfState'
 import { Ability, AbilityFunctionMap } from '../../src/types'
 // import difference from 'lodash.difference'
 
+import abilityList from './abilities'
+
 import * as addAlarm from './addAlarm'
 import * as removeAlarm from './removeAlarm'
 import * as listAlarms from './listAlarms'
@@ -27,9 +29,7 @@ const ksl: AbilityFunctionMap = {
   listAbilities
 }
 
-import abilityList from './abilities'
-
-const restify = require('restify')
+import restify from 'restify'
 
 // Create server
 let server = restify.createServer()
@@ -95,7 +95,7 @@ server.post('/api/messages', (req, res) => {
       const actionResult: ActionResult = action(abilities, ksl, state, evaluateResult)
 
       // Outtake
-      const messageArray = outtake(state, context.sendActivity.bind(context), actionResult)
+      const messageArray = outtake(state, actionResult)
 
       // User defined logic to display messages
       const messages: Partial<Activity>[] = messageArray.map((msg) => ({
