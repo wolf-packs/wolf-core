@@ -1,5 +1,5 @@
-import { PendingWolfState, MessageType, Ability, AbilityFunction, Slot, AbilityFunctionMap } from '../../types'
-import { EvaluateResult } from '../evaluate'
+import { PendingWolfState, MessageType, Ability, AbilityFunctionMap } from '../types'
+import { EvaluateResult } from './evaluate'
 const get = require('lodash.get')
 const set = require('lodash.set')
 

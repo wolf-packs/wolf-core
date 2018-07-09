@@ -1,5 +1,5 @@
-import { MessageType, MessageQueueItem } from '../../types'
-import { ActionResult } from '../action'
+import { MessageType, MessageQueueItem } from '../types'
+import { ActionResult } from './action'
 
 export type OuttakeResult = string[]
 

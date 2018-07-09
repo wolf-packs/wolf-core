@@ -1,6 +1,6 @@
-import { PendingWolfState, Slot, SlotValidation, MessageType, Ability } from '../../types'
-import { IntakeResult, Entity, NlpResult } from '../intake'
-import { findAbilityByName, findSlotByEntityName } from '../../helpers'
+import { PendingWolfState, Slot, SlotValidation, MessageType, Ability } from '../types'
+import { IntakeResult, Entity, NlpResult } from './intake'
+import { findAbilityByName, findSlotByEntityName } from '../helpers'
 const get = require('lodash.get')
 const set = require('lodash.set')
 
@@ -120,7 +120,7 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   }
 }
 
-export function fillSlots(
+export default function fillSlots(
   abilityDataDef: Ability[],
   validateSlotResult: ValidateSlotsResult
 ): FillSlotsResult {
