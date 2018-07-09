@@ -23,6 +23,8 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   const { slots } = currentAbility
   // execute validators on slots
   const validatedEntities: ValidatedEntity[] = result.entities.map((entity: Entity) => {
+    console.log('slots', slots)
+    console.log(entity)
     const slot = findSlotByEntityName(entity.entity, slots)
     if (!slot) {
       return {
@@ -77,11 +79,11 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
       }
       // run slot retry function
       const slot = findSlotByEntityName(element.entity, slots) as Slot
-      if (slot.retryQuery) {
+      if (slot.retry) {
         pendingWolfState.messageQueue.push({
-          message: slot.retryQuery(pendingWolfState.waitingFor.turnCount),
+          message: slot.retry(pendingWolfState.waitingFor.turnCount),
           type: MessageType.retryMessage,
-          slotName: slot.entity
+          slotName: slot.name
         })
       }
       pendingWolfState.waitingFor.turnCount++
@@ -132,7 +134,7 @@ export default function fillSlots(
 
   const setSlots = (entity: Entity) => {
     const { slots } = abilityDataDef.find(ability => ability.name === result.intent) as Ability
-    const slotObj = slots.find((slot) => slot.entity === entity.entity) as Slot
+    const slotObj = slots.find((slot) => slot.name === entity.entity) as Slot
     set(pendingWolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
     pendingWolfState.messageQueue.push({
       message: slotObj.acknowledge ? slotObj.acknowledge(entity.value) : null,

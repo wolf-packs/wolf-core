@@ -38,11 +38,11 @@ export interface SlotValidation {
 }
 
 export interface Slot {
-  entity: string,
+  name: string,
   query: string,
   type: string,
-  retryQuery?: (turnCount: number) => string,
-  validate?: (value: string) => SlotValidation
+  retry?: (turnCount: number) => string,
+  validate?: (value: string) => SlotValidation,
   acknowledge?: (value: any) => string
 }
 
