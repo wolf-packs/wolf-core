@@ -4,10 +4,10 @@ export default [
     name: 'addAlarm',
     slots: [
       {
-        entity: 'alarmName',
+        name: 'alarmName',
         type: 'string',
         query: 'What is the name of the alarm?',
-        retryQuery: (turnCount) => {
+        retry: (turnCount) => {
           const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
           if (turnCount > phrase.length - 1) {
             return phrase[phrase.length - 1]
@@ -23,10 +23,10 @@ export default [
         acknowledge: (value) => `ok! name is set to ${value}.`
       },
       {
-        entity: 'alarmTime',
+        name: 'alarmTime',
         type: 'string',
         query: 'What is the time you want to set?',
-        retryQuery: (turn) => {
+        retry: (turnCount) => {
           const phrases: string[] = ['let\'s try again', 'what is the time you want to set?']
           return randomElement(phrases)
         },
@@ -49,7 +49,7 @@ export default [
     name: 'removeAlarm',
     slots: [
       {
-        entity: 'alarmName',
+        name: 'alarmName',
         type: 'string',
         query: 'What is the name of the alarm you would like to remove?'
       }

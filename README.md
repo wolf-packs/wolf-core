@@ -12,19 +12,19 @@ ___
 
 ## Concepts
 __*Slot*__: A slot is structure that represents any piece of information that is required from the user and obtained through conversation or a system. This can be the user's name, address, etc.. A slot structure has a few properties which allows Wolf to dynamically search for possible matches. Anatomy of a slot:
-- `entity`: name of slot.
+- `name`: name of slot.
 - `type`: value type.
 - `query`: string to prompt user to obtain information.
-- `retryQuery`: string(s) to prompt user if validator does not pass.
+- `retry`: string(s) to prompt user if validator does not pass.
 - `validate`: function to test if the information is valid before fulfilling.
 - `acknowledge`: function that returns string to present to user on slot fulfill.
 
 Here is an example of a slot:
 ```js
-entity: 'alarmName',
+name: 'alarmName',
 type: 'string',
 query: 'What is the name of the alarm?',
-retryQuery: (turnCount) => {
+retry: (turnCount) => {
   // array of retry phrases to send to user
   const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
   if (turnCount > phrase.length - 1) {

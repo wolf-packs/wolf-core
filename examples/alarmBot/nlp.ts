@@ -1,15 +1,6 @@
-export interface Entity {
-  value: string,
-  string: string,
-  entity: string
-}
+import { NlpEntity, NlpResult } from '../../src/stages/intake'
 
-type recognizer = (input: string) => Entity | null
-
-export interface NlpResult {
-  entities: Entity[],
-  intent: string
-}
+type recognizer = (input: string) => NlpEntity | null
 
 const addAlarmTester = new RegExp('add')
 const listAlarmsTester = new RegExp('list')
@@ -51,7 +42,7 @@ const recognizers: recognizer[] = [
       return null
     }
     return {
-      entity: 'alarmName',
+      name: 'alarmName',
       value: result[1],
       string: result[1]
     }
@@ -64,7 +55,7 @@ const recognizers: recognizer[] = [
       return null
     }
     return {
-      entity: 'alarmTime',
+      name: 'alarmTime',
       value: result[1],
       string: result[1]
     }
@@ -91,6 +82,6 @@ function nlp(input: string): NlpResult {
   }
 }
 
-// "add alarm at 8am" => {intent: "addAlarm", entities: [{entity: "alarmTime", value: "8am"}]}
+// "add alarm at 8am" => {intent: "addAlarm", entities: [{name: "alarmTime", value: "8am"}]}
 
 export default nlp

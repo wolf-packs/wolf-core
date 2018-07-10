@@ -30,7 +30,7 @@ export default function evaluate(
     Please make sure your default Ability is spelled right`)
   }
   const currentPendingData = getPendingData(pendingWolfState)
-  const missingSlots = difference(abilityObj.slots.map(slot => slot.entity), Object.keys(currentPendingData))
+  const missingSlots = difference(abilityObj.slots.map(slot => slot.name), Object.keys(currentPendingData))
   if (missingSlots.length === 0) { // no missingSlot
     return {
       pendingWolfState,
@@ -40,10 +40,10 @@ export default function evaluate(
   }
 
   const { slots } = abilityObj
-  const pendingSlot = slots.find(slot => slot.entity === missingSlots[0]) as Slot
+  const pendingSlot = slots.find(slot => slot.name === missingSlots[0]) as Slot
   return {
     pendingWolfState,
     type: 'slot',
-    name: pendingSlot.entity
+    name: pendingSlot.name
   }
 }
