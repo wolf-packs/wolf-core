@@ -5,14 +5,14 @@ export interface IntakeResult {
   nlpResult: NlpResult
 }
 
-export interface Entity {
+export interface NlpEntity {
   value: string,
   string: string,
-  entity: string
+  name: string
 }
 
 export interface NlpResult {
-  entities: Entity[],
+  entities: NlpEntity[],
   intent: string
 }
 
@@ -39,7 +39,7 @@ export default function intake(
       intent: pendingWolfState.activeAbility,
       entities: [
         {
-          entity: pendingWolfState.waitingFor.slotName,
+          name: pendingWolfState.waitingFor.slotName,
           value: userMessage,
           string: userMessage
         }

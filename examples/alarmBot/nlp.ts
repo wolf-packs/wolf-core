@@ -1,13 +1,13 @@
-export interface Entity {
+export interface NlpEntity {
   value: string,
   string: string,
-  entity: string
+  name: string
 }
 
-type recognizer = (input: string) => Entity | null
+type recognizer = (input: string) => NlpEntity | null
 
 export interface NlpResult {
-  entities: Entity[],
+  entities: NlpEntity[],
   intent: string
 }
 
@@ -51,7 +51,7 @@ const recognizers: recognizer[] = [
       return null
     }
     return {
-      entity: 'alarmName',
+      name: 'alarmName',
       value: result[1],
       string: result[1]
     }
@@ -64,7 +64,7 @@ const recognizers: recognizer[] = [
       return null
     }
     return {
-      entity: 'alarmTime',
+      name: 'alarmTime',
       value: result[1],
       string: result[1]
     }
@@ -91,6 +91,6 @@ function nlp(input: string): NlpResult {
   }
 }
 
-// "add alarm at 8am" => {intent: "addAlarm", entities: [{entity: "alarmTime", value: "8am"}]}
+// "add alarm at 8am" => {intent: "addAlarm", entities: [{name: "alarmTime", value: "8am"}]}
 
 export default nlp
