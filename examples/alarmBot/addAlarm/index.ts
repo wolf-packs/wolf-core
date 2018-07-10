@@ -1,5 +1,3 @@
-import { resolve } from 'path';
-
 interface Alarm {
   alarmName: string,
   alarmTime: string
