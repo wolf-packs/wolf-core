@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+
 interface Alarm {
   alarmName: string,
   alarmTime: string
@@ -16,7 +18,13 @@ export const submit = (prev = [], alarm) => {
   return alarms
 }
 
-export const acknowledge = ({getSubmittedData}) => {
+// @params: getSubmittedData, convoState, context
+export const acknowledgeAsync = (): Promise<string> => {
+  // return promise
+  return
+}
+
+export const acknowledge = ({ getSubmittedData }): string => {
   const value = getSubmittedData()
   return `Your ${value.alarmName} alarm is added!`
 }
