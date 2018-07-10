@@ -1,15 +1,6 @@
-export interface NlpEntity {
-  value: string,
-  string: string,
-  name: string
-}
+import { NlpEntity, NlpResult } from '../../src/stages/intake'
 
 type recognizer = (input: string) => NlpEntity | null
-
-export interface NlpResult {
-  entities: NlpEntity[],
-  intent: string
-}
 
 const addAlarmTester = new RegExp('add')
 const listAlarmsTester = new RegExp('list')
