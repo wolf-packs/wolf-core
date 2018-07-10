@@ -6,7 +6,7 @@ export const submit = (prev) => {
   return prev
 }
 
-export const acknowledge = ({getSgState}) => {
+export const acknowledge = ({ getSgState }): string => {
   const alarms = getSgState() || []
   if (alarms.length === 0) {
     return `You do not have any alarms!`
