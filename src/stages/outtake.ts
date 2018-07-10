@@ -1,7 +1,10 @@
 import { MessageType, MessageQueueItem } from '../types'
 import { ActionResult } from './action'
 
-export type OuttakeResult = string[]
+export interface OuttakeResult {
+  messageStringArray: string[],
+  messageItemArray: MessageQueueItem[]
+}
 
 export default function outtake(
   convoState: {[key: string]: any},
@@ -23,7 +26,7 @@ export default function outtake(
   const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
   const queryMessage = createMessage(pendingWolfState.messageQueue, MessageType.queryMessage)
 
-  const messageArray = [
+  const messageStringArray = [
     slotFillMessage,
     abilityMessage,
     validateMessage,
@@ -37,5 +40,5 @@ export default function outtake(
   // update wolfState with changes from pendingWolfState
   convoState.wolf = pendingWolfState
 
-  return messageArray
+  return { messageStringArray, messageItemArray: pendingWolfState.messageQueue } 
 }

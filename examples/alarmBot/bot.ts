@@ -8,11 +8,12 @@ import fillSlots, { validateSlots, ValidateSlotsResult, FillSlotsResult } from '
 import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
 import action, { ActionResult } from '../../src/stages/action'
 import outtake from '../../src/stages/outtake'
+import { addMessageToQueue } from '../../src/helpers'
 
 // import Wolf middleware
 import initializeWolfState from '../../src/middlewares/initializeWolfState'
 
-import { Ability, AbilityFunctionMap } from '../../src/types'
+import { Ability, AbilityFunctionMap, MessageType } from '../../src/types'
 // import difference from 'lodash.difference'
 
 import abilityList from './abilities'
@@ -81,11 +82,14 @@ server.post('/api/messages', (req, res) => {
       // Action
       const actionResult: ActionResult = action(abilities, ksl, convoState, evaluateResult)
 
+      // Async Action (user defined function)
+      const updatedActionResult = addMessageToQueue(actionResult, 'Async action results...')
+
       // Outtake
-      const messageArray = outtake(convoState, actionResult)
+      const messageArray = outtake(convoState, updatedActionResult)
 
       // User defined logic to display messages
-      const messages: Partial<Activity>[] = messageArray.map((msg) => ({
+      const messages: Partial<Activity>[] = messageArray.messageStringArray.map((msg) => ({
         type: 'message',
         text: msg
       }))
