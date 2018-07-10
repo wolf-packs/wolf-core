@@ -12,15 +12,18 @@
     "test": "jest"
   },
   "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/src/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
-      "js"
-    ],
-    "transform": {
-      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "/test/.*\\.(ts|tsx|js)$"
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   },
   "keywords": [
     "botbuilder",
@@ -29,14 +32,14 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^22.2.0",
+    "@types/jest": "^22.2.3",
     "botbuilder": "^4.0.0-preview1.2",
     "botbuilder-node": "^4.0.0-m1.10",
     "botbuilder-services": "^4.0.0-m1.10",
     "bravey": "^0.1.5",
-    "jest": "^22.4.2",
+    "jest": "^22.4.4",
     "restify": "^6.3.4",
-    "ts-jest": "^22.4.1",
+    "ts-jest": "^22.4.6",
     "typescript": "^2.7.2"
   },
   "dependencies": {

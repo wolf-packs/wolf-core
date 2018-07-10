@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 
-import nlp from '../examples/alarmBot/nlp'
+import nlp from '../nlp'
 
 describe('nlp', () => {
   it('can detect intent and full set of entities', () => {
