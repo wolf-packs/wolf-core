@@ -83,10 +83,11 @@ server.post('/api/messages', (req, res) => {
       const actionResult: ActionResult = action(abilities, ksl, convoState, evaluateResult)
 
       // Async Action (user defined function)
-      const updatedActionResult = addMessageToQueue(actionResult, 'Async action results...')
+      // const updatedActionResult = addMessageToQueue(actionResult, 'Async action results...')
+      // const messageArray = outtake(convoState, actionResult)
 
       // Outtake
-      const messageArray = outtake(convoState, updatedActionResult)
+      const messageArray = outtake(convoState, actionResult)
 
       // User defined logic to display messages
       const messages: Partial<Activity>[] = messageArray.messageStringArray.map((msg) => ({
