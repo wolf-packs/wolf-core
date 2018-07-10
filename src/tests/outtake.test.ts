@@ -8,7 +8,7 @@ interface Pizza {
   size: string
 }
 
-test('FillSlot Stage with Initial Wolf State (starting ability)', () => {
+test('Outtake Stage with Initial Wolf State (starting ability)', () => {
   const actionResult: ActionResult = {
     abilityCompleted: false,
     activeAbility: 'orderPizza',

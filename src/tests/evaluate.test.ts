@@ -8,7 +8,7 @@ interface Pizza {
   size: string
 }
 
-test('FillSlot Stage with Initial Wolf State (starting ability)', () => {
+test('Evaluate Stage with Initial Wolf State (starting ability)', () => {
   const abilities: Ability[] = [{
       name: 'orderPizza',
       slots: [{
