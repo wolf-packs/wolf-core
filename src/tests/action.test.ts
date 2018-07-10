@@ -12,12 +12,12 @@ test('FillSlot Stage with Initial Wolf State (starting ability)', () => {
   const abilities: Ability[] = [{
       name: 'orderPizza',
       slots: [{
-        entity: 'size',
+        name: 'size',
         query: 'What size would you like?',
         type: 'string',
         acknowledge: (value) => `ok! your pizza size is set to ${value}`
       }, {
-        entity: 'kind',
+        name: 'kind',
         query: 'What kind of result would you like?',
         type: 'string'
       }]

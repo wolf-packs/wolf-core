@@ -18,12 +18,12 @@ test('FillSlot Stage with Initial Wolf State (starting ability)', () => {
   const abilities: Ability[] = [{
       name: 'orderPizza',
       slots: [{
-        entity: 'size',
+        name: 'size',
         query: 'What size would you like?',
         type: 'string',
         acknowledge: (value) => `ok! your pizza size is set to ${value}`
       }, {
-        entity: 'kind',
+        name: 'kind',
         query: 'What kind of result would you like?',
         type: 'string'
       }]
@@ -33,7 +33,7 @@ test('FillSlot Stage with Initial Wolf State (starting ability)', () => {
     intent: 'orderPizza',
     entities: [
       {
-        entity: 'size',
+        name: 'size',
         value: 'L',
         string: 'large'
       }
@@ -81,12 +81,12 @@ test('FillSlot Stage with Active Ability and partially filled slots', () => {
   const abilities: Ability[] = [{
     name: 'orderPizza',
     slots: [{
-      entity: 'size',
+      name: 'size',
       query: 'What size would you like?',
       type: 'string',
       acknowledge: (value) => `ok! your pizza size is set to ${value}`
     }, {
-      entity: 'kind',
+      name: 'kind',
       query: 'What kind of result would you like?',
       type: 'string',
       acknowledge: (value) => `ok! type of pizza: ${value}`
@@ -97,7 +97,7 @@ test('FillSlot Stage with Active Ability and partially filled slots', () => {
     intent: 'orderPizza',
     entities: [
       {
-        entity: 'kind',
+        name: 'kind',
         value: 'Sausage',
         string: 'sausage'
       }

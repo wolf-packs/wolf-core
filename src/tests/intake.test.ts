@@ -47,7 +47,7 @@ test('Intake Stage with detected NLP result', () => {
     intent: 'orderPizza',
     entities: [
       {
-        entity: 'size',
+        name: 'size',
         value: 'L',
         string: 'large'
       }

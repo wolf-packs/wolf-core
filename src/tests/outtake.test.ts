@@ -9,20 +9,6 @@ interface Pizza {
 }
 
 test('FillSlot Stage with Initial Wolf State (starting ability)', () => {
-  const abilities: Ability[] = [{
-      name: 'orderPizza',
-      slots: [{
-        entity: 'size',
-        query: 'What size would you like?',
-        type: 'string',
-        acknowledge: (value) => `ok! your pizza size is set to ${value}`
-      }, {
-        entity: 'kind',
-        query: 'What kind of result would you like?',
-        type: 'string'
-      }]
-  }]
-
   const actionResult: ActionResult = {
     abilityCompleted: false,
     activeAbility: 'orderPizza',
