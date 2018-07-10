@@ -15,9 +15,9 @@ describe('nlp', () => {
     }]
     expect(result.intent).toBe('addAlarm')
     expect(Object.keys(result.entities[0]))
-      .toEqual(['entity', 'value', 'string'])
+      .toEqual(['name', 'value', 'string'])
     expect(result.entities.map(_ => ({
-      name: _.entity,
+      name: _.name,
       value: _.value
     }))).toEqual(expectedEntities)
 
@@ -32,9 +32,9 @@ describe('nlp', () => {
     }]
     expect(result2.intent).toBe('addAlarm')
     expect(Object.keys(result2.entities[0]))
-      .toEqual(['entity', 'value', 'string'])
+      .toEqual(['name', 'value', 'string'])
     expect(result2.entities.map(_ => ({
-      name: _.entity,
+      name: _.name,
       value: _.value
     }))).toEqual(expectedEntities2)
   })

@@ -1,5 +1,5 @@
 import { PendingWolfState, Slot, SlotValidation, MessageType, Ability } from '../types'
-import { IntakeResult, Entity, NlpResult } from './intake'
+import { IntakeResult, NlpEntity, NlpResult } from './intake'
 import { findAbilityByName, findSlotByEntityName } from '../helpers'
 const get = require('lodash.get')
 const set = require('lodash.set')
@@ -13,7 +13,7 @@ export interface FillSlotsResult extends PendingWolfState {
   
 }
 
-interface ValidatedEntity extends Entity {
+interface ValidatedEntity extends NlpEntity {
   validated: SlotValidation
 }
 
@@ -22,8 +22,8 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   const currentAbility = findAbilityByName(result.intent, abilityDataDef) || {name: '', slots: []} as Ability
   const { slots } = currentAbility
   // execute validators on slots
-  const validatedEntities: ValidatedEntity[] = result.entities.map((entity: Entity) => {
-    const slot = findSlotByEntityName(entity.entity, slots)
+  const validatedEntities: ValidatedEntity[] = result.entities.map((entity: NlpEntity) => {
+    const slot = findSlotByEntityName(entity.name, slots)
     if (!slot) {
       return {
         ...entity,
@@ -49,39 +49,39 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   })
   
   // filter entities with valid values: true && no validator
-  const validatorTrue = (element: ValidatedEntity) => element.validated.valid === true  
+  const validatorTrue = (valEntity: ValidatedEntity) => valEntity.validated.valid === true  
   const entitiesWithValidValues = validatedEntities.filter(validatorTrue)
 
   // filter entities with invalid values: false
-  const entitiesWithInvalidValues = validatedEntities.filter((entity: ValidatedEntity) => !validatorTrue(entity))
+  const entitiesWithInvalidValues = validatedEntities.filter((valEntity: ValidatedEntity) => !validatorTrue(valEntity))
 
   const processInvalidEntities = (
     pendingWolfState: PendingWolfState,
     entitiesWithInvalidValues: ValidatedEntity[]
   ): void => {
-    entitiesWithInvalidValues.forEach((element) => {
+    entitiesWithInvalidValues.forEach((invalEntity) => {
       // push reason to messageQueue
-      if (element.validated.reason) {
+      if (invalEntity.validated.reason) {
         pendingWolfState.messageQueue.push({
-          message: element.validated.reason,
+          message: invalEntity.validated.reason,
           type: MessageType.validateReason,
-          slotName: element.entity
+          slotName: invalEntity.name
         })
       }
       // create waitingFor object if does not exist (retry purposes)
       if (!pendingWolfState.waitingFor.slotName) {
         pendingWolfState.waitingFor = {
-          slotName: element.entity,
+          slotName: invalEntity.name,
           turnCount: 0
         }
       }
       // run slot retry function
-      const slot = findSlotByEntityName(element.entity, slots) as Slot
-      if (slot.retryQuery) {
+      const slot = findSlotByEntityName(invalEntity.name, slots) as Slot
+      if (slot.retry) {
         pendingWolfState.messageQueue.push({
-          message: slot.retryQuery(pendingWolfState.waitingFor.turnCount),
+          message: slot.retry(pendingWolfState.waitingFor.turnCount),
           type: MessageType.retryMessage,
-          slotName: slot.entity
+          slotName: slot.name
         })
       }
       pendingWolfState.waitingFor.turnCount++
@@ -91,10 +91,10 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
   const processValidEntities = (
     pendingWolfState: PendingWolfState,
     entitiesWithValidValues: ValidatedEntity[]
-  ): Entity[]  => {
+  ): NlpEntity[]  => {
     // check if any entity matches the slot wolf is waiting for
     const waitingForAnEntity = entitiesWithValidValues
-      .some((entity) => entity.entity === pendingWolfState.waitingFor.slotName)
+      .some((entity) => entity.name === pendingWolfState.waitingFor.slotName)
 
     if (waitingForAnEntity) {
       pendingWolfState.waitingFor = {
@@ -103,9 +103,9 @@ export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeRes
       }
     }
 
-    return entitiesWithValidValues.map((entity) => {
-      delete entity.validated
-      return entity
+    return entitiesWithValidValues.map((valEntity) => {
+      delete valEntity.validated
+      return valEntity
     })
   }
   
@@ -130,14 +130,14 @@ export default function fillSlots(
     pendingWolfState.pendingData[result.intent] = {}
   }
 
-  const setSlots = (entity: Entity) => {
+  const setSlots = (entity: NlpEntity) => {
     const { slots } = abilityDataDef.find(ability => ability.name === result.intent) as Ability
-    const slotObj = slots.find((slot) => slot.entity === entity.entity) as Slot
-    set(pendingWolfState, `pendingData.${result.intent}.${entity.entity}`, entity.value)
+    const slotObj = slots.find((slot) => slot.name === entity.name) as Slot
+    set(pendingWolfState, `pendingData.${result.intent}.${entity.name}`, entity.value)
     pendingWolfState.messageQueue.push({
       message: slotObj.acknowledge ? slotObj.acknowledge(entity.value) : null,
       type: MessageType.slotFillMessage,
-      slotName: entity.entity
+      slotName: entity.name
     })
   }
   result.entities.forEach(setSlots)
