@@ -16,7 +16,7 @@ export const submit = (prev = [], alarm) => {
   return alarms
 }
 
-export const acknowledge = ({getSubmittedData}) => {
+export const acknowledge = ({ getSubmittedData }): string => {
   const value = getSubmittedData()
   return `Your ${value.alarmName} alarm is added!`
 }
