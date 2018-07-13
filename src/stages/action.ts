@@ -1,41 +1,35 @@
-import { PendingWolfState, MessageType, Ability, AbilityFunctionMap } from '../types'
+import { PendingWolfState, MessageType, Ability, AbilityFunctionMap, GetStateFunctions, ConvoState } from '../types'
 import { EvaluateResult } from './evaluate'
+import { addMessageToQueue } from '../helpers';
 const get = require('lodash.get')
 const set = require('lodash.set')
 
-export interface ActionResult extends PendingWolfState {
-
+export interface ActionResult {
+  actionResult: PendingWolfState,
+  runOnComplete: () => Promise<string | null>
 }
 
-interface GetStateFunctionGeneric {
-  (): any
-}
-
-interface GetStateFunctions {
-  getConversationState: GetStateFunctionGeneric,
-  getSgState?: GetStateFunctionGeneric,
-  getSubmittedData: GetStateFunctionGeneric
-}
-
-export default function action(
+const runSlotAction = (
+  evaluateResult: EvaluateResult, 
+  pendingWolfState: PendingWolfState, 
   abilityList: Ability[],
-  abilityFunctions: AbilityFunctionMap,
-  convoState: Object,
-  result: EvaluateResult
-): ActionResult {
-  const { pendingWolfState } = result
-  if (result.type === 'slot') {
-    // Next action: gather information to fill slot (determined by eval stage)
+  convoState: ConvoState  
+): ActionResult => {
+  // Next action: gather information to fill slot (determined by eval stage)
 
-    // Load slots base don ability
-    const { slots } = abilityList.find((ability) => ability.name === pendingWolfState.activeAbility) as Ability
+    // Load slots baseed on ability
+    const activeAbility = abilityList.find((ability) => ability.name === pendingWolfState.activeAbility) as Ability
+    const slots = activeAbility.slots
     // Select slot defined by evaluate result
-    const slot = slots.find((slot) => slot.name === result.name)
+    const slot = slots.find((slot) => slot.name === evaluateResult.name)
 
     // Safety null check - eval stage should catch
     if (!slot) {
       // No pending slot found based on result.name
-      return pendingWolfState
+      return {
+        actionResult: pendingWolfState,
+        runOnComplete: () => Promise.resolve('Please makesure that your slot name is spelled correctly')
+      }
     }
     
     // Not currently waiting for a response to a prompt
@@ -45,43 +39,87 @@ export default function action(
         slotName: slot.name,
         turnCount: 0
       }
+
+      const stateFunctions: GetStateFunctions = {
+        getConvoState: () => convoState,
+        getPendingWolfState: () => pendingWolfState,
+        getAbilityList: () => abilityList   
+      }                  
+      
       // Add slot prompt onto messageQueue to prompt user
-      pendingWolfState.messageQueue.push({
-        message: slot.query,
-        type: MessageType.queryMessage,
-        slotName: slot.name
-      })
+      const updatedPendingWolfState = addMessageToQueue(
+        pendingWolfState,
+        slot.query(stateFunctions),
+        MessageType.queryMessage,
+        slot.name
+      )
+      return { actionResult: updatedPendingWolfState, runOnComplete: () => Promise.resolve(null) }
     }
-    return pendingWolfState
+    return { actionResult: pendingWolfState, runOnComplete: () => Promise.resolve(null) }
+}
+
+const runUserAction = (
+  evaluateResult: EvaluateResult, 
+  pendingWolfState: PendingWolfState, 
+  abilityList: Ability[],
+  convoState: ConvoState
+): ActionResult => {
+  const ability = abilityList.find((ability) => ability.name === evaluateResult.name) as Ability
+  const data = pendingWolfState.pendingData[ability.name]
+  
+  const stateFunctions: GetStateFunctions = {
+    getSubmittedData: () => data,
+    getConvoState: () => convoState,
+    getPendingWolfState: () => pendingWolfState,
+    getAbilityList: () => abilityList
+  }
+  
+  // remove pendingData
+  pendingWolfState.abilityCompleted = true
+  pendingWolfState.pendingData[ability.name] = undefined
+  pendingWolfState.activeAbility = ''
+
+  const runOnComplete = () => {
+    if (!ability.onComplete) {
+      return Promise.resolve(null)
+    }
+
+    const valueOrPromise = ability.onComplete(stateFunctions)
+    
+    if (valueOrPromise === null) {
+      return Promise.resolve(valueOrPromise)
+    }
+
+    if (typeof valueOrPromise === 'string') {
+      return Promise.resolve(valueOrPromise)
+    }
+
+    if (typeof valueOrPromise.then === 'function') {
+      return valueOrPromise
+    }
+
+    return Promise.resolve(valueOrPromise)
+  }
+  
+  return { actionResult: pendingWolfState, runOnComplete }  
+}
+
+export default function action(
+  abilityList: Ability[],
+  convoState: ConvoState,
+  result: EvaluateResult
+): ActionResult {
+  const { pendingWolfState } = result
+  if (result.type === 'slot') {
+    console.log('running slot..')
+    return runSlotAction(result, pendingWolfState, abilityList, convoState)
   }
   
   if (result.type === 'userAction') {
-    const ability = abilityList.find((ability) => ability.name === result.name) as Ability
-    const userAction = abilityFunctions[ability.name]
-    const data = pendingWolfState.pendingData[ability.name]
-    
-    const ackObj: GetStateFunctions = {
-      getConversationState: () => convoState,  // user defined
-      getSubmittedData: () => data
-    }
-
-    if (userAction.props && userAction.props.name) {
-      const prev = get(convoState, userAction.props.name)
-      set(convoState, userAction.props.name, userAction.submit(prev, data))
-      ackObj.getSgState = () => get(convoState, userAction.props.name)
-    }
-
-    pendingWolfState.messageQueue.push({
-      message: userAction.acknowledge(ackObj),
-      type: MessageType.abilityMessage,
-      abilityName: ability.name
-    })
-
-    // remove pendingData
-    pendingWolfState.abilityCompleted = true
-    pendingWolfState.pendingData[ability.name] = undefined
-    pendingWolfState.activeAbility = ''
-    return pendingWolfState
+    console.log('running userAction...')
+    console.log('queue', pendingWolfState.messageQueue)
+    return runUserAction(
+      result, pendingWolfState, abilityList, convoState)                    
   }
-  return pendingWolfState
+  return { actionResult: pendingWolfState, runOnComplete: () => Promise.resolve(null) }
 }

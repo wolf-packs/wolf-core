@@ -1,23 +1,25 @@
-import { MessageType, MessageQueueItem } from '../types'
-import { ActionResult } from './action'
+import { Activity, ConsoleTranscriptLogger } from 'botbuilder'
+import { MessageType, MessageQueueItem, PendingWolfState, ConvoState } from '../types'
 
 export interface OuttakeResult {
   messageStringArray: string[],
   messageItemArray: MessageQueueItem[]
+  messageActivityArray: Partial<Activity>[]
+}
+
+const createMessage = (messageQueue: MessageQueueItem[], messageType: MessageType) => {
+  const queue = messageQueue
+    .filter((item: MessageQueueItem) => item.type === messageType)
+    .filter((item: MessageQueueItem) => item.message)
+  const messages = `${queue.map((_: MessageQueueItem) => _.message).join(', ')}`
+  return messages
 }
 
 export default function outtake(
-  convoState: {[key: string]: any},
-  result: ActionResult
+  convoState: ConvoState,
+  result: PendingWolfState
 ): OuttakeResult {
   const pendingWolfState = result
-
-  const createMessage = (messageQueue: MessageQueueItem[], messageType: MessageType) => {
-    const queue = messageQueue
-      .filter((message: MessageQueueItem) => message.type === messageType)
-    const messages = `${queue.map((_: MessageQueueItem) => _.message).join(', ')}`
-    return messages
-  }
 
   // order and format messageQueue
   const slotFillMessage = createMessage(pendingWolfState.messageQueue, MessageType.slotFillMessage)
@@ -40,5 +42,10 @@ export default function outtake(
   // update wolfState with changes from pendingWolfState
   convoState.wolf = pendingWolfState
 
-  return { messageStringArray, messageItemArray: pendingWolfState.messageQueue } 
+  const messageActivityArray: Partial<Activity>[] = messageStringArray.map((msg) => ({
+    type: 'message',
+    text: msg
+  }))
+
+  return { messageStringArray, messageItemArray: pendingWolfState.messageQueue, messageActivityArray } 
 }

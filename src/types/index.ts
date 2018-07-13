@@ -2,24 +2,26 @@ import {
   WaitingFor,
   MessageType,
   MessageQueueItem,
+  ConvoState,
   WolfState,
   PendingWolfState,
   SlotValidation,
   Slot,
   Ability,
-  AbilityFunction,
-  AbilityFunctionMap
+  AbilityFunctionMap,
+  GetStateFunctions
 } from './types'
 
 export {
   WaitingFor,
   MessageType,
   MessageQueueItem,
+  ConvoState,
   WolfState,
   PendingWolfState,
   SlotValidation,
   Slot,
   Ability,
-  AbilityFunction,
-  AbilityFunctionMap
+  AbilityFunctionMap,
+  GetStateFunctions
 }

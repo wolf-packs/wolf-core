@@ -1,6 +1,7 @@
 import { PendingWolfState, Slot, SlotValidation, MessageType, Ability } from '../types'
 import { IntakeResult, NlpEntity, NlpResult } from './intake'
 import { findAbilityByName, findSlotByEntityName } from '../helpers'
+import { ConsoleTranscriptLogger } from '../../node_modules/botbuilder';
 const get = require('lodash.get')
 const set = require('lodash.set')
 
@@ -17,9 +18,13 @@ interface ValidatedEntity extends NlpEntity {
   validated: SlotValidation
 }
 
-export function validateSlots(abilityDataDef: Ability[], intakeResult: IntakeResult): ValidateSlotsResult {
+export function validateSlots(
+  abilityDataDef: Ability[],
+  intakeResult: IntakeResult
+): ValidateSlotsResult {
   const { nlpResult: result, pendingWolfState } = intakeResult
-  const currentAbility = findAbilityByName(result.intent, abilityDataDef) || {name: '', slots: []} as Ability
+  const activeAbility = pendingWolfState.activeAbility
+  const currentAbility = findAbilityByName(activeAbility, abilityDataDef) || {name: '', slots: []} as Ability
   const { slots } = currentAbility
   // execute validators on slots
   const validatedEntities: ValidatedEntity[] = result.entities.map((entity: NlpEntity) => {
@@ -134,8 +139,10 @@ export default function fillSlots(
     const { slots } = abilityDataDef.find(ability => ability.name === result.intent) as Ability
     const slotObj = slots.find((slot) => slot.name === entity.name) as Slot
     set(pendingWolfState, `pendingData.${result.intent}.${entity.name}`, entity.value)
+    // slot filled, add onFill message to messageQueue
+    // message default to null, filter out null in outtake
     pendingWolfState.messageQueue.push({
-      message: slotObj.acknowledge ? slotObj.acknowledge(entity.value) : null,
+      message: slotObj.onFill ? slotObj.onFill(entity.value) : null,
       type: MessageType.slotFillMessage,
       slotName: entity.name
     })

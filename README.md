@@ -17,7 +17,7 @@ __*Slot*__: A slot is structure that represents any piece of information that is
 - `query`: string to prompt user to obtain information.
 - `retry`: string(s) to prompt user if validator does not pass.
 - `validate`: function to test if the information is valid before fulfilling.
-- `acknowledge`: function that returns string to present to user on slot fulfill.
+- `onFill`: function that returns string to present to user on slot fulfill.
 
 Here is an example of a slot:
 ```js
@@ -39,7 +39,7 @@ validate: (value) => {
   }
   return { valid: true, reason: null }
 },
-acknowledge: (value) => `ok! name is set to ${value}.`
+onFill: (value) => `ok! name is set to ${value}.`
 ```
 
 __*Fulfilling Slots*__: On every turn, Wolf will check if the user input can possibly fulfill any slots in a 'pending' state. This check is done using NLP (*Natural Language Processing*) and user defined criteria and test functions. If a slot is identified as a match, the slot state will change from 'pending' to 'fulfilled' and the slot action will run, such as storing the value to the state.

@@ -18,7 +18,6 @@ const getPendingData = ( pendingWolfState: PendingWolfState ): Object => {
 
 export default function evaluate(
   abilityDataDef: Ability[],
-  abilityFunctions: AbilityFunctionMap,
   result: FillSlotsResult
 ): EvaluateResult {
   // simplest non-graph implementation

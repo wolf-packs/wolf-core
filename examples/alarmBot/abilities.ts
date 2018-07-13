@@ -1,4 +1,6 @@
 import { randomElement } from '../../src/helpers'
+import { Ability } from '../../src/types'
+
 export default [
   {
     name: 'addAlarm',
@@ -6,7 +8,7 @@ export default [
       {
         name: 'alarmName',
         type: 'string',
-        query: 'What is the name of the alarm?',
+        query: () => { return 'What is the name of the alarm?'},
         retry: (turnCount) => {
           const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
           if (turnCount > phrase.length - 1) {
@@ -20,12 +22,12 @@ export default [
           }
           return { valid: true, reason: null }
         },
-        acknowledge: (value) => `ok! name is set to ${value}.`
+        onFill: (value) => `ok! name is set to ${value}.`
       },
       {
         name: 'alarmTime',
         type: 'string',
-        query: 'What is the time you want to set?',
+        query: () => { return 'What is the time you want to set?' },
         retry: (turnCount) => {
           const phrases: string[] = ['let\'s try again', 'what is the time you want to set?']
           return randomElement(phrases)
@@ -41,9 +43,25 @@ export default [
             valid: true
           }
         },
-        acknowledge: (value) => `ok! time is set to ${value}.`
+        onFill: (value) => `ok! time is set to ${value}.`
       }
-    ]
+    ],
+    onComplete: ({ getSubmittedData, getConvoState }) => {
+      return new Promise((resolve, reject) => {
+        const value = getSubmittedData()
+
+        const convoState = getConvoState()
+        const alarms = convoState.alarms || []
+        convoState.alarms = [
+          ...alarms,
+          value          
+        ]                                             
+        
+        setTimeout(() => {
+          resolve(`Your ${value.alarmName} alarm is added!`)
+        }, 2000)
+      })
+    }
   },
   {
     name: 'removeAlarm',
@@ -51,16 +69,48 @@ export default [
       {
         name: 'alarmName',
         type: 'string',
-        query: 'What is the name of the alarm you would like to remove?'
+        query: () => {
+          return 'What is the name of the alarm you would like to remove?'
+        }
       }
-    ]
+    ],
+    onComplete: ({ getSubmittedData, getConvoState }) => {
+      const convoState = getConvoState()
+      const { alarmName } = getSubmittedData()
+      const stateAlarms = convoState.alarms || []
+
+      // Check if alarm name exists
+      if (!stateAlarms.some((alarm) => alarm.alarmName === alarmName)) {
+        return `There is no alarm with name ${alarmName}`
+      }
+
+      // Remove alarm
+      const alarms = stateAlarms.filter(alarm => alarm.alarmName !== alarmName)
+      convoState.alarms = alarms
+      return `The ${alarmName} has been removed`                                                
+    }
   },
   {
     name: 'listAlarms',
-    slots: []
+    slots: [],
+    onComplete: ({ getConvoState }) => {
+      const convoState = getConvoState()
+      const alarms = convoState.alarms || []
+
+      if (alarms.length === 0) {
+        return `You do not have any alarms!`
+      }
+      return alarms.map(alarms => alarms.alarmName + ' at ' + alarms.alarmTime).join(', ')
+    }
   },
   {
     name: 'listAbilities',
-    slots: []
+    slots: [],
+    onComplete: ({ getAbilityList }) => {
+      const abilityList = getAbilityList()
+      const abilities = abilityList.map((ability) => ability.name).join(', ')
+      const message = `Here are my abilities: ${abilities}`
+      return message
+    }
   }
-]
+] as Ability[]

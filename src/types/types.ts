@@ -18,6 +18,10 @@ export interface MessageQueueItem {
   abilityName?: string
 }
 
+export interface ConvoState {
+  [key: string]: any
+}
+
 export interface WolfState {
   activeAbility: string,
   abilityCompleted: boolean,
@@ -39,26 +43,38 @@ export interface SlotValidation {
 
 export interface Slot {
   name: string,
-  query: string,
+  query: (stateFunctions: GetStateFunctions) => string,
   type: string,
   retry?: (turnCount: number) => string,
   validate?: (value: string) => SlotValidation,
-  acknowledge?: (value: any) => string
+  onFill?: (value: any) => string
 }
 
 export interface Ability {
   name: string,
   slots: Slot[]
+  onComplete?: (stateFuncs: GetStateFunctions) => Promise<string|null> | string | null
 }
 
-export interface AbilityFunction {
-  props: {
-    name: string
-  },
-  submit: <T>(prev: T|T[], value: any) => T|T[],
-  acknowledge: (funcs: any) => string
+// export interface AbilityFunction {
+//   props: {
+//     name: string
+//   },
+//   submit: <T>(prev: T|T[], value: any) => T|T[],
+//   acknowledge: (funcs: any) => string
+// }
+
+// export interface AbilityFunctionMap {
+//   [key: string]: AbilityFunction
+// }
+
+interface GetStateFunctionGeneric {
+  (): any
 }
 
-export interface AbilityFunctionMap {
-  [key: string]: AbilityFunction
+export interface GetStateFunctions {
+  getSubmittedData?: GetStateFunctionGeneric
+  getConvoState: GetStateFunctionGeneric,
+  getPendingWolfState?: GetStateFunctionGeneric,
+  getAbilityList?: GetStateFunctionGeneric
 }
