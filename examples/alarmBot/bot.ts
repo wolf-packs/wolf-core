@@ -47,7 +47,6 @@ server.post('/api/messages', (req, res) => {
       if (context.activity.type !== 'message') {
         return
       }
-      // convoState.messageHere
 
       const userMessage = context.activity.text
       
