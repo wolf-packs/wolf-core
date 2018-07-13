@@ -26,7 +26,7 @@ test('Intake Stage with default Ability', () => {
 
   let intakeResult: IntakeResult = intake(wolfState, nlpResult, userMessage, defaultAbility)
   
-  expect(intakeResult).toMatchObject({
+  expect(intakeResult).toEqual({
     nlpResult: nlpResult,
     pendingWolfState: {
       abilityCompleted: false,
@@ -47,7 +47,7 @@ test('Intake Stage with detected NLP result', () => {
     intent: 'orderPizza',
     entities: [
       {
-        entity: 'size',
+        name: 'size',
         value: 'L',
         string: 'large'
       }
@@ -58,7 +58,7 @@ test('Intake Stage with detected NLP result', () => {
 
   let intakeResult: IntakeResult = intake(wolfState, nlpResult, userMessage, defaultAbility)
 
-  expect(intakeResult).toMatchObject({
+  expect(intakeResult).toEqual({
     nlpResult: nlpResult,
     pendingWolfState: {
       abilityCompleted: false,
