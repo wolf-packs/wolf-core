@@ -8,7 +8,6 @@ import {
   SlotValidation,
   Slot,
   Ability,
-  AbilityFunctionMap,
   GetStateFunctions
 } from './types'
 
@@ -22,6 +21,5 @@ export {
   SlotValidation,
   Slot,
   Ability,
-  AbilityFunctionMap,
   GetStateFunctions
 }

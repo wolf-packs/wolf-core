@@ -56,18 +56,6 @@ export interface Ability {
   onComplete?: (stateFuncs: GetStateFunctions) => Promise<string|null> | string | null
 }
 
-// export interface AbilityFunction {
-//   props: {
-//     name: string
-//   },
-//   submit: <T>(prev: T|T[], value: any) => T|T[],
-//   acknowledge: (funcs: any) => string
-// }
-
-// export interface AbilityFunctionMap {
-//   [key: string]: AbilityFunction
-// }
-
 interface GetStateFunctionGeneric {
   (): any
 }
