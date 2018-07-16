@@ -1,7 +1,6 @@
 /* global describe it test expect */
 import { ActionResult } from '../stages/action'
 import outtake, { OuttakeResult } from '../stages/outtake'
-import { Ability, MessageType, AbilityFunctionMap, AbilityFunction } from '../types'
 
 interface Pizza {
   kind: string,
@@ -34,25 +33,10 @@ test('Outtake Stage with Initial Wolf State (starting ability)', () => {
       turnCount: 0,
     }
   }
-
-  const orderPizzaAbility: AbilityFunction = {
-    props: {
-      name: 'cart'
-    },
-    submit: <Pizza>(prev: Pizza[], value: Pizza): Pizza[] => {
-      return [
-        ...prev,
-        value
-      ]
-    },
+ // there are two seats (y)
     acknowledge: (value: Pizza) => {
       return 'your pizza is added to the cart'
     }
-  }
-
-  const funcs: AbilityFunctionMap = {
-    orderPizza: orderPizzaAbility
-  }
 
   const convoState = {cart: []}
   
