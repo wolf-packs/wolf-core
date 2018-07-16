@@ -7,7 +7,7 @@ import intake, { NlpResult } from '../../src/stages/intake'
 import fillSlots, { validateSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/stages/fillSlot'
 import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
 import action, { ActionResult } from '../../src/stages/action'
-import outtake from '../../src/stages/outtake'
+import outtake, { OuttakeResult } from '../../src/stages/outtake'
 import { addMessageToQueue } from '../../src/helpers'
 
 // import Wolf middleware
@@ -82,8 +82,8 @@ server.post('/api/messages', (req, res) => {
       // const messageArray = outtake(convoState, actionResult)
 
       // Outtake
-      const { messageActivityArray } = outtake(convoState, actionResult)
-
+      const { messageActivityArray }: OuttakeResult = outtake(convoState, actionResult)
+      
       // User defined logic to display messages
       await context.sendActivities(messageActivityArray)
 
