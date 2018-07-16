@@ -8,7 +8,7 @@ export enum MessageType {
   retryMessage,
   queryMessage,
   slotFillMessage,
-  abilityMessage
+  abilityCompleteMessage
 }
 
 export interface MessageQueueItem {
@@ -16,6 +16,10 @@ export interface MessageQueueItem {
   type: MessageType,
   slotName?: string,
   abilityName?: string
+}
+
+export interface ConvoState {
+  [key: string]: any
 }
 
 export interface WolfState {
@@ -39,26 +43,39 @@ export interface SlotValidation {
 
 export interface Slot {
   name: string,
-  query: string,
+  query: (stateFunctions: GetIncompleteAbilityStateFunctions) => string,
   type: string,
   retry?: (turnCount: number) => string,
   validate?: (value: string) => SlotValidation,
-  acknowledge?: (value: any) => string
+  onFill?: (value: any) => string
 }
 
 export interface Ability {
   name: string,
   slots: Slot[]
+  onComplete?: (stateFuncs: GetCompletedAbilityStateFunctions) => Promise<string|null> | string | null
 }
 
-export interface AbilityFunction {
-  props: {
-    name: string
-  }
-  submit: <T>(prev: any|T[], value: T) => any|T[],
-  acknowledge: (funcs: any) => string
+interface GetStateFunctionGeneric {
+  (): any
 }
 
-export interface AbilityFunctionMap {
-  [key: string]: AbilityFunction
+export interface GetStateFunctions {
+  getSubmittedData?: GetStateFunctionGeneric,
+  getConvoState: GetStateFunctionGeneric,
+  getPendingWolfState?: GetStateFunctionGeneric,
+  getAbilityList?: GetStateFunctionGeneric
+}
+
+export interface GetCompletedAbilityStateFunctions {
+  getSubmittedData: <S>() => S,
+  getConvoState: () => ConvoState,
+  getPendingWolfState: () => PendingWolfState,
+  getAbilityList: () => Ability[]
+}
+
+export interface GetIncompleteAbilityStateFunctions {
+  getConvoState: () => ConvoState,
+  getPendingWolfState: () => PendingWolfState,
+  getAbilityList: () => Ability[]
 }

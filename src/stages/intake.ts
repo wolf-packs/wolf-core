@@ -21,7 +21,10 @@ function getActiveAbility(defaultAbility: string, activeAbility: string | undefi
   if (activeAbility) {
     return activeAbility
   }
-  return intent ? intent : defaultAbility
+  if (intent) {
+    return intent
+  }
+  return defaultAbility
 }
 
 export default function intake(
@@ -48,7 +51,7 @@ export default function intake(
   }
 
   const prevActiveAbility = pendingWolfState.activeAbility
-  
+  console.log(nlpResult)
   const newActiveAbility = getActiveAbility(defaultAbility, prevActiveAbility, nlpResult.intent)
   const pendingWithNewActiveAbility = Object.assign(
     {},
