@@ -1,4 +1,11 @@
-import { PendingWolfState, MessageType, Ability, AbilityFunctionMap, GetStateFunctions, ConvoState } from '../types'
+import { 
+  PendingWolfState,
+  MessageType, 
+  Ability, 
+  ConvoState, 
+  GetIncompleteAbilityStateFunctions,
+  GetCompletedAbilityStateFunctions
+} from '../types'
 import { EvaluateResult } from './evaluate'
 import { addMessageToQueue } from '../helpers';
 const get = require('lodash.get')
@@ -40,7 +47,7 @@ const runSlotAction = (
         turnCount: 0
       }
 
-      const stateFunctions: GetStateFunctions = {
+      const stateFunctions: GetIncompleteAbilityStateFunctions = {
         getConvoState: () => convoState,
         getPendingWolfState: () => pendingWolfState,
         getAbilityList: () => abilityList   
@@ -67,7 +74,7 @@ const runUserAction = (
   const ability = abilityList.find((ability) => ability.name === evaluateResult.name) as Ability
   const data = pendingWolfState.pendingData[ability.name]
   
-  const stateFunctions: GetStateFunctions = {
+  const stateFunctions: GetCompletedAbilityStateFunctions = {
     getSubmittedData: () => data,
     getConvoState: () => convoState,
     getPendingWolfState: () => pendingWolfState,

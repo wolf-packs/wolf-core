@@ -3,7 +3,7 @@ import { MessageType, MessageQueueItem, PendingWolfState } from '../types'
 export function addMessageToQueue(
   pendingWolfState: PendingWolfState,
   message: string,
-  messageType: MessageType = MessageType.slotFillMessage,
+  messageType: MessageType = MessageType.abilityCompleteMessage,
   slotName?: string
 ): PendingWolfState {
   let messageItem: MessageQueueItem = {

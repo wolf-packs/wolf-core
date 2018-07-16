@@ -23,14 +23,14 @@ export default function outtake(
 
   // order and format messageQueue
   const slotFillMessage = createMessage(pendingWolfState.messageQueue, MessageType.slotFillMessage)
-  const abilityMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityMessage)
+  const abilityCompleteMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityCompleteMessage)
   const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
   const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
   const queryMessage = createMessage(pendingWolfState.messageQueue, MessageType.queryMessage)
 
   const messageStringArray = [
     slotFillMessage,
-    abilityMessage,
+    abilityCompleteMessage,
     validateMessage,
     retryMessage,
     queryMessage

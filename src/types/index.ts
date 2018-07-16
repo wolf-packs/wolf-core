@@ -8,7 +8,8 @@ import {
   SlotValidation,
   Slot,
   Ability,
-  GetStateFunctions
+  GetCompletedAbilityStateFunctions,
+  GetIncompleteAbilityStateFunctions
 } from './types'
 
 export {
@@ -21,5 +22,6 @@ export {
   SlotValidation,
   Slot,
   Ability,
-  GetStateFunctions
+  GetCompletedAbilityStateFunctions,
+  GetIncompleteAbilityStateFunctions
 }

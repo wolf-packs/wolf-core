@@ -1,6 +1,11 @@
 import { randomElement } from '../../src/helpers'
 import { Ability } from '../../src/types'
 
+interface Alarm {
+  alarmName: string,
+  alarmTime: string
+}
+
 export default [
   {
     name: 'addAlarm',
@@ -48,7 +53,7 @@ export default [
     ],
     onComplete: ({ getSubmittedData, getConvoState }) => {
       return new Promise((resolve, reject) => {
-        const value = getSubmittedData()
+        const value = getSubmittedData<Alarm>()
 
         const convoState = getConvoState()
         const alarms = convoState.alarms || []
@@ -76,7 +81,7 @@ export default [
     ],
     onComplete: ({ getSubmittedData, getConvoState }) => {
       const convoState = getConvoState()
-      const { alarmName } = getSubmittedData()
+      const { alarmName } = getSubmittedData<Alarm>()
       const stateAlarms = convoState.alarms || []
 
       // Check if alarm name exists
