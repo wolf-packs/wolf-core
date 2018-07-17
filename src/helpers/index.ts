@@ -6,4 +6,5 @@ export {
   findSlotByEntityName,
   findAbilityByName,
   randomElement,
-  addMessageToQueue }
+  addMessageToQueue
+}

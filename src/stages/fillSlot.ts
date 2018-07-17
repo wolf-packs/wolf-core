@@ -1,7 +1,6 @@
 import { PendingWolfState, Slot, SlotValidation, MessageType, Ability } from '../types'
 import { IntakeResult, NlpEntity, NlpResult } from './intake'
 import { findAbilityByName, findSlotByEntityName } from '../helpers'
-import { ConsoleTranscriptLogger } from '../../node_modules/botbuilder';
 const get = require('lodash.get')
 const set = require('lodash.set')
 

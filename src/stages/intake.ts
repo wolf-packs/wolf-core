@@ -16,8 +16,11 @@ export interface NlpResult {
   intent: string
 }
 
-function getActiveAbility(defaultAbility: string, activeAbility: string | undefined, intent: string | undefined)
-: string {
+function getActiveAbility(
+  defaultAbility: string,
+  activeAbility: string | undefined,
+  intent: string | undefined
+): string {
   if (activeAbility) {
     return activeAbility
   }

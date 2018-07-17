@@ -1,4 +1,4 @@
-import { Activity, ConsoleTranscriptLogger } from 'botbuilder'
+import { Activity } from 'botbuilder'
 import { MessageType, MessageQueueItem, PendingWolfState, ConvoState } from '../types'
 
 export interface OuttakeResult {
