@@ -1,9 +1,11 @@
 /* global test */
 import intake, { NlpResult, IntakeResult } from '../stages/intake'
-import { WolfState, Ability } from '../types';
-import { randomElement } from '../helpers'
+import { WolfState, Ability, MessageType, ConvoState } from '../types';
+import { randomElement, addMessageToQueue } from '../helpers'
 import evaluate, { EvaluateResult } from '../stages/evaluate';
-import { ValidateSlotsResult, validateSlots } from '../stages/fillSlot';
+import fillSlots, { ValidateSlotsResult, validateSlots, FillSlotsResult } from '../stages/fillSlot';
+import action, { ActionResult } from '../stages/action';
+import outtake, { OuttakeResult } from '../stages/outtake';
 
 const initialWolfState = {
   abilityCompleted: false,
@@ -38,12 +40,12 @@ const abilities: Ability[] = [
           return phrase[turnCount]
         },
         validate: (value) => {
-          if (value.toLowerCase() === 'anchovy' || value.toLowerCase() === 'pineapple') {
-            return { valid: false, reason: `${value} is not a good pizza.`}
-          }
+          // if (value.toLowerCase() === 'anchovy' || value.toLowerCase() === 'pineapple') {
+          //   return { valid: false, reason: `${value} is not a good pizza.`}
+          // }
           return { valid: true, reason: null }
         },
-        onFill: (value) => `ok! pizza is set to ${value}.`
+        onFill: (value) => `ok! type is set to ${value}.`
       },
       {
         name: 'pizzaSize',
@@ -54,12 +56,12 @@ const abilities: Ability[] = [
           return randomElement(phrases)
         },
         validate: (value: string) => {
-          if (!value.toLowerCase().endsWith('L') && !value.toLowerCase().endsWith('S')) {
-            return {
-              valid: false,
-              reason: 'Needs to set L or S',
-            }
-          }
+          // if (!value.toLowerCase().endsWith('L') && !value.toLowerCase().endsWith('S')) {
+          //   return {
+          //     valid: false,
+          //     reason: 'Needs to set L or S',
+          //   }
+          // }
           return {
             valid: true
           }
@@ -75,16 +77,17 @@ const abilities: Ability[] = [
         },
         validate: (value) => {
           const valid = isNaN(+value)
-          if (valid) {
+          // if (valid) {
             return {
               valid: true                                                                      
             }
-          }
-          return {
-            valid: false,
-            reason: 'not a number'                                                
-          }
-        }
+          // }
+          // return {
+          //   valid: false,
+          //   reason: 'not a number'                                                
+          // }
+        },
+        onFill: (value) => `ok! quantity is set to ${value}.`
       }
     ],
     onComplete: ({ getSubmittedData, getConvoState }) => {
@@ -102,27 +105,27 @@ const abilities: Ability[] = [
     name: 'removeOrder',
     slots: [
       {
-        name: 'pizza',
+        name: 'pizzaName',
         type: 'string',
         query: () => {
-          return 'What is the name of the alarm you would like to remove?'
+          return 'Which pizza order would you would like to remove?'
         }
       }
     ],
     onComplete: ({ getSubmittedData, getConvoState }) => {
       const convoState = getConvoState()
-      const { alarmName } = getSubmittedData()
-      const stateAlarms = convoState.alarms || []
+      const { pizzaName } = getSubmittedData<{pizzaName: string}>()
+      const orders: PizzaData[] = convoState.orders || []
 
-      // Check if alarm name exists
-      if (!stateAlarms.some((alarm) => alarm.alarmName === alarmName)) {
-        return `There is no alarm with name ${alarmName}`
+      // Check if pizza name exists
+      if (!orders.some((order) => order.pizzaType === pizzaName)) {
+        return `There is no ${pizzaName} pizza in your order`
       }
 
       // Remove alarm
-      const alarms = stateAlarms.filter(alarm => alarm.alarmName !== alarmName)
-      convoState.alarms = alarms
-      return `The ${alarmName} has been removed`                                                
+      const newOrders = orders.filter(order => order.pizzaType !== pizzaName)
+      convoState.orders = newOrders
+      return `The ${pizzaName} pizza(s) has been removed`                                                
     }
   },
   {
@@ -130,12 +133,12 @@ const abilities: Ability[] = [
     slots: [],
     onComplete: ({ getConvoState }) => {
       const convoState = getConvoState()
-      const alarms = convoState.alarms || []
+      const orders: PizzaData[] = convoState.orders || []
 
-      if (alarms.length === 0) {
-        return `You do not have any alarms!`
+      if (orders.length === 0) {
+        return `You do not have any orders!`
       }
-      return alarms.map(alarms => alarms.alarmName + ' at ' + alarms.alarmTime).join(', ')
+      return orders.map(order => order.quantity + order.pizzaSize + order.pizzaType + 'pizza(s)').join(', ')
     }
   },
   {
@@ -148,7 +151,7 @@ const abilities: Ability[] = [
       return message
     }
   }
-]
+] as Ability[]
 
 describe('Add a Pizza a cart', () => { // Feature (ability)
   it('can receive order (all correct inputs)', () => { // Test Scenario
@@ -160,8 +163,8 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
         string: 'everything',
         name: 'pizzaType'
       }, {
-        value: 'small',
-        string: 'small',
+        value: 'S',
+        string: 'S',
         name: 'pizzaSize'
       }, {
         value: '1',
@@ -169,7 +172,7 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
         name: 'quantity'
       }]
     }
-    const userMessage = 'add 1 small everything pizza to order'
+    const userMessage = 'add 1 S everything pizza to order'
     const wolfState: WolfState = {
       activeAbility: '',
       abilityCompleted: false,
@@ -177,6 +180,7 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
       messageQueue: [],
       pendingData: {}
     }
+
     // Intake Stage
     const actualIntakeResult: IntakeResult = intake(wolfState, nlpResult, userMessage, 'listAbility')
     const expectedIntakeResult: IntakeResult = {
@@ -194,8 +198,8 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
           string: 'everything',
           name: 'pizzaType'
         }, {
-          value: 'small',
-          string: 'small',
+          value: 'S',
+          string: 'S',
           name: 'pizzaSize'
         }, {
           value: '1',
@@ -205,72 +209,219 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
       }
     }
     expect(actualIntakeResult).toEqual(expectedIntakeResult) // Test
+
     // FillSlot Stage
-    const validateResults: ValidateSlotsResult = validateSlots(abilities, actualIntakeResult)
-    // Evaluate Stage
-    // Action Stage
-    // Outtake Stage
-
-  })
-  it('can retry order with run type')
-})
-
-test('Intake Stage with default Ability', () => {
-  const wolfState: WolfState = initialWolfState
-
-  const nlpResult: NlpResult = {
-    intent: '',
-    entities: []
-  } 
-
-  const userMessage = 'hi'
-  const defaultAbility = 'help'
-
-  let intakeResult: IntakeResult = intake(wolfState, nlpResult, userMessage, defaultAbility)
-  
-  expect(intakeResult).toEqual({
-    nlpResult: nlpResult,
-    pendingWolfState: {
-      abilityCompleted: false,
-      activeAbility: defaultAbility, // default abilityName
-      waitingFor: {
-        slotName: null,
-        turnCount: 0
+    const actualValidateResult: ValidateSlotsResult = validateSlots(abilities, actualIntakeResult)
+    const expectedValidateResult: ValidateSlotsResult = {
+      pendingWolfState: {
+        activeAbility: 'addOrder',
+        abilityCompleted: false,
+        waitingFor: { slotName: null, turnCount: 0 },
+        messageQueue: [],
+        pendingData: {}
       },
-      messageQueue: [],
-      pendingData: {}
-    }
-  })
-})
-
-test('Intake Stage with detected NLP result', () => {
-  const wolfState: WolfState = initialWolfState
-  const nlpResult: NlpResult = {
-    intent: 'orderPizza',
-    entities: [
-      {
-        name: 'size',
-        value: 'L',
-        string: 'large'
+      validateResult: {
+        intent: 'addOrder',
+        entities: [{
+          value: 'everything',
+          string: 'everything',
+          name: 'pizzaType'
+        }, {
+          value: 'S',
+          string: 'S',
+          name: 'pizzaSize'
+        }, {
+          value: '1',
+          string: '1',
+          name: 'quantity'
+        }]
       }
-    ]
-  }
-  const userMessage = 'I want to order a large pizza'
-  const defaultAbility = 'help'
-
-  let intakeResult: IntakeResult = intake(wolfState, nlpResult, userMessage, defaultAbility)
-
-  expect(intakeResult).toEqual({
-    nlpResult: nlpResult,
-    pendingWolfState: {
-      abilityCompleted: false,
-      activeAbility: 'orderPizza', // default abilityName
-      waitingFor: {
-        slotName: null,
-        turnCount: 0
-      },
-      messageQueue: [],
-      pendingData: {}
     }
+    expect(actualValidateResult).toEqual(expectedValidateResult) // Test
+
+    const actualFillSlotResult: FillSlotsResult = fillSlots(abilities, actualValidateResult)
+    const expectedFillSlotResult: FillSlotsResult = {
+      activeAbility: 'addOrder',
+      abilityCompleted: false,
+      waitingFor: { slotName: null, turnCount: 0 },
+      messageQueue: [
+        {
+          message: 'ok! type is set to everything.',
+          type: MessageType.slotFillMessage,
+          slotName: 'pizzaType'
+        },
+        {
+          message: 'ok! size is set to S.',
+          type: MessageType.slotFillMessage,
+          slotName: 'pizzaSize'
+        },
+        {
+          message: 'ok! quantity is set to 1.',
+          type: MessageType.slotFillMessage,
+          slotName: 'quantity'
+        }
+      ],
+      pendingData: {
+        addOrder: {
+          pizzaType: 'everything',
+          pizzaSize: 'S',
+          quantity: '1'
+        }
+      }
+    }
+    expect(actualFillSlotResult).toEqual(expectedFillSlotResult) // Test
+
+    // Evaluate Stage
+    const actualEvaluateResult: EvaluateResult = evaluate(abilities, actualFillSlotResult)
+    const expectedEvaluateResult: EvaluateResult =  {
+      pendingWolfState: {
+        activeAbility: 'addOrder',
+        abilityCompleted: false,
+        waitingFor: { slotName: null, turnCount: 0 },
+        messageQueue: [
+          {
+            message: 'ok! type is set to everything.',
+            type: MessageType.slotFillMessage,
+            slotName: 'pizzaType'
+          },
+          {
+            message: 'ok! size is set to S.',
+            type: MessageType.slotFillMessage,
+            slotName: 'pizzaSize'
+          },
+          {
+            message: 'ok! quantity is set to 1.',
+            type: MessageType.slotFillMessage,
+            slotName: 'quantity'
+          }
+        ],
+        pendingData: {
+          addOrder: {
+            pizzaType: 'everything',
+            pizzaSize: 'S',
+            quantity: '1'
+          }
+        }
+      },
+      name: 'addOrder',
+      type: 'userAction'
+    }
+    expect(actualEvaluateResult).toEqual(expectedEvaluateResult) // Test
+
+    // Action Stage
+    const convoState: ConvoState = {}
+    const actualActionResult: ActionResult = action(abilities, convoState, actualEvaluateResult)
+    const expectedActionResult: ActionResult = {
+      actionResult: {
+        activeAbility: '',
+        abilityCompleted: true,
+        waitingFor: { slotName: null, turnCount: 0 },
+        messageQueue: [
+          {
+            message: 'ok! type is set to everything.',
+            type: MessageType.slotFillMessage,
+            slotName: 'pizzaType'
+          },
+          {
+            message: 'ok! size is set to S.',
+            type: MessageType.slotFillMessage,
+            slotName: 'pizzaSize'
+          },
+          {
+            message: 'ok! quantity is set to 1.',
+            type: MessageType.slotFillMessage,
+            slotName: 'quantity'
+          }
+        ],
+        pendingData: {
+          addOrder: undefined
+        }
+      },
+      runOnComplete: () => Promise.resolve('Your pizza order is added!')
+    }
+    expect(actualActionResult).toEqual(expectedActionResult) // Test
+
+    // addMessageToQueue
+    const ackMessage = actualActionResult.runOnComplete()
+
+    let updatedActionResult = actualActionResult
+    if (typeof ackMessage === 'string') {
+      updatedActionResult.actionResult = addMessageToQueue(actualActionResult.actionResult, ackMessage)
+    }
+    expect(updatedActionResult.actionResult.messageQueue).toEqual([
+      {
+        message: 'ok! type is set to everything.',
+        type: MessageType.slotFillMessage,
+        slotName: 'pizzaType'
+      },
+      {
+        message: 'ok! size is set to S.',
+        type: MessageType.slotFillMessage,
+        slotName: 'pizzaSize'
+      },
+      {
+        message: 'ok! quantity is set to 1.',
+        type: MessageType.slotFillMessage,
+        slotName: 'quantity'
+      },
+      {
+        message: 'Your pizza order is added!',
+        type: MessageType.abilityCompleteMessage
+      }
+    ])
+
+    // Outtake Stage
+    const actualOuttakeResult: OuttakeResult = outtake(convoState, updatedActionResult.actionResult)
+    const expectedOuttakeResult: OuttakeResult = {
+      messageStringArray: [
+        'ok! type is set to everything.',
+        'ok! size is set to S.',
+        'ok! quantity set to 1',
+        'Your pizza order is added!'
+      ],
+      messageItemArray: [
+        {
+          message: 'ok! type is set to everything.',
+          type: MessageType.slotFillMessage,
+          slotName: 'pizzaType',
+          abilityName: 'addOrder'
+        },
+        {
+          message: 'ok! size is set to S.',
+          type: MessageType.slotFillMessage,
+          slotName: 'pizzaSize',
+          abilityName: 'addOrder'
+        },
+        {
+          message: 'ok! quantity is set to 1.',
+          type: MessageType.slotFillMessage,
+          slotName: 'quantity',
+          abilityName: 'addOrder'
+        },
+        {
+          message: 'Your pizza order is added!',
+          type: MessageType.abilityCompleteMessage
+        }
+      ],
+      messageActivityArray: [
+        {
+          type: 'message',
+          text: 'ok! type is set to everything.'
+        },
+        {
+          type: 'message',
+          text: 'ok! size is set to S.'
+        },
+        {
+          type: 'message',
+          text: 'ok! quantity is set to 1.'
+        },
+        {
+          type: 'message',
+          text: 'Your pizza order is added!'
+        }
+      ]
+    }
+    expect(actualOuttakeResult).toEqual(expectedOuttakeResult)
   })
 })

@@ -129,7 +129,7 @@ export default function fillSlots(
   abilityDataDef: Ability[],
   validateSlotResult: ValidateSlotsResult
 ): FillSlotsResult {
-  const {pendingWolfState, validateResult: result} = validateSlotResult
+  const { pendingWolfState, validateResult: result } = validateSlotResult
   const pendingPath = `pendingData.${result.intent}`
   if (! get(pendingWolfState, `pendingData.${result.intent}`)) {
     pendingWolfState.pendingData[result.intent] = {}
