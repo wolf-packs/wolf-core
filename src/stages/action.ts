@@ -118,13 +118,10 @@ export default function action(
 ): ActionResult {
   const { pendingWolfState } = result
   if (result.type === 'slot') {
-    console.log('running slot..')
     return runSlotAction(result, pendingWolfState, abilityList, convoState)
   }
   
   if (result.type === 'userAction') {
-    console.log('running userAction...')
-    console.log('queue', pendingWolfState.messageQueue)
     return runUserAction(
       result, pendingWolfState, abilityList, convoState)                    
   }

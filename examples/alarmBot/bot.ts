@@ -61,8 +61,8 @@ server.post('/api/messages', (req, res) => {
       const intakeResult = intake(convoState.wolf, nlpResult, userMessage, 'listAbilities')
 
       // FillSlot
-      const validatedResults: ValidateSlotsResult = validateSlots(abilities, intakeResult)
-      const fillSlotResult: FillSlotsResult = fillSlots(abilities, validatedResults)
+      const validatedResult: ValidateSlotsResult = validateSlots(abilities, intakeResult)
+      const fillSlotResult: FillSlotsResult = fillSlots(abilities, validatedResult)
 
       // Evaluate
       const evaluateResult: EvaluateResult = evaluate(abilities, fillSlotResult)
@@ -72,17 +72,12 @@ server.post('/api/messages', (req, res) => {
 
       const { actionResult, runOnComplete }: ActionResult = action(abilities, convoState, evaluateResult)
       const ackMessage: string = await runOnComplete()
-      console.log('ackMessage:', ackMessage)
-      if (ackMessage) {
-        addMessageToQueue(actionResult, ackMessage)
-      }
 
       // Async Action (user defined function)
-      // const updatedActionResult = addMessageToQueue(actionResult, 'Async action results...')
-      // const messageArray = outtake(convoState, actionResult)
+      const updatedActionResult = addMessageToQueue(actionResult, ackMessage)
 
       // Outtake
-      const { messageActivityArray }: OuttakeResult = outtake(convoState, actionResult)
+      const { messageActivityArray }: OuttakeResult = outtake(convoState, updatedActionResult)
       
       // User defined logic to display messages
       await context.sendActivities(messageActivityArray)

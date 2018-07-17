@@ -36,6 +36,7 @@ export default function outtake(
     queryMessage
   ].filter((message) => message) // remove all undefined messages
   
+  const messageItemArray = pendingWolfState.messageQueue
   // clear messageQueue for next turn
   pendingWolfState.messageQueue = []
   
@@ -47,5 +48,5 @@ export default function outtake(
     text: msg
   }))
 
-  return { messageStringArray, messageItemArray: pendingWolfState.messageQueue, messageActivityArray } 
+  return { messageStringArray, messageItemArray, messageActivityArray } 
 }
