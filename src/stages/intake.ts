@@ -51,7 +51,6 @@ export default function intake(
   }
 
   const prevActiveAbility = pendingWolfState.activeAbility
-  console.log(nlpResult)
   const newActiveAbility = getActiveAbility(defaultAbility, prevActiveAbility, nlpResult.intent)
   const pendingWithNewActiveAbility = Object.assign(
     {},

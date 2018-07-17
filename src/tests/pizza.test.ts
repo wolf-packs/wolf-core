@@ -154,7 +154,7 @@ const abilities: Ability[] = [
 ] as Ability[]
 
 describe('Add a Pizza a cart', () => { // Feature (ability)
-  it('can receive order (all correct inputs)', () => { // Test Scenario
+  it('can receive order (all correct inputs)', async () => { // Test Scenario
     // NLP
     const nlpResult: NlpResult = {
       intent: 'addOrder',
@@ -339,10 +339,11 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
       },
       runOnComplete: () => Promise.resolve('Your pizza order is added!')
     }
-    expect(actualActionResult).toEqual(expectedActionResult) // Test
+
+    expect(JSON.stringify(actualActionResult)).toEqual(JSON.stringify(expectedActionResult)) // Test
 
     // addMessageToQueue
-    const ackMessage = actualActionResult.runOnComplete()
+    const ackMessage = await actualActionResult.runOnComplete()
 
     let updatedActionResult = actualActionResult
     if (typeof ackMessage === 'string') {
@@ -374,9 +375,7 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
     const actualOuttakeResult: OuttakeResult = outtake(convoState, updatedActionResult.actionResult)
     const expectedOuttakeResult: OuttakeResult = {
       messageStringArray: [
-        'ok! type is set to everything.',
-        'ok! size is set to S.',
-        'ok! quantity set to 1',
+        'ok! type is set to everything., ok! size is set to S., ok! quantity is set to 1.',
         'Your pizza order is added!'
       ],
       messageItemArray: [
@@ -384,37 +383,27 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
           message: 'ok! type is set to everything.',
           type: MessageType.slotFillMessage,
           slotName: 'pizzaType',
-          abilityName: 'addOrder'
         },
         {
           message: 'ok! size is set to S.',
           type: MessageType.slotFillMessage,
           slotName: 'pizzaSize',
-          abilityName: 'addOrder'
         },
         {
           message: 'ok! quantity is set to 1.',
           type: MessageType.slotFillMessage,
           slotName: 'quantity',
-          abilityName: 'addOrder'
         },
         {
           message: 'Your pizza order is added!',
-          type: MessageType.abilityCompleteMessage
+          type: MessageType.abilityCompleteMessage,
+          slotName: undefined
         }
       ],
       messageActivityArray: [
         {
           type: 'message',
-          text: 'ok! type is set to everything.'
-        },
-        {
-          type: 'message',
-          text: 'ok! size is set to S.'
-        },
-        {
-          type: 'message',
-          text: 'ok! quantity is set to 1.'
+          text: 'ok! type is set to everything., ok! size is set to S., ok! quantity is set to 1.'
         },
         {
           type: 'message',
