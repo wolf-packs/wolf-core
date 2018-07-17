@@ -8,6 +8,7 @@ import {
 } from '../types'
 import { EvaluateResult } from './evaluate'
 import { addMessageToQueue } from '../helpers';
+import { ActionType } from '../types/types';
 const get = require('lodash.get')
 const set = require('lodash.set')
 
@@ -117,11 +118,11 @@ export default function action(
   result: EvaluateResult
 ): ActionResult {
   const { pendingWolfState } = result
-  if (result.type === 'slot') {
+  if (result.type === ActionType.slot) {
     return runSlotAction(result, pendingWolfState, abilityList, convoState)
   }
   
-  if (result.type === 'userAction') {
+  if (result.type === ActionType.ability) {
     return runUserAction(
       result, pendingWolfState, abilityList, convoState)                    
   }

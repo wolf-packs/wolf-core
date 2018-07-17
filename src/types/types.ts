@@ -3,6 +3,11 @@ export interface WaitingFor {
   turnCount: number, // initial = 0
 }
 
+export enum ActionType {
+  slot,
+  ability
+}
+
 export enum MessageType {
   validateReason,
   retryMessage,

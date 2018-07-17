@@ -1,11 +1,12 @@
 import { PendingWolfState, Ability, Slot } from '../types'
 import { FillSlotsResult } from './fillSlot'
+import { ActionType } from '../types/types';
 const get = require('lodash.get')
 const difference = require('lodash.difference')
 
 export interface EvaluateResult {
   pendingWolfState: PendingWolfState,
-  type: string,
+  type: ActionType,
   name: string,
 }
 
@@ -33,7 +34,7 @@ export default function evaluate(
   if (missingSlots.length === 0) { // no missingSlot
     return {
       pendingWolfState,
-      type: 'userAction',
+      type: ActionType.ability,
       name: activeAbility
     }
   }
@@ -42,7 +43,7 @@ export default function evaluate(
   const pendingSlot = slots.find(slot => slot.name === missingSlots[0]) as Slot
   return {
     pendingWolfState,
-    type: 'slot',
+    type: ActionType.slot,
     name: pendingSlot.name
   }
 }

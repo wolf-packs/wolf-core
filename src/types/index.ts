@@ -9,7 +9,8 @@ import {
   Slot,
   Ability,
   GetCompletedAbilityStateFunctions,
-  GetIncompleteAbilityStateFunctions
+  GetIncompleteAbilityStateFunctions,
+  ActionType
 } from './types'
 
 export {
@@ -23,5 +24,6 @@ export {
   Slot,
   Ability,
   GetCompletedAbilityStateFunctions,
-  GetIncompleteAbilityStateFunctions
+  GetIncompleteAbilityStateFunctions,
+  ActionType
 }

@@ -1,6 +1,6 @@
 /* global test */
 import intake, { NlpResult, IntakeResult } from '../stages/intake'
-import { WolfState, Ability, MessageType, ConvoState } from '../types';
+import { WolfState, Ability, MessageType, ConvoState, ActionType } from '../types';
 import { randomElement, addMessageToQueue } from '../helpers'
 import evaluate, { EvaluateResult } from '../stages/evaluate';
 import fillSlots, { ValidateSlotsResult, validateSlots, FillSlotsResult } from '../stages/fillSlot';
@@ -304,8 +304,9 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
         }
       },
       name: 'addOrder',
-      type: 'userAction'
+      type: ActionType.ability
     }
+
     expect(actualEvaluateResult).toEqual(expectedEvaluateResult) // Test
 
     // Action Stage
