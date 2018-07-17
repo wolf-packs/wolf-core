@@ -12,7 +12,7 @@ const get = require('lodash.get')
 const set = require('lodash.set')
 
 export interface ActionResult {
-  actionResult: PendingWolfState,
+  pendingWolfState: PendingWolfState,
   runOnComplete: () => Promise<string | null>
 }
 
@@ -34,7 +34,7 @@ const runSlotAction = (
     if (!slot) {
       // No pending slot found based on result.name
       return {
-        actionResult: pendingWolfState,
+        pendingWolfState: pendingWolfState,
         runOnComplete: () => Promise.resolve('Please makesure that your slot name is spelled correctly')
       }
     }
@@ -60,9 +60,9 @@ const runSlotAction = (
         MessageType.queryMessage,
         slot.name
       )
-      return { actionResult: updatedPendingWolfState, runOnComplete: () => Promise.resolve(null) }
+      return { pendingWolfState: updatedPendingWolfState, runOnComplete: () => Promise.resolve(null) }
     }
-    return { actionResult: pendingWolfState, runOnComplete: () => Promise.resolve(null) }
+    return { pendingWolfState: pendingWolfState, runOnComplete: () => Promise.resolve(null) }
 }
 
 const runUserAction = (
@@ -108,7 +108,7 @@ const runUserAction = (
     return Promise.resolve(valueOrPromise)
   }
   
-  return { actionResult: pendingWolfState, runOnComplete }  
+  return { pendingWolfState: pendingWolfState, runOnComplete }  
 }
 
 export default function action(
@@ -125,5 +125,5 @@ export default function action(
     return runUserAction(
       result, pendingWolfState, abilityList, convoState)                    
   }
-  return { actionResult: pendingWolfState, runOnComplete: () => Promise.resolve(null) }
+  return { pendingWolfState: pendingWolfState, runOnComplete: () => Promise.resolve(null) }
 }

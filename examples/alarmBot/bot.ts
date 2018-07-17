@@ -70,14 +70,14 @@ server.post('/api/messages', (req, res) => {
       // Action
       // const actionResult: ActionResult = action(abilities, ksl, convoState, evaluateResult)
 
-      const { actionResult, runOnComplete }: ActionResult = action(abilities, convoState, evaluateResult)
+      const { pendingWolfState, runOnComplete }: ActionResult = action(abilities, convoState, evaluateResult)
       const ackMessage: string = await runOnComplete()
 
       // Async Action (user defined function)
-      const updatedActionResult = addMessageToQueue(actionResult, ackMessage)
+      const updatedPendingWolfState = addMessageToQueue(pendingWolfState, ackMessage)
 
       // Outtake
-      const { messageActivityArray }: OuttakeResult = outtake(convoState, updatedActionResult)
+      const { messageActivityArray }: OuttakeResult = outtake(convoState, updatedPendingWolfState)
       
       // User defined logic to display messages
       await context.sendActivities(messageActivityArray)

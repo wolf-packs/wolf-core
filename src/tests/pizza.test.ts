@@ -312,7 +312,7 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
     const convoState: ConvoState = {}
     const actualActionResult: ActionResult = action(abilities, convoState, actualEvaluateResult)
     const expectedActionResult: ActionResult = {
-      actionResult: {
+      pendingWolfState: {
         activeAbility: '',
         abilityCompleted: true,
         waitingFor: { slotName: null, turnCount: 0 },
@@ -347,9 +347,9 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
 
     let updatedActionResult = actualActionResult
     if (typeof ackMessage === 'string') {
-      updatedActionResult.actionResult = addMessageToQueue(actualActionResult.actionResult, ackMessage)
+      updatedActionResult.pendingWolfState = addMessageToQueue(actualActionResult.pendingWolfState, ackMessage)
     }
-    expect(updatedActionResult.actionResult.messageQueue).toEqual([
+    expect(updatedActionResult.pendingWolfState.messageQueue).toEqual([
       {
         message: 'ok! type is set to everything.',
         type: MessageType.slotFillMessage,
@@ -372,7 +372,7 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
     ])
 
     // Outtake Stage
-    const actualOuttakeResult: OuttakeResult = outtake(convoState, updatedActionResult.actionResult)
+    const actualOuttakeResult: OuttakeResult = outtake(convoState, updatedActionResult.pendingWolfState)
     const expectedOuttakeResult: OuttakeResult = {
       messageStringArray: [
         'ok! type is set to everything., ok! size is set to S., ok! quantity is set to 1.',
