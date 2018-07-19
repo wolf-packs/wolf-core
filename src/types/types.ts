@@ -1,6 +1,11 @@
-export interface WaitingFor {
+import { NlpResult } from '../stages/intake';
+
+export interface WaitingSlot {
   slotName: string | null,
   turnCount: number, // initial = 0
+}
+
+export interface WaitingSlotData extends NlpResult {
 }
 
 export enum ActionType {
@@ -30,7 +35,9 @@ export interface ConvoState {
 export interface WolfState {
   activeAbility: string,
   abilityCompleted: boolean,
-  waitingFor: WaitingFor,
+  isWaitingSlot: boolean,
+  waitingSlot: WaitingSlot,
+  waitingSlotData: WaitingSlotData,
   messageQueue: MessageQueueItem[],
   pendingData: {
     [key: string]: any

@@ -19,13 +19,20 @@ interface ValidatedEntity extends NlpEntity {
 
 export function validateSlots(
   abilityDataDef: Ability[],
-  intakeResult: IntakeResult
+  intakeResult: IntakeResult,
+  nlpResult: NlpResult
 ): ValidateSlotsResult {
-  const { nlpResult: result, pendingWolfState } = intakeResult
+  const pendingWolfState = intakeResult
+  let result: NlpResult = nlpResult
   const activeAbility = pendingWolfState.activeAbility
   const currentAbility = findAbilityByName(activeAbility, abilityDataDef) || {name: '', slots: []} as Ability
   const { slots } = currentAbility
-  // execute validators on slots
+
+  if (pendingWolfState.isWaitingSlot) { // bot asked for a question.. waiting for specific slot
+    result = pendingWolfState.waitingSlotData
+  }
+
+  // execute validators on slot
   const validatedEntities: ValidatedEntity[] = result.entities.map((entity: NlpEntity) => {
     const slot = findSlotByEntityName(entity.name, slots)
     if (!slot) {
@@ -72,23 +79,17 @@ export function validateSlots(
           slotName: invalEntity.name
         })
       }
-      // create waitingFor object if does not exist (retry purposes)
-      if (!pendingWolfState.waitingFor.slotName) {
-        pendingWolfState.waitingFor = {
-          slotName: invalEntity.name,
-          turnCount: 0
-        }
-      }
+      
       // run slot retry function
       const slot = findSlotByEntityName(invalEntity.name, slots) as Slot
       if (slot.retry) {
         pendingWolfState.messageQueue.push({
-          message: slot.retry(pendingWolfState.waitingFor.turnCount),
+          message: slot.retry(pendingWolfState.waitingSlot.turnCount),
           type: MessageType.retryMessage,
           slotName: slot.name
         })
       }
-      pendingWolfState.waitingFor.turnCount++
+      pendingWolfState.waitingSlot.turnCount++
     })
   }
   
@@ -96,12 +97,14 @@ export function validateSlots(
     pendingWolfState: PendingWolfState,
     entitiesWithValidValues: ValidatedEntity[]
   ): NlpEntity[]  => {
+     
     // check if any entity matches the slot wolf is waiting for
     const waitingForAnEntity = entitiesWithValidValues
-      .some((entity) => entity.name === pendingWolfState.waitingFor.slotName)
-
+      .some((entity) => entity.name === pendingWolfState.waitingSlot.slotName)
+  
+    // pendingWolfState is no longer waiting, slow will be filled
     if (waitingForAnEntity) {
-      pendingWolfState.waitingFor = {
+      pendingWolfState.waitingSlot = {
         slotName: null,
         turnCount: 0
       }
@@ -130,16 +133,26 @@ export default function fillSlots(
 ): FillSlotsResult {
   const { pendingWolfState, validateResult: result } = validateSlotResult
   const pendingPath = `pendingData.${result.intent}`
-  if (! get(pendingWolfState, `pendingData.${result.intent}`)) {
-    pendingWolfState.pendingData[result.intent] = {}
+
+  if (typeof result.intent === 'undefined') {
+    return pendingWolfState
   }
 
+  // initialize ability specific pending data object
+  if (! get(pendingWolfState, pendingPath)) {
+    pendingWolfState.pendingData[result.intent] = {}
+  }
+  
   const setSlots = (entity: NlpEntity) => {
     const { slots } = abilityDataDef.find(ability => ability.name === result.intent) as Ability
     const slotObj = slots.find((slot) => slot.name === entity.name) as Slot
     set(pendingWolfState, `pendingData.${result.intent}.${entity.name}`, entity.value)
-    // slot filled, add onFill message to messageQueue
-    // message default to null, filter out null in outtake
+
+    // slot filled, change to idle state
+    pendingWolfState.isWaitingSlot = false
+    
+    // add onFill message to messageQueue
+    // message will default to null, filter out null in outtake
     pendingWolfState.messageQueue.push({
       message: slotObj.onFill ? slotObj.onFill(entity.value) : null,
       type: MessageType.slotFillMessage,

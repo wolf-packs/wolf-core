@@ -176,7 +176,9 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
     const wolfState: WolfState = {
       activeAbility: '',
       abilityCompleted: false,
-      waitingFor: { slotName: null, turnCount: 0 },
+      isWaitingSlot: false,
+      waitingSlot: { slotName: null, turnCount: 0 },
+      waitingSlotData: { intent: undefined, entities: []},
       messageQueue: [],
       pendingData: {}
     }
@@ -184,39 +186,25 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
     // Intake Stage
     const actualIntakeResult: IntakeResult = intake(wolfState, nlpResult, userMessage, 'listAbility')
     const expectedIntakeResult: IntakeResult = {
-      pendingWolfState: {
-        activeAbility: 'addOrder',
-        abilityCompleted: false,
-        waitingFor: { slotName: null, turnCount: 0 },
-        messageQueue: [],
-        pendingData: {}
-      },
-      nlpResult: {
-        intent: 'addOrder',
-        entities: [{
-          value: 'everything',
-          string: 'everything',
-          name: 'pizzaType'
-        }, {
-          value: 'S',
-          string: 'S',
-          name: 'pizzaSize'
-        }, {
-          value: '1',
-          string: '1',
-          name: 'quantity'
-        }]
-      }
+      activeAbility: 'addOrder',
+      abilityCompleted: false,
+      isWaitingSlot: false,
+      waitingSlot: { slotName: null, turnCount: 0 },
+      waitingSlotData: { intent: undefined, entities: [] },
+      messageQueue: [],
+      pendingData: {}
     }
     expect(actualIntakeResult).toEqual(expectedIntakeResult) // Test
 
     // FillSlot Stage
-    const actualValidateResult: ValidateSlotsResult = validateSlots(abilities, actualIntakeResult)
+    const actualValidateResult: ValidateSlotsResult = validateSlots(abilities, actualIntakeResult, nlpResult)
     const expectedValidateResult: ValidateSlotsResult = {
       pendingWolfState: {
         activeAbility: 'addOrder',
         abilityCompleted: false,
-        waitingFor: { slotName: null, turnCount: 0 },
+        isWaitingSlot: false,
+        waitingSlot: { slotName: null, turnCount: 0 },
+        waitingSlotData: { intent: undefined, entities: [] },
         messageQueue: [],
         pendingData: {}
       },
@@ -243,7 +231,9 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
     const expectedFillSlotResult: FillSlotsResult = {
       activeAbility: 'addOrder',
       abilityCompleted: false,
-      waitingFor: { slotName: null, turnCount: 0 },
+      isWaitingSlot: false,
+      waitingSlot: { slotName: null, turnCount: 0 },
+      waitingSlotData: { intent: undefined, entities: [] },
       messageQueue: [
         {
           message: 'ok! type is set to everything.',
@@ -277,7 +267,9 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
       pendingWolfState: {
         activeAbility: 'addOrder',
         abilityCompleted: false,
-        waitingFor: { slotName: null, turnCount: 0 },
+        isWaitingSlot: false,
+        waitingSlot: { slotName: null, turnCount: 0 },
+        waitingSlotData: { intent: undefined, entities: [] },
         messageQueue: [
           {
             message: 'ok! type is set to everything.',
@@ -316,7 +308,9 @@ describe('Add a Pizza a cart', () => { // Feature (ability)
       pendingWolfState: {
         activeAbility: '',
         abilityCompleted: true,
-        waitingFor: { slotName: null, turnCount: 0 },
+        isWaitingSlot: false,
+        waitingSlot: { slotName: null, turnCount: 0 },
+        waitingSlotData: { intent: undefined, entities: [] },
         messageQueue: [
           {
             message: 'ok! type is set to everything.',

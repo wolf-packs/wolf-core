@@ -22,9 +22,14 @@ export default function initializeWolfState(conversationStore: ConversationState
       convoState.wolf = {
         abilityCompleted: false,
         activeAbility: '', // default abilityName
-        waitingFor: {
+        isWaitingSlot: false,
+        waitingSlot: {
           slotName: null,
           turnCount: 0
+        },
+        waitingSlotData: {
+          intent: undefined,
+          entities: []
         },
         messageQueue: [],
         pendingData: {},
