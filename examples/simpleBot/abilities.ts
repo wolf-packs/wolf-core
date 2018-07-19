@@ -8,7 +8,7 @@ export default [
       }
     ],
     onComplete: ({getSubmittedData}) => {
-      const {name} = getSubmittedData()
+      const { name } = getSubmittedData()
       return `Oh! Hello ${name!}`
     }
   }
