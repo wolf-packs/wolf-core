@@ -1,93 +1,109 @@
-import { NlpResult } from '../stages/intake';
+import { Entity } from '../stages/intake'
 
-export interface WaitingSlot {
-  slotName: string | null,
-  turnCount: number, // initial = 0
+// Ability and Slot 
+/**
+ * Defines conversation abilities, used to control overall flow
+ * that Wolf references.
+ * 
+ * See `example/` directory for ability examples for how to use.
+ */
+export interface Ability {
+  name: string,
+  slots: Slot[],
+  shouldCancelAbility?: (
+    convoState: ConvoState,
+    messageData: MessageData
+  ) => boolean,
+  onCancel?: (
+    convoState: ConvoState,
+    slotData: SlotData[]
+  ) => Promise<string|void> | string | void,
+  shouldRunComplete?: (
+    convoState: ConvoState,
+    stateDerivedObj: {
+      slotStatus: SlotStatus[],
+      slotData: SlotData[],
+      abilityStatus: AbilityStatus[]
+    }
+  ) => ShouldRunCompleteResult,
+  onComplete: (convoState: ConvoState, submittedData: any) => Promise<string|void> | string | void
 }
 
-export interface WaitingSlotData extends NlpResult {
+/**
+ * Wolf primitive representing data points that should be collected.
+ */
+export interface Slot {
+  name: string,
+  isRequired?: boolean,
+  defaultIsEnabled?: boolean,
+  order?: number,
+  query: (convoState: ConvoState) => string,
+  validate: (submittedValue: any) => ValidateResult,
+  onFill: (
+    convoState: ConvoState,
+    setOtherSlotFunctions: SetSlotDataObj,
+    submittedValue: any,
+  ) => string
 }
 
-export enum ActionType {
-  slot,
-  ability
+export interface ShouldRunCompleteResult {
+  shouldComplete: boolean,
+  reason?: string,
+  nextAbility?: string
 }
 
-export enum MessageType {
-  validateReason,
-  retryMessage,
-  queryMessage,
-  slotFillMessage,
-  abilityCompleteMessage
+// Get and Set Functions
+
+export interface SetSlotDataObj {
+  setSlotValue: (abilityName: string, slotName: string, value: any, runOnFill?: boolean) => void,
+  setSlotEnabled: (abilityName: string, slotName: string, isEnabled: boolean) => void
 }
 
-export interface MessageQueueItem {
-  message: string | null,
-  type: MessageType,
-  slotName?: string,
-  abilityName?: string
-}
+// State
 
+/**
+ * Conversation state managed by Botbuilder
+ */
 export interface ConvoState {
   [key: string]: any
 }
 
+/**
+ * Wolf's state object that facilitates management of state sytem.
+ * 
+ * _User should not touch this object._
+ */
 export interface WolfState {
-  activeAbility: string,
-  abilityCompleted: boolean,
-  isWaitingSlot: boolean,
-  waitingSlot: WaitingSlot,
-  waitingSlotData: WaitingSlotData,
-  messageQueue: MessageQueueItem[],
-  pendingData: {
-    [key: string]: any
-  }
+  messageData: MessageData,
+  slotStatus: SlotStatus[],
+  slotData: SlotData[],
+  abilityStatus: AbilityStatus[]
 }
 
-export interface PendingWolfState extends WolfState {
-
+export interface MessageData {
+  rawText: string,
+  intent: string | null,
+  entities: Entity[]
 }
 
-export interface SlotValidation {
-  valid: boolean,
-  reason?: string
+export interface SlotStatus {
+  abilityName: string,
+  slotName: string,
+  isEnabled: boolean
 }
 
-export interface Slot {
-  name: string,
-  query: (stateFunctions: GetIncompleteAbilityStateFunctions) => string,
-  type: string,
-  retry?: (turnCount: number) => string,
-  validate?: (value: string) => SlotValidation,
-  onFill?: (value: any) => string
+export interface SlotData {
+  abilityName: string,
+  slotName: string,
+  value: any
 }
 
-export interface Ability {
-  name: string,
-  slots: Slot[]
-  onComplete?: (stateFuncs: GetCompletedAbilityStateFunctions) => Promise<string|null> | string | null
+export interface AbilityStatus {
+  abilityName: string,
+  isCompleted: boolean
 }
 
-interface GetStateFunctionGeneric {
-  (): any
-}
-
-export interface GetStateFunctions {
-  getSubmittedData?: GetStateFunctionGeneric,
-  getConvoState: GetStateFunctionGeneric,
-  getPendingWolfState?: GetStateFunctionGeneric,
-  getAbilityList?: GetStateFunctionGeneric
-}
-
-export interface GetCompletedAbilityStateFunctions {
-  getSubmittedData: <S>() => S,
-  getConvoState: () => ConvoState,
-  getPendingWolfState: () => PendingWolfState,
-  getAbilityList: () => Ability[]
-}
-
-export interface GetIncompleteAbilityStateFunctions {
-  getConvoState: () => ConvoState,
-  getPendingWolfState: () => PendingWolfState,
-  getAbilityList: () => Ability[]
+export interface ValidateResult {
+  isValid: boolean,
+  reason: string | null
 }

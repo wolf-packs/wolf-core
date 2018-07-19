@@ -1,52 +1,16 @@
-import { Activity } from 'botbuilder'
-import { MessageType, MessageQueueItem, PendingWolfState, ConvoState } from '../types'
+interface OuttakeResult {
 
-export interface OuttakeResult {
-  messageStringArray: string[],
-  messageItemArray: MessageQueueItem[]
-  messageActivityArray: Partial<Activity>[]
 }
 
-const createMessage = (messageQueue: MessageQueueItem[], messageType: MessageType) => {
-  const queue = messageQueue
-    .filter((item: MessageQueueItem) => item.type === messageType)
-    .filter((item: MessageQueueItem) => item.message)
-  const messages = `${queue.map((_: MessageQueueItem) => _.message).join(', ')}`
-  return messages
-}
-
-export default function outtake(
-  convoState: ConvoState,
-  result: PendingWolfState
-): OuttakeResult {
-  const pendingWolfState = result
-
-  // order and format messageQueue
-  const slotFillMessage = createMessage(pendingWolfState.messageQueue, MessageType.slotFillMessage)
-  const abilityCompleteMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityCompleteMessage)
-  const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
-  const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
-  const queryMessage = createMessage(pendingWolfState.messageQueue, MessageType.queryMessage)
-
-  const messageStringArray = [
-    slotFillMessage,
-    abilityCompleteMessage,
-    validateMessage,
-    retryMessage,
-    queryMessage
-  ].filter((message) => message) // remove all undefined messages
-  
-  const messageItemArray = pendingWolfState.messageQueue
-  // clear messageQueue for next turn
-  pendingWolfState.messageQueue = []
-  
-  // update wolfState with changes from pendingWolfState
-  convoState.wolf = pendingWolfState
-
-  const messageActivityArray: Partial<Activity>[] = messageStringArray.map((msg) => ({
-    type: 'message',
-    text: msg
-  }))
-
-  return { messageStringArray, messageItemArray, messageActivityArray } 
+/**
+ * Outtake Stage (S5)
+ * 
+ * TODO
+ * 
+ * @param
+ * 
+ * @returns
+ */
+export default function outtake(): OuttakeResult {
+  return 0
 }

@@ -1,11 +1,11 @@
 /* global test */
-import intake, { NlpResult, IntakeResult } from '../stages/intake'
+import intake, { NlpResult, IntakeResult } from '../stages/old_intake'
 import { WolfState, Ability, MessageType, ConvoState, ActionType } from '../types';
 import { randomElement, addMessageToQueue } from '../helpers'
-import evaluate, { EvaluateResult } from '../stages/evaluate';
-import fillSlots, { ValidateSlotsResult, validateSlots, FillSlotsResult } from '../stages/fillSlot';
-import action, { ActionResult } from '../stages/action';
-import outtake, { OuttakeResult } from '../stages/outtake';
+import evaluate, { EvaluateResult } from '../stages/old_evaluate';
+import fillSlots, { ValidateSlotsResult, validateSlots, FillSlotsResult } from '../stages/old_fillSlot';
+import action, { ActionResult } from '../stages/old_action';
+import outtake, { OuttakeResult } from '../stages/old_outtake';
 
 const initialWolfState = {
   abilityCompleted: false,
