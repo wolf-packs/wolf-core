@@ -43,7 +43,7 @@
     "typescript": "^2.7.2"
   },
   "dependencies": {
-    "botbuilder-redux": "^2.0.0",
+    "botbuilder-redux": "^2.1.0",
     "immutable": "^3.8.2",
     "lodash.difference": "^4.5.0",
     "lodash.get": "^4.4.2",
