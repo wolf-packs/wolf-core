@@ -9,7 +9,6 @@ import { Ability, MessageData } from '../../src/types'
 // import difference from 'lodash.difference'
 
 import abilityData from './abilities'
-import { Store } from '../../node_modules/redux';
 
 const restify = require('restify')
 
@@ -36,7 +35,7 @@ adapter.use(...wolfMiddleware(conversationStore, (context) => {
     entities: []
   }
   return messageData
-}))
+}, {enabled: true}))
 
 // for wolf..
 // const abilities: Ability[] = abilityData as Ability[]
