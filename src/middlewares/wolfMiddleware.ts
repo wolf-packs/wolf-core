@@ -1,23 +1,20 @@
-import { ConversationState, TurnContext } from 'botbuilder'
+import { ConversationState, TurnContext, Promiseable } from 'botbuilder'
 import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder-redux/dist'
 import { createStore, combineReducers } from 'redux'
+import rootReducer from '../reducers'
+import { MessageData, NlpResult } from '../types'
+import intake from '../stages/intake';
 
+const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
 
 const storeCreator = (wolfStateFromConvoState: {[key: string]: any} | null) => {
-  const reducer = combineReducers({
-    messageData: (prev, action) => {
-      if (action.type === 'SET_MESSAGE_DATA') {
-        return action.payload
-      }
-      return prev
-    }
-  }) // TODO: this is where to put all the reducers
+  
   const defaultWolfState = {
     messageData: {}
   }
   const state = wolfStateFromConvoState || defaultWolfState
-  return createStore(reducer, state)
+  return createStore(rootReducer, state)
 }
 
 /**
@@ -25,23 +22,26 @@ const storeCreator = (wolfStateFromConvoState: {[key: string]: any} | null) => {
  * 
  * @return Promise<>
  */
-
-export default function initializeWolfStoreMiddleware(conversationStore: ConversationState) {
+export default function initializeWolfStoreMiddleware(
+  conversationStore: ConversationState,
+  userMessageData: (context: TurnContext) => Promiseable<NlpResult>
+) {
   return [
     botbuilderReduxMiddleware(conversationStore, storeCreator, '__WOLF_STORE__'),
     {
-    onTurn: async (context: TurnContext, next: () => any) => {
-      const store = getStore(context)
-      
-      // Do our wolf stages here
+      onTurn: async (context: TurnContext, next: () => any) => {
+        const store = getStore(context)
+        const nlpResult: NlpResult = await userMessageData(context)
+        intake(store, nlpResult)
+        // Do our wolf stages here
 
-      const messages = {} // result of outtake
+        const messages = {} // result of outtake
 
-      // save the messages in context.services
-      context.services.set(wolfMessagesKey, messages)
-      await next()
-    }
-    }]
+        // save the messages in context.services
+        context.services.set(wolfMessagesKey, messages)
+        await next()
+      }
+   }]
 }
 
 export function getStore(context: TurnContext) {

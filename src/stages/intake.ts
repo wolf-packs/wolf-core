@@ -1,20 +1,7 @@
-export interface IntakeResult {
-  
-}
-
-interface NlpResult {
-  intent: string | null,
-  entities: NlpEntity[]
-}
-
-interface NlpEntity {
-  value: string,  // normalized value
-  text: string,   // raw value
-  name: string    // entity name
-}
-export interface Entity extends NlpEntity {
-
-}
+import { MessageData } from '../types'
+import { Dispatch, Store } from 'redux'
+import { setMessageData }  from '../actions'
+import { NlpResult } from '../types'
 
 /**
  * Intake Stage (S1):
@@ -25,6 +12,14 @@ export interface Entity extends NlpEntity {
  * 
  * @returns void
  */
-export default function intake(nlpResult: NlpResult): IntakeResult {
-  return 0
-}
+export default function intake({dispatch}: Store, nlpResult: NlpResult): void {
+  // MessageData derived from user nlpResult
+  const messageData: MessageData = {
+    rawText: nlpResult.message,
+    intent: nlpResult.intent,
+    entities: nlpResult.entities
+  }
+
+  // Write messageData object to state
+  dispatch(setMessageData(messageData))
+} 

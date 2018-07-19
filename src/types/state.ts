@@ -1,5 +1,3 @@
-import { Entity } from '../stages/intake'
-
 /**
  * Conversation state managed by Botbuilder
  */
@@ -45,4 +43,19 @@ export interface AbilityStatus {
 export interface ValidateResult {
   isValid: boolean,
   reason: string | null
+}
+
+export interface NlpResult {
+  message: string,
+  intent: string | null,
+  entities: NlpEntity[]
+}
+
+export interface NlpEntity {
+  value: string,  // normalized value
+  text: string,   // raw value
+  name: string    // entity name
+}
+export interface Entity extends NlpEntity {
+
 }
