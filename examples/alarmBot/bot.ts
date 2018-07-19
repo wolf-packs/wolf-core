@@ -61,7 +61,7 @@ server.post('/api/messages', (req, res) => {
       const intakeResult = intake(convoState.wolf, nlpResult, userMessage, 'listAbilities')
 
       // FillSlot
-      const validatedResult: ValidateSlotsResult = validateSlots(abilities, intakeResult)
+      const validatedResult: ValidateSlotsResult = validateSlots(abilities, intakeResult, nlpResult)
       const fillSlotResult: FillSlotsResult = fillSlots(abilities, validatedResult)
 
       // Evaluate

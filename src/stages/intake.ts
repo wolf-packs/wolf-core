@@ -1,8 +1,6 @@
-import { PendingWolfState, WolfState } from '../types'
+import { PendingWolfState, WolfState, WaitingSlotData } from '../types'
 
-export interface IntakeResult {
-  pendingWolfState: PendingWolfState,
-  nlpResult: NlpResult
+export interface IntakeResult extends PendingWolfState {
 }
 
 export interface NlpEntity {
@@ -13,12 +11,12 @@ export interface NlpEntity {
 
 export interface NlpResult {
   entities: NlpEntity[],
-  intent: string
+  intent: string | undefined
 }
 
 function getActiveAbility(
   defaultAbility: string,
-  activeAbility: string | undefined,
+  activeAbility: string | null,
   intent: string | undefined
 ): string {
   if (activeAbility) {
@@ -39,13 +37,14 @@ export default function intake(
   // Load pendingWolfState from stored wolfState (from previous turn)
   // By updating pendingWolfState throughout stages, we can avoid mutations until last stage (to update)
   const pendingWolfState = Object.assign({}, wolfState) as PendingWolfState
-
-  if (pendingWolfState.waitingFor.slotName) { // bot asked for a question
-    nlpResult = {
+  
+  let waitingSlotData: WaitingSlotData = { intent: undefined, entities: [] }
+  if (pendingWolfState.isWaitingSlot) { // bot asked for a question.. waiting for specific slot
+    waitingSlotData = {
       intent: pendingWolfState.activeAbility,
       entities: [
         {
-          name: pendingWolfState.waitingFor.slotName,
+          name: pendingWolfState.waitingSlot.slotName as string,
           value: userMessage,
           string: userMessage
         }
@@ -58,11 +57,12 @@ export default function intake(
   const pendingWithNewActiveAbility = Object.assign(
     {},
     pendingWolfState,
-    { activeAbility: newActiveAbility, abilityCompleted: false }
+    { 
+      activeAbility: newActiveAbility,
+      abilityCompleted: false,
+      waitingSlotData
+    } 
   )
   
-  return {
-    pendingWolfState: pendingWithNewActiveAbility,
-    nlpResult
-  }
+  return pendingWithNewActiveAbility
 }

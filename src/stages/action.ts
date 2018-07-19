@@ -8,7 +8,7 @@ import {
 } from '../types'
 import { EvaluateResult } from './evaluate'
 import { addMessageToQueue } from '../helpers';
-import { ActionType } from '../types/types';
+import { ActionType, Slot } from '../types/types';
 const get = require('lodash.get')
 const set = require('lodash.set')
 
@@ -29,7 +29,7 @@ const runSlotAction = (
     const activeAbility = abilityList.find((ability) => ability.name === pendingWolfState.activeAbility) as Ability
     const slots = activeAbility.slots
     // Select slot defined by evaluate result
-    const slot = slots.find((slot) => slot.name === evaluateResult.name)
+    const slot = slots.find((slot: Slot) => slot.name === evaluateResult.name)
 
     // Safety null check - eval stage should catch
     if (!slot) {
@@ -41,9 +41,10 @@ const runSlotAction = (
     }
     
     // Not currently waiting for a response to a prompt
-    if (!pendingWolfState.waitingFor.slotName) {
+    if (!pendingWolfState.waitingSlot.slotName) {
       // Change into a waiting state (slot prompt will be added to queue)
-      pendingWolfState.waitingFor = {
+      pendingWolfState.isWaitingSlot = true
+      pendingWolfState.waitingSlot = {
         slotName: slot.name,
         turnCount: 0
       }
