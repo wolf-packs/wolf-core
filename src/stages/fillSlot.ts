@@ -1,7 +1,8 @@
 import { Action, Store, Dispatch } from 'redux'
-import { Slot, OutputMessageItem, OutputMessageType, MessageData } from '../types'
+import { Slot, OutputMessageItem, OutputMessageType, MessageData, ValidateResult } from '../types'
 import { addMessage, setMessageData } from '../actions'
 import { ConvoState } from '../types/old_types';
+import { addMessageToQueue } from '../helpers';
 
 interface PotentialSlotMatch {
   slot: Slot,
@@ -36,8 +37,10 @@ export default function fillSlot({dispatch}: Store, convoState: ConvoState): voi
   // Check if we have sent a prompt to the user in the previous turn
   if (isPromptStatus()) {
     const slot = getPromptedSlot()
+
+    const validatorResult = runSlotValiadtor(slot, message.rawText)
     
-    if (isPayloadValid(slot, message.rawText)) {
+    if (validatorResult.isValid) {
       const fulfillSlotResult = fulfillSlot(convoState, slot, message.rawText)
       fulfillSlotResult.forEach(dispatchActionArray(dispatch))
 
@@ -47,7 +50,10 @@ export default function fillSlot({dispatch}: Store, convoState: ConvoState): voi
       // Original prompted slot filled.. exit
       return // Status: FILLED
     }
-    // PAYLOAD NOT VALID FOR CURRENT SLOT.. continue below
+    // Payload not valid for current slot..
+    // Add reason to output queue if present
+    const validateMessage = createValidatorReasonMessage(validatorResult, slot)
+    validateMessage.forEach(dispatchActionArray(dispatch))
   }
   // NO PROMPT - EXPLORE OTHER SLOTS..
   
@@ -181,19 +187,43 @@ function runRetry(slot: Slot): Action[] {
 }
 
 /**
+ * If validatorResult has a reason, create an OutputMessageItem and return addMessage() action.
+ */
+function createValidatorReasonMessage(validatorResult: ValidateResult, slot: Slot): Action[] {
+  if (validatorResult.reason) {
+    const message =  {
+      message: validatorResult.reason,
+      type: OutputMessageType.validateReason,
+      slotName: slot.name,
+      abilityName: getSlotAbilityName(slot.name)
+    }
+    return [addMessage(message)]
+  }
+  return []
+}
+
+/**
  * For all found matches, run validator and try to fill slot.
  * For all validators that pass, fulfill slot, add message to output queue then exit.
  * For all validators that do not pass, exit.
  */
 const checkValidatorAndFill = (convoState: ConvoState, dispatch: Dispatch) => (match: PotentialSlotMatch): void => {
-  // check if match is valid
-  if (isPayloadValid(match.slot, match.entity)) {
-    // Slot validator passes.. fulfill
+  const validatorResult = runSlotValiadtor(match.slot, match.entity)
+    
+  if (validatorResult.isValid) {
     const fulfillSlotResult = fulfillSlot(convoState, match.slot, match.entity)
     fulfillSlotResult.forEach(dispatchActionArray(dispatch))
 
+    // set slot fill flag
     dispatch(setSlotFillFlag(true))
+
+    // slot filled.. exit
+    return // Status: FILLED
   }
+  // Payload not valid for current slot..
+  // Add reason to output queue if present
+  const validateMessage = createValidatorReasonMessage(validatorResult, match.slot)
+  validateMessage.forEach(dispatchActionArray(dispatch))
 }
 
 /**
@@ -240,6 +270,13 @@ function isPayloadValid(slot: Slot, submittedValue: string): boolean {
   // return validator reason if not valid... add to queue
   const validatorResult = slot.validate()
   return validatorResult.isValid
+}
+
+/**
+ * Run slot validator.
+ */
+function runSlotValiadtor(slot: Slot, submittedValue: string): ValidateResult {
+  return slot.validate(submittedValue)
 }
 
 /**
