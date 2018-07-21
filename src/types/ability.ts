@@ -39,11 +39,19 @@ export interface Slot {
   order?: number,
   query: (convoState: ConvoState) => string,
   validate: (submittedValue: any) => ValidateResult,
+  retry: (convoState: ConvoState, submittedData: any, turnCount: number) => string,
   onFill: (
+    submittedValue: any,
     convoState: ConvoState,
     setOtherSlotFunctions: SetSlotDataObj,
-    submittedValue: any,
-  ) => string
+    confirmationFunctions: ConfirmationFunctions
+  ) => string | void
+}
+
+export interface ConfirmationFunctions {
+  requireConfirmation: (slotName: string) => boolean,
+  accept: () => void,
+  deny: () => void
 }
 
 export interface ShouldRunCompleteResult {

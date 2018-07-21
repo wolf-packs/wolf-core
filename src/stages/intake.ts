@@ -1,7 +1,6 @@
-import { MessageData } from '../types'
-import { Dispatch, Store } from 'redux'
+import { MessageData, NlpResult } from '../types'
 import { setMessageData }  from '../actions'
-import { NlpResult } from '../types'
+import { Store } from 'redux'
 
 /**
  * Intake Stage (S1):

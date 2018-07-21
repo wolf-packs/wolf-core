@@ -23,6 +23,21 @@ export interface MessageData {
   entities: Entity[]
 }
 
+export interface OutputMessageItem {
+  message: string,
+  type: OutputMessageType,
+  slotName?: string,
+  abilityName?: string
+}
+
+export enum OutputMessageType {
+  validateReason,
+  retryMessage,
+  queryMessage,
+  slotFillMessage,
+  abilityCompleteMessage
+}
+
 export interface SlotStatus {
   abilityName: string,
   slotName: string,
@@ -32,6 +47,7 @@ export interface SlotStatus {
 export interface SlotData {
   abilityName: string,
   slotName: string,
+  isConfirmed: boolean,
   value: any
 }
 
@@ -56,6 +72,7 @@ export interface NlpEntity {
   text: string,   // raw value
   name: string    // entity name
 }
+
 export interface Entity extends NlpEntity {
 
 }
