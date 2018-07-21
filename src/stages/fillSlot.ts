@@ -13,8 +13,11 @@ const setSlotPendingData = (payload: string): Action<any> => { return }
 const addSlotToStack = (slotName: string): Action<any> => { return }
 const setActiveAbility = (abilityName: string): Action<any> => { return }
 const setSlotFillFlag = (value: boolean): Action<any> => { return }
+const setPromptedSlot = (promptedSlot: string): Action<any> => { return }
 
 const submittedData = 'kevin'
+
+// TODO: keep track of active ability.. should be up to date before entering S3
 
 /**
  * FillSlot Stage (S2):
@@ -153,6 +156,9 @@ function runRetryCheck(dispatch: Dispatch, potentialMatchFoundFlag: boolean) {
     let matchedSlot: Slot = {}
     const retryResult = runRetry(matchedSlot)
     retryResult.forEach(dispatchActionArray(dispatch))
+
+    // update prompted slot
+    setPromptedSlot(matchedSlot.name)
     return
   }
 
@@ -161,6 +167,8 @@ function runRetryCheck(dispatch: Dispatch, potentialMatchFoundFlag: boolean) {
     const promptedSlot = getPromptedSlot()
     const retryResult = runRetry(promptedSlot)
     retryResult.forEach(dispatchActionArray(dispatch))
+
+    // no need to update prompted slot.. same slot
   }
 
   // do not need to run retry.. exit
