@@ -17,7 +17,9 @@ const setPromptedSlot = (promptedSlot: string): Action<any> => { return }
 
 const submittedData = 'kevin'
 
-// TODO: keep track of active ability.. should be up to date before entering S3
+// TODO: keep track of active ability..
+// TODO: keep track of prompted slot..
+// should be up to date before entering S3
 
 /**
  * FillSlot Stage (S2):
