@@ -1,9 +1,6 @@
 import { Action, Store, Dispatch } from 'redux'
 import { Slot, OutputMessageItem, OutputMessageType, MessageData } from '../types'
 import { addMessage, setMessageData } from '../actions'
-import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
-import { exists } from 'fs';
-import { FileTranscriptStore } from '../../node_modules/botbuilder';
 import { ConvoState } from '../types/old_types';
 
 interface PotentialSlotMatch {
@@ -27,6 +24,7 @@ const submittedData = 'kevin'
  * potential slots in their the active ability or all slots.
  * 
  * @param dispatch redux
+ * @param convoState conversationState
  * 
  * @returns void
  */
@@ -114,12 +112,8 @@ export default function fillSlot({dispatch}: Store, convoState: ConvoState): voi
 }
 
 /**
- * Run slot onFill() and add message to output queue.
- * Store the submittedValue into the pendingData state.
- * 
- * @param slot Slot to run onFill()
- * 
- * @return addMessage Action
+ * Run slot onFill() and return dispatch actions to
+ * add message to output queue and store the submittedValue into the pendingData state.
  */
 function fulfillSlot(convoState: ConvoState, slot: Slot, message: string): Action[] {
   const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
@@ -128,7 +122,7 @@ function fulfillSlot(convoState: ConvoState, slot: Slot, message: string): Actio
       message: fillString,
       type: OutputMessageType.slotFillMessage,
       slotName: slot.name,
-      abilityName: getSlotAbility(slot.name)
+      abilityName: getSlotAbilityName(slot.name)
     }
   
     // Add onFill message to output message queue
@@ -140,6 +134,7 @@ function fulfillSlot(convoState: ConvoState, slot: Slot, message: string): Actio
 
 /**
  * Check if slot.retry() is required on either prompted slot or newly identified slot.
+ * If required, run slot retry and add retry message to output queue
  */
 function runRetryCheck(dispatch: Dispatch, potentialMatchFoundFlag: boolean) {
   // TODO get slotFillFlag
@@ -187,8 +182,8 @@ function runRetry(slot: Slot): Action[] {
 
 /**
  * For all found matches, run validator and try to fill slot.
+ * For all validators that pass, fulfill slot, add message to output queue then exit.
  * For all validators that do not pass, exit.
- * For all validators that pass, fulfill slot then exit.
  */
 const checkValidatorAndFill = (convoState: ConvoState, dispatch: Dispatch) => (match: PotentialSlotMatch): void => {
   // check if match is valid
@@ -209,15 +204,6 @@ const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
 }
 
 /**
- * Check if potential slot has been found on this turn.
- */
-function isPotentialMatchFlag(): boolean {
-  // TODO
-  // return potential match found flag
-  return true
-}
-
-/**
  * Check if we have prompted the user for a specific slot.
  * Ex. Ran slot.query() on the previous turn
  */
@@ -230,7 +216,6 @@ function isPromptStatus(): boolean {
 
 /**
  * Return previously prompted slot object.
- * 
  */
 function getPromptedSlot(): Slot {
   // TODO
@@ -239,9 +224,9 @@ function getPromptedSlot(): Slot {
 }
 
 /**
- * Return previously prompted slot ability.
+ * Return previously prompted slot ability name.
  */
-function getSlotAbility(slotName: string): string {
+function getSlotAbilityName(slotName: string): string {
   // TODO return prompted slot's ability
   const promptedAbilityName = 'test'
   return promptedAbilityName
@@ -251,7 +236,8 @@ function getSlotAbility(slotName: string): string {
  * Run the slot validator on the incoming message and checks if the validator has passed.
  */
 function isPayloadValid(slot: Slot, submittedValue: string): boolean {
-  // TODO
+  // TODO return valid result
+  // return validator reason if not valid... add to queue
   const validatorResult = slot.validate()
   return validatorResult.isValid
 }
@@ -265,7 +251,7 @@ function isActiveAbilitySet(): boolean {
 }
 
 /**
- * 
+ * Check if entity array contains elements.
  */
 function isEntityPresent(value: MessageData) {
   if (value.entities.length > 0) {
@@ -275,7 +261,7 @@ function isEntityPresent(value: MessageData) {
 }
 
 /**
- * 
+ * For each entity, check if the entity.name matches any slot.name in the active ability.
  */
 function checkActiveAbilityMatches(): PotentialSlotMatch[] {
   // TODO
@@ -283,7 +269,8 @@ function checkActiveAbilityMatches(): PotentialSlotMatch[] {
 }
 
 /**
- * 
+ * For each entity, check if the `entity.name` and `message.intent` matches any
+ * slot in any ability. `message.intent` will be used to determine the ability to check.
  */
 function checkAllAbilityMatches(): PotentialSlotMatch[] {
   return
