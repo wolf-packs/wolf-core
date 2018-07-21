@@ -263,16 +263,6 @@ function getSlotAbilityName(slotName: string): string {
 }
 
 /**
- * Run the slot validator on the incoming message and checks if the validator has passed.
- */
-function isPayloadValid(slot: Slot, submittedValue: string): boolean {
-  // TODO return valid result
-  // return validator reason if not valid... add to queue
-  const validatorResult = slot.validate()
-  return validatorResult.isValid
-}
-
-/**
  * Run slot validator.
  */
 function runSlotValiadtor(slot: Slot, submittedValue: string): ValidateResult {
