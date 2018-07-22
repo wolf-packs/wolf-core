@@ -5,11 +5,8 @@ import rootReducer from '../reducers'
 import { MessageData, NlpResult } from '../types'
 import intake from '../stages/intake';
 
-
 const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
-
-
 
 /**
  * wolf middleware

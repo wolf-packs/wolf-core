@@ -1,19 +1,13 @@
 import { Action, Store, Dispatch } from 'redux'
-import { Slot, OutputMessageItem, OutputMessageType, MessageData, ValidateResult } from '../types'
-import { addMessage, setMessageData } from '../actions'
-import { ConvoState } from '../types/old_types';
-import { addMessageToQueue } from '../helpers';
+import { Slot, OutputMessageItem, OutputMessageType, MessageData, ValidateResult, ConvoState } from '../types'
+import { addMessage, setSlotPendingData, setActiveAbility, setPromptedSlot, setSlotFillFlag } from '../actions'
 
 interface PotentialSlotMatch {
   slot: Slot,
   entity: string
 }
 
-const setSlotPendingData = (payload: string): Action<any> => { return }
 const addSlotToStack = (slotName: string): Action<any> => { return }
-const setActiveAbility = (abilityName: string): Action<any> => { return }
-const setSlotFillFlag = (value: boolean): Action<any> => { return }
-const setPromptedSlot = (promptedSlot: string | null): Action<any> => { return }
 
 const submittedData = 'kevin'
 
@@ -30,8 +24,10 @@ const submittedData = 'kevin'
  * 
  * @returns void
  */
-export default function fillSlot({dispatch}: Store, convoState: ConvoState): void {
+export default function fillSlot({ dispatch, getState }: Store, convoState: ConvoState): void {
   let potentialMatchFoundFlag: boolean = false
+  dispatch(setSlotFillFlag(false)) // reset
+  const state = getState()
 
   const message: MessageData = getMessageData
 
@@ -80,7 +76,7 @@ export default function fillSlot({dispatch}: Store, convoState: ConvoState): voi
   // ENTITIES EXIST.. continue checking potential matches for each entitiy
 
   // CHECK FOR POTENTIAL SLOTS.. in active ability
-  const slotMatchesActiveAbility: PotentialSlotMatch[] = checkActiveAbilityMatches()
+  const slotMatchesActiveAbility: PotentialSlotMatch[] = getActiveAbilityMatches()
   // process potential slot
   slotMatchesActiveAbility.forEach(checkValidatorAndFill(convoState, dispatch))
 
@@ -97,7 +93,7 @@ export default function fillSlot({dispatch}: Store, convoState: ConvoState): voi
   // No alternative matches found in active ability
 
   // CHECK FOR POTENTIAL SLOTS.. in all abilities.. expanding scope
-  const slotMatchesAllAbility: PotentialSlotMatch[] = checkAllAbilityMatches()
+  const slotMatchesAllAbility: PotentialSlotMatch[] = getAllAbilityMatches()
   // process potential slot
   slotMatchesAllAbility.forEach(checkValidatorAndFill(convoState, dispatch))
   
@@ -147,7 +143,7 @@ function fulfillSlot(convoState: ConvoState, slot: Slot, message: string): Actio
  */
 function runRetryCheck(dispatch: Dispatch, potentialMatchFoundFlag: boolean) {
   // TODO get slotFillFlag
-  const slotFillFlag: boolean = true // todo
+  const slotFillFlag = getSlotFillFlag()
 
   // If there has been an alternative slot match found but not been filled.. retry
   if (potentialMatchFoundFlag && !slotFillFlag) {
@@ -270,6 +266,11 @@ function getSlotAbilityName(slotName: string): string {
   return promptedAbilityName
 }
 
+function getSlotFillFlag(): boolean {
+  // TODO return slotFillFlag from state
+  return true
+}
+
 /**
  * Run slot validator.
  */
@@ -298,7 +299,7 @@ function isEntityPresent(value: MessageData) {
 /**
  * For each entity, check if the entity.name matches any slot.name in the active ability.
  */
-function checkActiveAbilityMatches(): PotentialSlotMatch[] {
+function getActiveAbilityMatches(): PotentialSlotMatch[] {
   // TODO
   return
 }
@@ -307,6 +308,6 @@ function checkActiveAbilityMatches(): PotentialSlotMatch[] {
  * For each entity, check if the `entity.name` and `message.intent` matches any
  * slot in any ability. `message.intent` will be used to determine the ability to check.
  */
-function checkAllAbilityMatches(): PotentialSlotMatch[] {
+function getAllAbilityMatches(): PotentialSlotMatch[] {
   return
 }
