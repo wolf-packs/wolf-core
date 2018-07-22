@@ -17,7 +17,12 @@ export default function evaluate(): EvaluateResult {
 
 /**
  * Beginning of S3 possible states:
+ * (getSlotFillFlag = true)
  * > slot has been filled (getSlotFillFlag) -> idle state -> select new slot to prompt (update prompted slot + active ability)
- * > no slot filled -> no retry -> idle state -> select new slot to prompt (update prompted slot + active ability)
- * > no slot filled -> retry has been made -> do nothing
+ * 
+ * (getSlotFillFlag = false) (promptSlot = null)
+ * > no slot filled -> no retry (no promptSlot)-> idle state -> select new slot to prompt (update prompted slot + active ability)
+ * 
+ * (getSlotFillFlag = false) (promptSlot = <string>)
+ * > no slot filled -> retry has been made (promptSlot) -> do nothing
  */
