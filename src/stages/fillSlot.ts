@@ -13,13 +13,9 @@ const setSlotPendingData = (payload: string): Action<any> => { return }
 const addSlotToStack = (slotName: string): Action<any> => { return }
 const setActiveAbility = (abilityName: string): Action<any> => { return }
 const setSlotFillFlag = (value: boolean): Action<any> => { return }
-const setPromptedSlot = (promptedSlot: string): Action<any> => { return }
+const setPromptedSlot = (promptedSlot: string | null): Action<any> => { return }
 
 const submittedData = 'kevin'
-
-// TODO: keep track of active ability..
-// TODO: keep track of prompted slot..
-// should be up to date before entering S3
 
 /**
  * FillSlot Stage (S2):
@@ -51,6 +47,8 @@ export default function fillSlot({dispatch}: Store, convoState: ConvoState): voi
 
       // set slot fill flag
       dispatch(setSlotFillFlag(true))
+      // remove prompted slot
+      dispatch(setPromptedSlot(null))
 
       // Original prompted slot filled.. exit
       return // Status: FILLED
@@ -160,7 +158,7 @@ function runRetryCheck(dispatch: Dispatch, potentialMatchFoundFlag: boolean) {
     retryResult.forEach(dispatchActionArray(dispatch))
 
     // update prompted slot
-    setPromptedSlot(matchedSlot.name)
+    dispatch(setPromptedSlot(matchedSlot.name))
     return
   }
 
