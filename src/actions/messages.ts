@@ -20,12 +20,3 @@ export const addMessage = (message: OutputMessageItem) => ({
   type: ADD_MESSAGE,
   payload: message
 })
-
-// FILL SLOT
-
-export const SET_SLOT_PENDING_DATA = 'SET_SLOT_PENDING_DATA'
-
-export const setSlotPendingData = (value: any) => ({
-  type: SET_SLOT_PENDING_DATA,
-  payload: value
-})

@@ -1,7 +1,14 @@
 import { Reducer } from 'redux'
 import { SET_MESSAGE_DATA } from '../actions'
+import { MessageData } from '../types'
 
-const reducer: Reducer = (prev = {}, action) => {
+const defaultMessageData = {
+  rawText: '',
+  intent: null,
+  entities: []
+}
+
+const reducer: Reducer = (prev: MessageData = defaultMessageData, action) => {
   if (action.type === SET_MESSAGE_DATA) {
     return {
       ...action.payload

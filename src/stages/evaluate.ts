@@ -1,4 +1,5 @@
 import { Store } from 'redux'
+import { WolfState } from '../types';
 
 /**
  * Evaluate Stage (S3):
@@ -9,20 +10,20 @@ import { Store } from 'redux'
  * 
  * @returns
  */
-export default function evaluate({dispatch}: Store): void {
-  // Condition: (S2 has not filled a slot) and (S2 has prompted a slot)
-  if (!getSlotFillFlag() && getPromptedSlot()) {
-    // Retry has already been made this turn by S2, bypass S3
-    return
+export default function evaluate({ dispatch, getState }: Store): void {
+  const state: WolfState = getState()
+
+  // Check if there were any slots filled during this turn
+  if (state.filledSlotsOnCurrentTurn.length > 0) {
+    // Check if any abilities have been completed as a result of the filled slot(s)
   }
 
-  // Condition: (S2 has filled a slot)
-  // Slot has been filled.. IDLE state.. find next slot to prompt
-  // or..
-  // Condition: (S2 has not filled a slot) and (S2 has not prompted a slot)
-  // No slot fill and no retry made.. IDLE state.. find next slot to prompt
+  // PROMPT STACK EMPTY
+  if (state.promptedSlotStack.length === 0) {
+    // Find slot
+  }
 
-  // TODO: find next slot to fill
+  // PROMPT STACK HAS ITEMS
 
   return
 }

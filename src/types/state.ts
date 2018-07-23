@@ -14,7 +14,28 @@ export interface WolfState {
   messageData: MessageData,
   slotStatus: SlotStatus[],
   slotData: SlotData[],
-  abilityStatus: AbilityStatus[]
+  abilityStatus: AbilityStatus[],
+  promptedSlotStack: PromptSlot[],
+  focusedAbility: string | null,
+  outputMessageQueue: OutputMessageItem[],
+  filledSlotsOnCurrentTurn: SlotId[]
+}
+
+export interface PromptSlot extends SlotId {
+  turnCount: number,
+  reasonAdded: PromptSlotReason,
+  prompted: boolean
+}
+
+enum PromptSlotReason {
+  query,
+  retry,
+  confirmation
+}
+
+export interface SlotId { 
+  slotName: string,
+  abilityName: string
 }
 
 export interface MessageData {
@@ -38,15 +59,12 @@ export enum OutputMessageType {
   abilityCompleteMessage
 }
 
-export interface SlotStatus {
-  abilityName: string,
-  slotName: string,
-  isEnabled: boolean
+export interface SlotStatus extends SlotId {
+  isEnabled: boolean,
+  confirmationSlot?: string,
 }
 
-export interface SlotData {
-  abilityName: string,
-  slotName: string,
+export interface SlotData extends SlotId {
   isConfirmed: boolean,
   value: any
 }

@@ -43,24 +43,22 @@ export default [
           // looks for if confirmCity's value on the state, 
           // if set, return setValue
           // if not set, next slot query to confirmCity
-          const confirmed = requireConfirmation('confirmCity') 
-          if (confirmed) {
-            return 'cool, city is set'
-          }
-          return 'mmm.. city is not confirmed'
+
+          requireConfirmation('confirmCity')
+
+          return null
         },
         retry: () => 'try again'
       },
       {
         name: 'confirmCity',
-        query: ({getSlotValues}) => `are you sure you want to set the ${getSlotValues().city}`,
+        query: ({getSlotValues}) => `are you sure you want to set the city to ${getSlotValues().city}`,
         onFill: (submittedValue, convoState, {setSlotValue, setSlotEnabled}, {accept, deny}) => {
           if (submittedValue) {
             accept()
-            return
+          } else {
+            deny() 
           }
-          deny()
-          return
         },
         retry: () => ''
       },
