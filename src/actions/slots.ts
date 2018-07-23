@@ -40,15 +40,15 @@ export const confirmSlot = (originSlotId: SlotId, confirmationSlotId: SlotId) =>
 })
 
 export const ACCEPT_SLOT = 'ACCEPT_SLOT'
-export const acceptSlot = (slotId: SlotId) => ({
+export const acceptSlot = (originSlotId: SlotId) => ({
   type: ACCEPT_SLOT,
-  payload: slotId
+  payload: originSlotId
 })
 
 export const DENY_SLOT = 'DENY_SLOT'
-export const denySlot = (slotId: SlotId) => ({
+export const denySlot = (originSlotId: SlotId) => ({
   type: DENY_SLOT,
-  payload: slotId
+  payload: originSlotId
 })
 
 export const START_FILL_SLOT_STAGE = 'START_FILL_SLOT_STAGE'

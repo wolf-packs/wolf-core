@@ -63,6 +63,7 @@ export enum OutputMessageType {
 
 export interface SlotStatus extends SlotId {
   isEnabled: boolean,
+  requestingSlot?: string,
   confirmationSlot?: string,
 }
 

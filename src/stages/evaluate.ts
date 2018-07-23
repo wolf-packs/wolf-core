@@ -2,7 +2,7 @@ import { Store } from 'redux'
 import { WolfState, SlotId } from '../types'
 import { getAbilityCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn, getPromptedSlotStack,
   getFocusedAbility, getDefaultAbility } from '../selectors'
-import { setFocusedAbility } from '../actions';
+import { setFocusedAbility } from '../actions'
 
 /**
  * Evaluate Stage (S3):
@@ -16,7 +16,7 @@ import { setFocusedAbility } from '../actions';
  * 
  * @returns void
  */
-export default function evaluate({ dispatch, getState }: Store): void {
+export default function evaluate({ dispatch, getState }: Store<WolfState>): void {
   const state: WolfState = getState()
 
   // Check if ability is marked to run onComplete this turn

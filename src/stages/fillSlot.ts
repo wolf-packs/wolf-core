@@ -4,10 +4,10 @@ import { Slot, OutputMessageItem, OutputMessageType,
   SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity } from '../types'
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
-  confirmSlot, acceptSlot, denySlot, setAbilityCompleteOnCurrentTurn } from '../actions'
+  confirmSlot, acceptSlot, denySlot, setAbilityCompleteOnCurrentTurn, enableSlot, disableSlot } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
-  getSlotBySlotId, getSlotTurnCount, getTargetAbility } from '../selectors'
-import { addSlotTopPromptedStack } from '../helpers'
+  getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId } from '../selectors'
+import { addSlotTopPromptedStack, findSlotInAbilitiesBySlotId } from '../helpers'
 
 interface PotentialSlotMatch {
   slot: Slot,
@@ -35,10 +35,11 @@ interface MatchNotValidData extends SlotId {
  * @returns void
  */
 export default function fillSlot(
-  { dispatch, getState }: Store<WolfState>,
+  store: Store<WolfState>,
   convoState: ConvoState,
   abilities: Ability[]
 ): void {
+  const { dispatch, getState } = store
   dispatch(startFillSlotStage()) // TODO: clear abilityCompleteOnCurrentTurn and filledSlotsOnCurrentTurn
   let potentialMatchFoundFlag: boolean = false // reset
   let slotFillFlag: boolean = false // reset
@@ -56,7 +57,7 @@ export default function fillSlot(
       validatorResult = runSlotValidator(promptedSlot, message.rawText)
       
       if (validatorResult.isValid) {
-        const fulfillSlotResult = fulfillSlot(convoState, abilities, message.rawText, slotName, abilityName)
+        const fulfillSlotResult = fulfillSlot(convoState, abilities, message.rawText, slotName, abilityName, getState)
         fulfillSlotResult.forEach(dispatchActionArray(dispatch))
   
         // set slot fill flag
@@ -114,7 +115,7 @@ export default function fillSlot(
   
       // process potential slot
       slotMatchesFocusedAbility.forEach((match) => {
-        if (checkValidatorAndFill(dispatch, convoState, abilities, match)) {
+        if (checkValidatorAndFill(store, convoState, abilities, match)) {
           slotFillFlag = true
           return
         }
@@ -155,7 +156,7 @@ export default function fillSlot(
     
       // process potential slot
       slotMatchesAllAbility.forEach((match) => {
-        if (checkValidatorAndFill(dispatch, convoState, abilities, match)) {
+        if (checkValidatorAndFill(store, convoState, abilities, match)) {
           slotFillFlag = true
           return
         }
@@ -190,33 +191,50 @@ export default function fillSlot(
  */
 function fulfillSlot(
   convoState: ConvoState,
-  // store: Store<WolfState>,    
   abilities: Ability[],
   message: string,
   slotName: string,
-  abilityName: string
+  abilityName: string,
+  getState: () => WolfState
 ): Action[] {
   const slot = getSlotBySlotId(abilities, { slotName, abilityName })
   const actions: Action[] = []    
   if (slot) {
     const setSlotFuncs: SetSlotDataFunctions = {
-      setSlotEnabled: (abilityName: string, slotName: string, value: any, runOnFill?: boolean) => {
-        actions.push(setSlotStatus())
+      setSlotEnabled: (abilityName: string, slotName: string, isEnabled: boolean) => {
+        if (isEnabled) {
+          actions.push(disableSlot({slotName, abilityName}))
+        } else {
+          actions.push(enableSlot({slotName, abilityName}))
+        }
       },
-      setSlotValue: () => {}
+      setSlotValue: (abilityName: string, slotName: string, value: any, runOnFill?: boolean) => {
+        actions.push(fillSlotAction(slotName, abilityName, value))
+        if (runOnFill) {
+          const targetSlot = findSlotInAbilitiesBySlotId(abilities, {abilityName, slotName})
+          if (!targetSlot) {
+            throw new Error('There is no slot with that name')
+          }
+          // TODO: Do I call onFill here? if so, the targetSlot.onFill needs its own (setSlotFuncs, and confirmFuncs)
+          // ... like in L236
+        }
+      }
     }
     const confirmFuncs: SlotConfirmationFunctions = {
-      requireConfirmation: (targetSlotName) => {
-        const targetSlot = getSlotBySlotId(abilities, {slotName: targetSlotName, abilityName})
+      requireConfirmation: (targetSlotName: string) => {
         actions.push(confirmSlot(
           {abilityName, slotName}, {abilityName, slotName: targetSlotName}
-        ))                       
+        ))
       },
       accept: () => {
-        actions.push(acceptSlot())
+        const originSlotId: SlotId = getRequestingSlotIdFromCurrentSlotId(getState(), {slotName, abilityName})
+        actions.push(acceptSlot(originSlotId))
       },
-      deny: () => {}
-    }    
+      deny: () => {
+        const originSlotId: SlotId = getRequestingSlotIdFromCurrentSlotId(getState(), {slotName, abilityName})
+        actions.push(denySlot(originSlotId))
+      }
+    }
     const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
     if (fillString) {
       const message: OutputMessageItem = {
@@ -332,14 +350,16 @@ function createValidatorReasonMessage(
  * For all validators that do not pass, exit.
  */
 function checkValidatorAndFill (
-  dispatch: Dispatch,
+  store: Store<WolfState>,
   convoState: ConvoState,
   abilities: Ability[],
   match: PotentialSlotMatch): boolean {
+  const {dispatch, getState} = store
   const validatorResult = runSlotValidator(match.slot, match.entity)
     
   if (validatorResult.isValid) {
-    const fulfillSlotResult = fulfillSlot(convoState, abilities, match.entity, match.slot.name, match.abilityName)
+    const fulfillSlotResult =
+      fulfillSlot(convoState, abilities, match.entity, match.slot.name, match.abilityName, getState)
     fulfillSlotResult.forEach(dispatchActionArray(dispatch))
 
     // slot filled.. exit true

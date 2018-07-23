@@ -1,5 +1,6 @@
-import { createSelector } from 'reselect'
-import { WolfState, PromptSlot, SlotId, Ability, Slot } from '../types'
+// import { createSelector } from 'reselect'
+import { WolfState, PromptSlot, SlotId, Ability, Slot, SlotStatus } from '../types'
+import { findIndexOfSlotIdsBySlotId } from '../helpers'
 
 // export const getSlotAbilityName = (state: WolfState): string => state. 
 
@@ -32,4 +33,16 @@ export const getSlotTurnCount = (state: WolfState, slotId: SlotId): number => {
 
 export const getTargetAbility = (abilities: Ability[], targetAbility: string): Ability | undefined => {
   return abilities.find((ability) => ability.name === targetAbility)
+}
+
+export const getRequestingSlotIdFromCurrentSlotId = (state: WolfState, slotId: SlotId): SlotId => {
+  const slotIndex = findIndexOfSlotIdsBySlotId(state.slotStatus, slotId)
+  const slot: SlotStatus = state.slotStatus[slotIndex]
+  if (!slot.requestingSlot) {
+    throw new Error (`You did not request any slot to use this slot to confirm`)
+  }
+  return {
+    abilityName: slot.abilityName,
+    slotName: slot.requestingSlot
+  }
 }
