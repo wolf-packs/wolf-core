@@ -29,3 +29,7 @@ export const getSlotTurnCount = (state: WolfState, slotId: SlotId): number => {
   }
   return 0
 }
+
+export const getTargetAbility = (abilities: Ability[], targetAbility: string): Ability | undefined => {
+  return abilities.find((ability) => ability.name === targetAbility)
+}

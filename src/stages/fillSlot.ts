@@ -4,8 +4,9 @@ import { Slot, OutputMessageItem, OutputMessageType,
   SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity } from '../types'
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
-  confirmSlot, acceptSlot, denySlot } from '../actions'
-import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet, getSlotBySlotId, getSlotTurnCount } from '../selectors'
+  confirmSlot, acceptSlot, denySlot, setAbilityCompleteOnCurrentTurn } from '../actions'
+import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
+  getSlotBySlotId, getSlotTurnCount, getTargetAbility } from '../selectors'
 import { addSlotTopPromptedStack } from '../helpers'
 
 interface PotentialSlotMatch {
@@ -36,7 +37,7 @@ export default function fillSlot(
   convoState: ConvoState,
   abilities: Ability[]
 ): void {
-  dispatch(startFillSlotStage())
+  dispatch(startFillSlotStage()) // TODO: clear abilityCompleteOnCurrentTurn and filledSlotsOnCurrentTurn
   let potentialMatchFoundFlag: boolean = false // reset
   let slotFillFlag: boolean = false // reset
   let matchNotValid: MatchNotValidData | null = null // reset
@@ -93,9 +94,22 @@ export default function fillSlot(
 
   // CHECK FOR POTENTIAL SLOTS.. in focused ability
   if (state.focusedAbility) {
-    const slotMatchesFocusedAbility: PotentialSlotMatch[] = 
-      getPotentialMatches(abilities, message.entities, state.focusedAbility)
+    // get ability match
+    const ability = getTargetAbility(abilities, state.focusedAbility)
 
+    // ensure ability has slots
+    if (ability && ability.slots.length === 0) {
+      dispatch(setAbilityCompleteOnCurrentTurn(ability.name))
+      return // exit stage
+    }
+
+    // ABILITY EXISTS AND HAS SLOTS TO CHECK..
+
+    if (ability) {
+      // find slot matches
+      const slotMatchesFocusedAbility: PotentialSlotMatch[] = 
+        getPotentialMatches(message.entities, ability)
+  
       // process potential slot
       slotMatchesFocusedAbility.forEach((match) => {
         if (checkValidatorAndFill(dispatch, convoState, abilities, match)) {
@@ -117,33 +131,47 @@ export default function fillSlot(
         return
       }
       // No alternative matches found in focused ability
+    }
   }
 
   // CHECK FOR POTENTIAL SLOTS.. in all abilities.. expanding scope
   if (message.intent) {
-    const slotMatchesAllAbility: PotentialSlotMatch[] = 
-      getPotentialMatches(abilities, message.entities, message.intent)
-  
-    // process potential slot
-    slotMatchesAllAbility.forEach((match) => {
-      if (checkValidatorAndFill(dispatch, convoState, abilities, match)) {
-        slotFillFlag = true
+    // get ability match
+    const ability = getTargetAbility(abilities, message.intent)
+
+    // ensure ability has slots
+    if (ability && ability.slots.length === 0) {
+      dispatch(setAbilityCompleteOnCurrentTurn(ability.name))
+      return // exit stage
+    }
+
+    // ABILITY EXISTS AND HAS SLOTS TO CHECK..
+
+    if (ability) {
+      const slotMatchesAllAbility: PotentialSlotMatch[] = 
+        getPotentialMatches(message.entities, ability)
+    
+      // process potential slot
+      slotMatchesAllAbility.forEach((match) => {
+        if (checkValidatorAndFill(dispatch, convoState, abilities, match)) {
+          slotFillFlag = true
+          return
+        }
+        // validator failed
+        matchNotValid = { slotName: match.slot.name, abilityName: match.abilityName, value: match.entity }
+      })
+    
+      if (slotMatchesAllAbility.length > 0) {
+        // set potential match found flag
+        potentialMatchFoundFlag = true
+    
+        // Exit through alternative slot match route..
+        // Check if retry() is necessary before exiting
+        runRetryCheck(dispatch, convoState, state, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
         return
       }
-      // validator failed
-      matchNotValid = { slotName: match.slot.name, abilityName: match.abilityName, value: match.entity }
-    })
-  
-    if (slotMatchesAllAbility.length > 0) {
-      // set potential match found flag
-      potentialMatchFoundFlag = true
-  
-      // Exit through alternative slot match route..
-      // Check if retry() is necessary before exiting
-      runRetryCheck(dispatch, convoState, state, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
-      return
+      // No alternative matches found in all abilities
     }
-    // No alternative matches found in all abilities
   }
   
   // MATCHES THAT ARE VALID HAVE BEEN FILLED
@@ -353,22 +381,15 @@ function isEntityPresent(value: MessageData) {
  * in the `abilities`
  * 
  */
-function getPotentialMatches(abilities: Ability[], entities: Entity[], targetAbility: string): PotentialSlotMatch[] {
-  let entityValue
-  const ability = abilities.filter((ability) => ability.name === targetAbility)
-
-  if (ability.length === 0) {
-    return [] 
-  }
-
-  const slotMatches = ability[0].slots.filter((slot) => entities.find((entity) => entity.name === slot.name))
+function getPotentialMatches(entities: Entity[], targetAbility: Ability): PotentialSlotMatch[] {
+  const slotMatches = targetAbility.slots.filter((slot) => entities.find((entity) => entity.name === slot.name))
 
   const matches = slotMatches.map((slot) => {
     const entityMatch = entities.find((entity) => entity.name === slot.name)
     if (entityMatch) {
       return {
         slot,
-        abilityName: targetAbility,
+        abilityName: targetAbility.name,
         entity: entityMatch.value
       }
     }

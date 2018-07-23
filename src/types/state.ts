@@ -18,7 +18,9 @@ export interface WolfState {
   promptedSlotStack: PromptSlot[],
   focusedAbility: string | null,
   outputMessageQueue: OutputMessageItem[],
-  filledSlotsOnCurrentTurn: SlotId[]
+  filledSlotsOnCurrentTurn: SlotId[],
+  abilityCompleteOnCurrentTurn: string | null,
+  defaultAbility: string | null
 }
 
 export interface PromptSlot extends SlotId {
