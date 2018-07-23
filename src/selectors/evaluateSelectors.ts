@@ -1,4 +1,4 @@
-import { WolfState, SlotId, PromptSlot } from '../types'
+import { WolfState, SlotId, PromptSlot, SlotStatus, SlotData, Ability } from '../types'
 
 export const getAbilityCompleteOnCurrentTurn = (state: WolfState): string | null => {
   return state.abilityCompleteOnCurrentTurn
@@ -18,4 +18,12 @@ export const getFocusedAbility = (state: WolfState): string | null => {
 
 export const getDefaultAbility = (state: WolfState): string | null => {
   return state.defaultAbility
+}
+
+export const getSlotStatus = (state: WolfState): SlotStatus[] => {
+  return state.slotStatus
+}
+
+export const getSlotData = (state: WolfState): SlotData[] => {
+  return state.slotData
 }

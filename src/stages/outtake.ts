@@ -1,3 +1,6 @@
+import { Store } from 'redux'
+import { WolfState } from '../types'
+
 interface OuttakeResult {
 
 }
@@ -5,12 +8,13 @@ interface OuttakeResult {
 /**
  * Outtake Stage (S5)
  * 
- * TODO
+ * Ensure developer has access to all `OutputMessageItems`
  * 
- * @param
- * 
- * @returns
+ * @param store redux
  */
-export default function outtake(): OuttakeResult {
+export default function outtake(store: Store<WolfState>): OuttakeResult {
+  const { getState } = store
+  const state: WolfState = getState()
+  
   return 0
 }

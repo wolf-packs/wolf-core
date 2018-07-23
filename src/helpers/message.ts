@@ -13,6 +13,6 @@ export function addMessageToQueue(
   }
 
   const updatedState = Object.assign({}, state)
-  updatedState.outputMessageQueue .push(messageItem)
+  updatedState.outputMessageQueue.push(messageItem)
   return updatedState
 }
