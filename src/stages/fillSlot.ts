@@ -28,7 +28,9 @@ interface MatchNotValidData extends SlotId {
  * potential slots in their the active ability or all slots.
  * 
  * @param dispatch redux
+ * @param store redux
  * @param convoState conversationState
+ * @param abilities list of user defined abilities
  * 
  * @returns void
  */

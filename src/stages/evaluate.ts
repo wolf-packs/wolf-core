@@ -7,11 +7,14 @@ import { setFocusedAbility } from '../actions';
 /**
  * Evaluate Stage (S3):
  * 
- * TODO
+ * Responsible for ensuring S4 (execute stage) has a slot or ability action to run.
+ * S3 will ensure that `abilityCompleteOnCurrentTurn` and `promptedSlotStack` are up-to-date.
+ * This will inform S4 for the next item to execute.
  * 
- * @param
+ * @param dispatch redux
+ * @param getState redux
  * 
- * @returns
+ * @returns void
  */
 export default function evaluate({ dispatch, getState }: Store): void {
   const state: WolfState = getState()
@@ -48,18 +51,32 @@ export default function evaluate({ dispatch, getState }: Store): void {
   if (!focusedAbility) {
     // focusedAbility is null, use default ability
     const defaultAbility = getDefaultAbility(state)
+
+    // check if defaultAbility is null
+    if (!defaultAbility) {
+      // focusedAbility and Default ability are both null..
+      // no slots will be found.
+      return
+    }
+
+    // defaultAbility is a string
     focusedAbility = defaultAbility // update local
     dispatch(setFocusedAbility(defaultAbility)) // update state
   }
 
   // FIND NEXT SLOT TO PROMPT IN FOCUSED ABILITY
-  // TODO
+
+  const nextSlot = findNextSlotToPrompt(state, focusedAbility)
+
+  // create prompt slot
+  // add prompt slot to top of stack
+
   // find next slot to fill in focused ability.. add slot to stack.. exit
 
   return
 }
 
-function findNextSlotToPrompt(): SlotId {
+function findNextSlotToPrompt(state: WolfState, focusedAbility: string): SlotId {
   const nextSlot: SlotId = {
     slotName: '',
     abilityName: ''
