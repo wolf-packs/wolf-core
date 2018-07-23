@@ -11,12 +11,12 @@ import { setFocusedAbility } from '../actions'
  * S3 will ensure that `abilityCompleteOnCurrentTurn` and `promptedSlotStack` are up-to-date.
  * This will inform S4 for the next item to execute.
  * 
- * @param dispatch redux
- * @param getState redux
+ * @param store redux
  * 
  * @returns void
  */
-export default function evaluate({ dispatch, getState }: Store<WolfState>): void {
+export default function evaluate(store: Store<WolfState>): void {
+  const { dispatch, getState } = store
   const state: WolfState = getState()
 
   // Check if ability is marked to run onComplete this turn
