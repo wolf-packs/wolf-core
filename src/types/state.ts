@@ -19,7 +19,7 @@ export interface WolfState {
   focusedAbility: string | null,
   outputMessageQueue: OutputMessageItem[],
   filledSlotsOnCurrentTurn: SlotId[],
-  abilityCompleteOnCurrentTurn: string | null,
+  abilityCompleteOnCurrentTurn: string[] | null,
   defaultAbility: string | null
 }
 
