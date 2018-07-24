@@ -1,8 +1,12 @@
 import { Store } from 'redux'
-import { WolfState } from '../types'
+import { Activity } from 'botbuilder'
+import { WolfState, OutputMessageItem, OutputMessageType } from '../types'
+import { getOutputMessageQueue } from '../selectors'
 
-interface OuttakeResult {
-
+export interface OuttakeResult {
+  messageStringArray: string[],
+  messageItemArray: OutputMessageItem[]
+  messageActivityArray: Partial<Activity>[]
 }
 
 /**
@@ -13,8 +17,53 @@ interface OuttakeResult {
  * @param store redux
  */
 export default function outtake(store: Store<WolfState>): OuttakeResult {
-  const { getState } = store
-  const state: WolfState = getState()
-  
-  return 0
+  const { dispatch, getState } = store
+  const messageQueue = getOutputMessageQueue(getState())
+
+  // order and format messageQueue
+  const slotFillMessage = createMessage(messageQueue, OutputMessageType.slotFillMessage)
+  const abilityCompleteMessage = createMessage(messageQueue, OutputMessageType.abilityCompleteMessage)
+  const validateMessage = createMessage(messageQueue, OutputMessageType.validateReason)
+  const retryMessage = createMessage(messageQueue, OutputMessageType.retryMessage)
+  const queryMessage = createMessage(messageQueue, OutputMessageType.queryMessage)
+
+  const messageStringArray = [
+    slotFillMessage,
+    abilityCompleteMessage,
+    validateMessage,
+    retryMessage,
+    queryMessage
+  ].filter((message) => message) // remove all undefined messages
+
+  // store rich message objects
+  const messageItemArray = messageQueue
+
+  // clear messageQueue for next turn
+  dispatch(clearMessageQueue())
+
+  const messageActivityArray: Partial<Activity>[] = messageStringArray.map((msg) => ({
+    type: 'message',
+    text: msg
+  }))
+
+  return { messageStringArray, messageItemArray, messageActivityArray } 
 }
+
+/**
+ * Create a single string from grouped messageTypes
+ */
+const createMessage = (messageQueue: OutputMessageItem[], messageType: OutputMessageType) => {
+  const queue = messageQueue
+    .filter((item: OutputMessageItem) => item.type === messageType)
+    .filter((item: OutputMessageItem) => item.message)
+  const messages = `${queue.map((_: OutputMessageItem) => _.message).join(', ')}`
+  return messages
+}
+
+// ACTION TODO: move and implement
+// clear message queuu
+// post-condition: empty queue
+const CLEAR_MESSAGE_QUEUE = 'CLEAR_MESSAGE_QUEUE'
+const clearMessageQueue = () => ({
+  type: CLEAR_MESSAGE_QUEUE
+})

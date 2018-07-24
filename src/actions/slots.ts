@@ -1,4 +1,4 @@
-import { PromptSlot, SlotId, PromptSlotReason } from '../types'
+import { SlotId, PromptSlotReason } from '../types'
 
 export const FILL_SLOT = 'FILL_SLOT'
 export const fillSlot = (slotName: string, abilityName: string, value: any) => ({

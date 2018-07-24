@@ -1,7 +1,7 @@
-import { WolfState, SlotId, PromptSlot, SlotStatus, SlotData, Ability } from '../types'
+import { WolfState, SlotId, PromptSlot, SlotStatus, SlotData } from '../types'
 
-export const getAbilityCompleteOnCurrentTurn = (state: WolfState): string | null => {
-  return state.abilityCompleteOnCurrentTurn
+export const getAbilitiesCompleteOnCurrentTurn = (state: WolfState): string[] => {
+  return state.abilitiesCompleteOnCurrentTurn
 }
 
 export const getfilledSlotsOnCurrentTurn = (state: WolfState): SlotId[] => {

@@ -1,6 +1,6 @@
 import { Store, Action, Dispatch } from 'redux'
 import { WolfState, Ability, Slot, ConvoState, OutputMessageType, SlotId } from '../types'
-import { getAbilityCompleteOnCurrentTurn, getPromptedSlotStack,
+import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
     getSlotBySlotId, getSlotDataByAbilityName } from '../selectors';
 import { addMessage } from '../actions';
 
@@ -19,30 +19,28 @@ export interface ExecuteResult {
  */
 export default function execute(store: Store<WolfState>, convoState: ConvoState, abilities: Ability[]): ExecuteResult {
   const { dispatch, getState } = store
-  const state: WolfState = getState()
 
   // Check if S4 should run an ability onComplete
-  const abilityCompleteResult = getAbilityCompleteOnCurrentTurn(state)
-  if (abilityCompleteResult) {
-    const valueOrPromise = runAbilityOnComplete(state, convoState, abilities, abilityCompleteResult)
+  const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
+  if (abilityCompleteResult.length > 0) {
+    const valueOrPromise = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult[0])
 
-    /////////////////////
-    // TODO.. figure out what to return..
-    let returnResult: Promise<string|void> = Promise.resolve()
+    let returnResult: Promise<string|void>
     if (typeof valueOrPromise === 'string') {
       returnResult = Promise.resolve(valueOrPromise)
-    }
-  
-    if (typeof valueOrPromise.then === 'function') {
+    } else if (!valueOrPromise) {
+      // void
       returnResult = Promise.resolve()
+    } else if (typeof valueOrPromise.then === 'function') {
+      // promise
+      returnResult = valueOrPromise
     }
-    /////////////////////
 
     return { runOnComplete: () => returnResult }
   }
 
   // Check if S4 should prompt a slot
-  const promptedSlotStack = getPromptedSlotStack(state)
+  const promptedSlotStack = getPromptedSlotStack(getState())
   if (promptedSlotStack[0]) {
     const slot = promptedSlotStack[0]
 
@@ -56,7 +54,6 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
     if (slotToPrompt) {
       const runSlotQueryResult = runSlotQuery(convoState, slotToPrompt, slot.abilityName)
       runSlotQueryResult.forEach(dispatchActionArray(dispatch))
-
       return { runOnComplete: () => Promise.resolve() }
     }
     // SLOT NOT VALID.. continue
@@ -67,8 +64,11 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
   return { runOnComplete: () => Promise.resolve() }
 }
 
+/**
+ * Execute ability.onComplte()
+ */
 function runAbilityOnComplete(
-  state: WolfState,
+  getState: () => WolfState,
   convoState: ConvoState,
   abilities: Ability[],
   abilityToComplete: string
@@ -78,11 +78,14 @@ function runAbilityOnComplete(
     return Promise.resolve()
   }
 
-  const abilitySlotData = getSlotDataByAbilityName(state, ability.name)
+  const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
   const valueOrPromise = ability.onComplete(convoState, abilitySlotData)
   return valueOrPromise
 }
 
+/**
+ * Ececute slot.query()
+ */
 function runSlotQuery(convoState: ConvoState, slot: Slot, abilityName: string): Action[] {
   const queryString = slot.query(convoState)
 
@@ -107,7 +110,7 @@ const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
   dispatch(action)
 }
 
-// ACTION
+// TODO: move to action and implement
 
 /**
  * Set slot.prompted property

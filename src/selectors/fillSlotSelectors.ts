@@ -46,3 +46,5 @@ export const getRequestingSlotIdFromCurrentSlotId = (state: WolfState, slotId: S
     slotName: slot.requestingSlot
   }
 }
+
+export const getMessageData = (state: WolfState) => state.messageData

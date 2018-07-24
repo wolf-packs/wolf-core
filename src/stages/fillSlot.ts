@@ -1,13 +1,16 @@
 import { Action, Store, Dispatch } from 'redux'
 import { Slot, OutputMessageItem, OutputMessageType,
   MessageData, ValidateResult, ConvoState, Ability, WolfState,
-  SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity } from '../types'
+  SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason } from '../types'
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
-  confirmSlot, acceptSlot, denySlot, abilityCompleted, enableSlot, disableSlot } from '../actions'
+  confirmSlot, acceptSlot, denySlot, abilityCompleted, enableSlot,
+  disableSlot, addSlotToPromptedStack } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
-  getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId } from '../selectors'
-import { addSlotTopPromptedStack, findSlotInAbilitiesBySlotId } from '../helpers'
+  getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
+    getMessageData, 
+    getFocusedAbility } from '../selectors'
+import { findSlotInAbilitiesBySlotId } from '../helpers'
 
 interface PotentialSlotMatch {
   slot: Slot,
@@ -18,8 +21,6 @@ interface PotentialSlotMatch {
 interface MatchNotValidData extends SlotId {
   value: any
 }
-
-// TODO: getState needs to be called everytime state is used, because we are calling dispatch
 
 /**
  * FillSlot Stage (S2):
@@ -45,12 +46,12 @@ export default function fillSlot(
   let potentialMatchFoundFlag: boolean = false // reset
   let slotFillFlag: boolean = false // reset
   let matchNotValid: MatchNotValidData | null = null // reset
-  const state = getState()
-  const message = state.messageData
+
+  const message = getMessageData(getState())
 
   // Check if we have sent a prompt to the user in the previous turn
-  if (isPromptStatus(state)) {
-    const promptedSlotInfo = getPromptedSlotId(state)
+  if (isPromptStatus(getState())) {
+    const promptedSlotInfo = getPromptedSlotId(getState())
     const { slotName, abilityName } = promptedSlotInfo
     const promptedSlot = getSlotBySlotId(abilities, { slotName, abilityName })
     let validatorResult
@@ -82,7 +83,7 @@ export default function fillSlot(
   // EXPLORE POTENTIAL MATCHES
 
   // set focused ability if there is none already
-  if (!isFocusedAbilitySet(state)) {
+  if (!isFocusedAbilitySet(getState())) {
     dispatch(setFocusedAbility(message.intent))
   }
 
@@ -90,16 +91,17 @@ export default function fillSlot(
   if (!isEntityPresent(message)) {
     // No entities exist to check for potential slot matches.. exit
     // Check if retry() is necessary before exiting
-    runRetryCheck(dispatch, convoState, state, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
+    runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
     return
   }
 
   // ENTITIES EXIST.. continue checking potential matches for each entitiy
 
   // CHECK FOR POTENTIAL SLOTS.. in focused ability
-  if (state.focusedAbility) {
+  const focusedAbility = getFocusedAbility(getState())
+  if (focusedAbility) {
     // get ability match
-    const ability = getTargetAbility(abilities, state.focusedAbility)
+    const ability = getTargetAbility(abilities, focusedAbility)
 
     // ensure ability has slots
     if (ability && ability.slots.length === 0) {
@@ -131,7 +133,7 @@ export default function fillSlot(
     
         // Exit through alternative slot match route..
         // Check if retry() is necessary before exiting
-        runRetryCheck(dispatch, convoState, state, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
+        runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
         return
       }
       // No alternative matches found in focused ability
@@ -171,7 +173,7 @@ export default function fillSlot(
     
         // Exit through alternative slot match route..
         // Check if retry() is necessary before exiting
-        runRetryCheck(dispatch, convoState, state, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
+        runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
         return
       }
       // No alternative matches found in all abilities
@@ -182,7 +184,7 @@ export default function fillSlot(
 
   // Exit through alternative slot match route..
   // Check if retry() is necessary before exiting
-  runRetryCheck(dispatch, convoState, state, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
+  runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillFlag)
   return
 }
 
@@ -259,8 +261,8 @@ function fulfillSlot(
  */
 function runRetryCheck(
   dispatch: Dispatch,
+  getState: () => WolfState,
   convoState: ConvoState,
-  state: WolfState,
   abilities: Ability[],
   matchNotValid: MatchNotValidData | null,
   potentialMatchFoundFlag: boolean,
@@ -271,20 +273,21 @@ function runRetryCheck(
     const matchedSlot = matchNotValid
     
     // should prompt retry on matched slot
-    const retryResult = runRetry(convoState, state, abilities, matchedSlot.slotName,
+    const retryResult = runRetry(convoState, getState, abilities, matchedSlot.slotName,
       matchedSlot.abilityName, matchedSlot.value)
     retryResult.forEach(dispatchActionArray(dispatch))
 
     // add slot to stack
-    addSlotTopPromptedStack(dispatch, matchedSlot.slotName, matchedSlot.abilityName)
+    const slotId: SlotId = { slotName: matchedSlot.slotName, abilityName: matchedSlot.abilityName }
+    dispatch(addSlotToPromptedStack(slotId, PromptSlotReason.retry))
     return
   }
 
   // If there was a previously prompted slot and has not been filed.. retry
-  if (isPromptStatus(state) && !slotFillFlag) {
-    const message = state.messageData
-    const promptedSlotInfo = getPromptedSlotId(state)
-    const retryResult = runRetry(convoState, state, abilities, promptedSlotInfo.slotName,
+  if (isPromptStatus(getState()) && !slotFillFlag) {
+    const message = getMessageData(getState())
+    const promptedSlotInfo = getPromptedSlotId(getState())
+    const retryResult = runRetry(convoState, getState, abilities, promptedSlotInfo.slotName,
       promptedSlotInfo.abilityName, message.rawText)
     retryResult.forEach(dispatchActionArray(dispatch))
 
@@ -297,13 +300,10 @@ function runRetryCheck(
 
 /**
  * Run slot retry.
- * 
- * @param slot Slot to be retried.
- * 
- * @returns addMessage Action.
  */
-function runRetry(convoState: ConvoState,
-  state: WolfState,
+function runRetry(
+  convoState: ConvoState,
+  getState: () => WolfState,
   abilities: Ability[],
   slotName: string,
   abilityName: string,
@@ -311,7 +311,7 @@ function runRetry(convoState: ConvoState,
 ): Action[] {
   const slot = getSlotBySlotId(abilities, { slotName, abilityName })
   if (slot) {
-    const turnCount = getSlotTurnCount(state, { slotName, abilityName })
+    const turnCount = getSlotTurnCount(getState(), { slotName, abilityName })
     const retryMessage = slot.retry(convoState, submittedData, turnCount)
     const message: OutputMessageItem = {
       message: retryMessage,
@@ -355,7 +355,7 @@ function checkValidatorAndFill (
   convoState: ConvoState,
   abilities: Ability[],
   match: PotentialSlotMatch): boolean {
-  const {dispatch, getState} = store
+  const { dispatch, getState } = store
   const validatorResult = runSlotValidator(match.slot, match.entity)
     
   if (validatorResult.isValid) {
