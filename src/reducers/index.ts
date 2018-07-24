@@ -20,5 +20,5 @@ export default combineReducers({
   outputMessageQueue,
   filledSlotsOnCurrentTurn,
   defaultAbility,
-  abilitiesCompletedOnCurrentTurn
+  abilitiesCompleteOnCurrentTurn
 })

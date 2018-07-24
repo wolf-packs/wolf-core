@@ -8,7 +8,7 @@ import { Ability, MessageData } from '../../src/types'
 
 // import difference from 'lodash.difference'
 
-import abilityData from './abilities'
+import abilities from './abilities'
 
 const restify = require('restify')
 
@@ -35,7 +35,7 @@ adapter.use(...wolfMiddleware(conversationStore, (context) => {
     entities: []
   }
   return messageData
-}, {enabled: true}))
+}, abilities, {enabled: true}))
 
 // for wolf..
 // const abilities: Ability[] = abilityData as Ability[]
@@ -48,7 +48,7 @@ server.post('/api/messages', (req, res) => {
       }
 
       const messages = getMessages(context)
-      // await context.sendActivities(messageActivityArray)
+      await context.sendActivities(messages.messageActivityArray)
 
     } catch (err) {
       console.error(err.stack)

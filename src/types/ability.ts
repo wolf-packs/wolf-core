@@ -1,5 +1,5 @@
 import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateResult } from './state'
-import { SetSlotDataObj } from './function'
+// import { SetSlotDataObj } from './function'
 
 /**
  * Defines conversation abilities, used to control overall flow

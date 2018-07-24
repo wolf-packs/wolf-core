@@ -3,7 +3,12 @@ import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
 import rootReducer from '../reducers'
 import { MessageData, NlpResult } from '../types'
-import intake from '../stages/intake';
+import intake from '../stages/intake'
+import fillSlot from '../stages/fillSlot'
+import evaluate from '../stages/evaluate'
+import execuate from '../stages/execute'
+import outtake from '../stages/outtake'
+import execute from '../stages/execute';
 
 const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
@@ -16,6 +21,7 @@ const wolfMessagesKey = Symbol('wolfMessageKey')
 export default function initializeWolfStoreMiddleware(
   conversationStore: ConversationState,
   userMessageData: (context: TurnContext) => Promiseable<NlpResult>,
+  abilities: Ability[],
   devTools: {enabled: boolean, port?: number} = {enabled: false}
 ) {
   let composeEnhancers = compose
@@ -28,7 +34,16 @@ export default function initializeWolfStoreMiddleware(
 
   const storeCreator = (wolfStateFromConvoState: {[key: string]: any} | null) => {
     const defaultWolfState = {
-      messageData: {}
+      messageData: null,
+      slotStatus: [],
+      slotData: [],
+      abilityStatus: [],
+      promptedSlotStack: [],
+      focusedAbility: null,
+      outputMessageQueue: [],
+      filledSlotsOnCurrentTurn: [],
+      abilitiesCompleteOnCurrentTurn: [],
+      defaultAbility: null
     }
     const state = wolfStateFromConvoState || defaultWolfState
     return createStore(rootReducer, state, composeEnhancers(applyMiddleware()))
@@ -41,12 +56,18 @@ export default function initializeWolfStoreMiddleware(
         const store = getStore(context)
         const nlpResult: NlpResult = await userMessageData(context)
         intake(store, nlpResult)
-        // Do our wolf stages here
+        fillSlot(store, conversationStore.get(context), abilities)
+        evaluate(store, abilities)
+        const {runOnComplete, addMessage} = execute(store, conversationStore.get(context), abilities)
+        
+        const message = await runOnComplete()
 
-        const messages = {} // result of outtake
+        addMessage(message)
+
+        const messagesObj = outtake(store)
 
         // save the messages in context.services
-        context.services.set(wolfMessagesKey, messages)
+        context.services.set(wolfMessagesKey, messagesObj)
         await next()
       }
    }]

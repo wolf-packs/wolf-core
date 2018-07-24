@@ -2,6 +2,7 @@ import { Store } from 'redux'
 import { Activity } from 'botbuilder'
 import { WolfState, OutputMessageItem, OutputMessageType } from '../types'
 import { getOutputMessageQueue } from '../selectors'
+import { clearMessageQueue } from '../actions'
 
 export interface OuttakeResult {
   messageStringArray: string[],

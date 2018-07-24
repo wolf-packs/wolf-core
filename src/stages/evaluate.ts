@@ -2,7 +2,7 @@ import { Store } from 'redux'
 import { WolfState, Ability, SlotId, Slot, PromptSlotReason } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn, getPromptedSlotStack,
   getFocusedAbility, getDefaultAbility, getSlotStatus, getSlotData, getTargetAbility } from '../selectors'
-import { setFocusedAbility, setAbilityCompleteOnCurrentTurn, addSlotToPromptedStack } from '../actions'
+import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted } from '../actions'
 
 /**
  * Evaluate Stage (S3):
@@ -31,7 +31,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
 
     if (abilityName) {
       // ability complete
-      dispatch(setAbilityCompleteOnCurrentTurn(abilityName))
+      dispatch(abilityCompleted(abilityName))
       return // exit stage.. S4 will run ability.onComplete()
     }
     // no ability has completed.. continue
@@ -119,16 +119,18 @@ function checkForAbilityCompletion(getState: () => WolfState, abilities: Ability
   if (filledSlotsResult.length === 0) {
     return null
   }
+  const {slotStatus} = getState()
 
+  let result = null
   filledSlotsResult.forEach((filledSlot) => {
     const unfilledSlots = getUnfilledSlots(getState, abilities, filledSlot.abilityName)
     if (unfilledSlots.length === 0) {
       // all slots filled in current ability.. complete
-      return filledSlot.abilityName
+      result = filledSlot.abilityName
     }
   })
 
-  return null
+  return result
 }
 
 /**
@@ -147,7 +149,8 @@ function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focus
   
   // return all slots that are not filled (not in slotData)
   const unfilledSlots = abilitySlots.filter((abilitySlot) => {
-    return !(slotData.some((dataSlot) => dataSlot.slotName === abilitySlot.name))
+    return !slotData.find(slot => slot.abilityName === ability.name && slot.slotName === abilitySlot.name)
+    // return !(slotData.some((dataSlot) => dataSlot.slotName === abilitySlot.name))
   })
   
   // get all slots that are disabled
@@ -155,7 +158,9 @@ function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focus
 
   // return all slots that are not present in the disabledSlots
   const enabledSlots = unfilledSlots.filter((unfilledSlot) => {
-    return !(disabledSlots.some((disabledSlot) => disabledSlot.slotName === unfilledSlot.name))
+    return !disabledSlots.find(
+      disabledSlot => disabledSlot.abilityName === ability.name && disabledSlot.slotName === unfilledSlot.name)
+    // return !(disabledSlots.some((disabledSlot) => disabledSlot.slotName === unfilledSlot.name))
   })
 
   return enabledSlots

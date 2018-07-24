@@ -51,6 +51,7 @@ export default function fillSlot(
 
   // Check if we have sent a prompt to the user in the previous turn
   if (isPromptStatus(getState())) {
+    console.log('Prompted Last Turn!')
     const promptedSlotInfo = getPromptedSlotId(getState())
     const { slotName, abilityName } = promptedSlotInfo
     const promptedSlot = getSlotBySlotId(abilities, { slotName, abilityName })
@@ -249,8 +250,9 @@ function fulfillSlot(
     
       // Add onFill message to output message queue
       // Add slot data to pendingData state
-      return [addMessage(message), fillSlotAction(slotName, abilityName, message)]
+      actions.push(addMessage(message))
     }
+    actions.push(fillSlotAction(slotName, abilityName, message))
   }
   return actions
 }

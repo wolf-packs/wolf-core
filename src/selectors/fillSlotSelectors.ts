@@ -16,7 +16,7 @@ export const getSlotBySlotId = (abilities: Ability[], slotInfo: SlotId): Slot | 
 }
 
 export const isPromptStatus = (state: WolfState) => { 
-  return state.promptedSlotStack[0].prompted
+  return state.promptedSlotStack[0] ? state.promptedSlotStack[0].prompted : false
 }
 
 export const isFocusedAbilitySet = (state: WolfState) => state.focusedAbility

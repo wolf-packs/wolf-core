@@ -15,8 +15,8 @@ export default [
         onFill: () => null
       }
     ],
-    onComplete: ({getSubmittedData}) => {
-      const { name } = getSubmittedData()
+    onComplete: (convoState, data) => {
+      const { name } = data
       return `Oh! Hello ${name!}`
     }
   },

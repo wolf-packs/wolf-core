@@ -1,6 +1,6 @@
 import { Reducer } from 'redux'
 import { PromptSlot, SlotId, PromptSlotReason } from '../types'
-import { ADD_SLOT_TO_PROMPTED_STACK, REMOVE_SLOT_FROM_PROMPTED_STACK } from '../actions'
+import { ADD_SLOT_TO_PROMPTED_STACK, REMOVE_SLOT_FROM_PROMPTED_STACK, SET_SLOT_PROMPTED } from '../actions'
 import { findIndexOfSlotIdsBySlotId, changeArrayItemOnIndex } from '../helpers'
 
 const makeDefaultPromptSlot = (slotId: SlotId, reasonAdded: PromptSlotReason): PromptSlot => ({
@@ -25,6 +25,19 @@ const reducer: Reducer = (prev: PromptSlot[] = [], action) => {
     const slot = isSlotMissing ? makeDefaultPromptSlot(slotId, reason) : prev[slotIndex]
     const updatedPromptedSlotStack = changeArrayItemOnIndex(prev, slotIndex, slot)
     const result = isSlotMissing ? [slot, ...prev] : moveIndexItemToTop(updatedPromptedSlotStack, slotIndex)
+    return result
+  }
+
+  if (action.type === SET_SLOT_PROMPTED) {
+    const {slotId, prompted} = action.payload
+    const slotIndex = findIndexOfSlotIdsBySlotId(prev, slotId)
+    const isSlotMissing: boolean = slotIndex === -1
+    const slot = isSlotMissing ? makeDefaultPromptSlot(slotId, PromptSlotReason.query) : prev[slotIndex]
+    const newSlot: PromptSlot = {
+      ...slot,
+      prompted
+    }
+    const result = isSlotMissing ? [...prev, newSlot] : changeArrayItemOnIndex(prev, slotIndex, newSlot)
     return result
   }
 

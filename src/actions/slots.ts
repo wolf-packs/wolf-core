@@ -15,15 +15,15 @@ export const addSlotToPromptedStack = (promptedSlot: SlotId, reason: PromptSlotR
   }
 })
 
-// TODO: I don't know how to implement setSlotPrompted
+// TODO (Done): implement setSlotPrompted
 
 /**
  * Set slot.prompted property
  */
 export const SET_SLOT_PROMPTED = 'SET_SLOT_PROMPTED'
-export const setSlotPrompted = (slotId: SlotId, value: boolean) => ({
+export const setSlotPrompted = (slotId: SlotId, prompted: boolean) => ({
   type: SET_SLOT_PROMPTED,
-  payload: { slotId, value }
+  payload: { slotId, prompted }
 })
 
 export const REMOVE_SLOT_FROM_PROMPTED_STACK = 'REMOVE_SLOT_FROM_PROMPTED_STACK'
