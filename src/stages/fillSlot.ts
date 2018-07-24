@@ -42,7 +42,7 @@ export default function fillSlot(
   abilities: Ability[]
 ): void {
   const { dispatch, getState } = store
-  dispatch(startFillSlotStage()) // TODO: clear abilityCompleteOnCurrentTurn and filledSlotsOnCurrentTurn
+  dispatch(startFillSlotStage()) // TODO: clear abilitiesCompleteOnCurrentTurn and filledSlotsOnCurrentTurn
   let potentialMatchFoundFlag: boolean = false // reset
   let slotFillFlag: boolean = false // reset
   let matchNotValid: MatchNotValidData | null = null // reset
@@ -218,8 +218,8 @@ function fulfillSlot(
           if (!targetSlot) {
             throw new Error('There is no slot with that name')
           }
-          // TODO: Do I call onFill here? if so, the targetSlot.onFill needs its own (setSlotFuncs, and confirmFuncs)
-          // ... like in L236
+          const setActions = fulfillSlot(convoState, abilities, value, slotName, abilityName, getState)
+          actions.push(...setActions)
         }
       }
     }
@@ -238,7 +238,7 @@ function fulfillSlot(
         actions.push(denySlot(originSlotId))
       }
     }
-    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO ?
+    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
     if (fillString) {
       const message: OutputMessageItem = {
         message: fillString,

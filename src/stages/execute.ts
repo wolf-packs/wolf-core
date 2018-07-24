@@ -2,7 +2,7 @@ import { Store, Action, Dispatch } from 'redux'
 import { WolfState, Ability, Slot, ConvoState, OutputMessageType, SlotId } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
     getSlotBySlotId, getSlotDataByAbilityName } from '../selectors';
-import { addMessage } from '../actions';
+import { addMessage, setSlotPrompted } from '../actions';
 
 export interface ExecuteResult {
   runOnComplete: () => Promise<string|void>
@@ -110,13 +110,4 @@ const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
   dispatch(action)
 }
 
-// ACTION TODO: move to action and implement
 
-/**
- * Set slot.prompted property
- */
-export const SET_SLOT_PROMPTED = 'SET_SLOT_PROMPTED'
-export const setSlotPrompted = (slotId: SlotId, value: boolean) => ({
-  type: SET_SLOT_PROMPTED,
-  payload: { slotId, value }
-})

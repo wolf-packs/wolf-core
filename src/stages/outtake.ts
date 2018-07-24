@@ -60,10 +60,3 @@ const createMessage = (messageQueue: OutputMessageItem[], messageType: OutputMes
   return messages
 }
 
-// ACTION TODO: move and implement
-// clear message queuu
-// post-condition: empty queue
-const CLEAR_MESSAGE_QUEUE = 'CLEAR_MESSAGE_QUEUE'
-const clearMessageQueue = () => ({
-  type: CLEAR_MESSAGE_QUEUE
-})
