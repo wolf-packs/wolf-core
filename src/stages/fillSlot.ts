@@ -85,6 +85,9 @@ export default function fillSlot(
 
   // set focused ability if there is none already
   if (!isFocusedAbilitySet(getState())) {
+    // TODO: what if the message.intent is null? aka, "hello" or "blahblah"
+    // do we set the focusAbility to default Ability here?
+    // if not here, where do we set the default Ability?
     dispatch(setFocusedAbility(message.intent))
   }
 
@@ -96,7 +99,7 @@ export default function fillSlot(
     return
   }
 
-  // ENTITIES EXIST.. continue checking potential matches for each entitiy
+  // ENTITIES EXIST.. continue checking potential matches for each entity
 
   // CHECK FOR POTENTIAL SLOTS.. in focused ability
   const focusedAbility = getFocusedAbility(getState())
@@ -111,7 +114,8 @@ export default function fillSlot(
     }
 
     // ABILITY EXISTS AND HAS SLOTS TO CHECK..
-
+    // TODO: I think there is a logic error here somewhere...
+    // ... "add alarm called kevin" is not filling the slot on alarmName
     if (ability) {
       // find slot matches
       const slotMatchesFocusedAbility: PotentialSlotMatch[] = 
@@ -120,7 +124,7 @@ export default function fillSlot(
       // process potential slot
       slotMatchesFocusedAbility.forEach((match) => {
         if (checkValidatorAndFill(store, convoState, abilities, match)) {
-          slotFillFlag = true
+          slotFillFlag = true 
           return
         }
         // validator failed

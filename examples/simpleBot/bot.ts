@@ -28,14 +28,18 @@ const conversationStore = new ConversationState(new MemoryStorage())
 
 adapter.use(conversationStore)
 // Wolf middleware
-adapter.use(...wolfMiddleware(conversationStore, (context) => {
-  const messageData: NlpResult = {
-    message: context.activity.text,
-    intent: context.activity.text === 'hi' ? 'greet' : null,
-    entities: []
-  }
-  return messageData
-}, abilities, {enabled: true}))
+adapter.use(...wolfMiddleware(conversationStore,
+  (context) => {
+    const messageData: NlpResult = {
+      message: context.activity.text,
+      intent: context.activity.text === 'hi' ? 'greet' : null,
+      entities: []
+    }
+    return messageData
+  }, 
+  abilities, 'greet',
+  {enabled: true}
+)) 
 
 // for wolf..
 // const abilities: Ability[] = abilityData as Ability[]

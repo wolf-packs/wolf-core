@@ -22,6 +22,7 @@ export default function initializeWolfStoreMiddleware(
   conversationStore: ConversationState,
   userMessageData: (context: TurnContext) => Promiseable<NlpResult>,
   abilities: Ability[],
+  defaultAbility: string,
   devTools: {enabled: boolean, port?: number} = {enabled: false}
 ) {
   let composeEnhancers = compose
@@ -55,7 +56,7 @@ export default function initializeWolfStoreMiddleware(
       onTurn: async (context: TurnContext, next: () => any) => {
         const store = getStore(context)
         const nlpResult: NlpResult = await userMessageData(context)
-        intake(store, nlpResult)
+        intake(store, nlpResult, defaultAbility)
         fillSlot(store, conversationStore.get(context), abilities)
         evaluate(store, abilities)
         const {runOnComplete, addMessage} = execute(store, conversationStore.get(context), abilities)

@@ -14,7 +14,7 @@ export default [
         name: 'alarmName',
         type: 'string',
         query: () => { return 'What is the name of the alarm?'},
-        retry: (turnCount) => {
+        retry: (convoState, submittedData, turnCount) => {
           const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
           if (turnCount > phrase.length - 1) {
             return phrase[phrase.length - 1]
@@ -51,11 +51,9 @@ export default [
         onFill: (value) => `ok! time is set to ${value}.`
       }
     ],
-    onComplete: ({ getSubmittedData, getConvoState }) => {
+    onComplete: (convoState, submittedData) => {
       return new Promise((resolve, reject) => {
-        const value = getSubmittedData<Alarm>()
-
-        const convoState = getConvoState()
+        const value = submittedData
         const alarms = convoState.alarms || []
         convoState.alarms = [
           ...alarms,
@@ -79,9 +77,8 @@ export default [
         }
       }
     ],
-    onComplete: ({ getSubmittedData, getConvoState }) => {
-      const convoState = getConvoState()
-      const { alarmName } = getSubmittedData<Alarm>()
+    onComplete: (convoState, submittedData) => {
+      const { alarmName } = submittedData
       const stateAlarms = convoState.alarms || []
 
       // Check if alarm name exists

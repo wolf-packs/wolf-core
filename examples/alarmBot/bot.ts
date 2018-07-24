@@ -1,22 +1,10 @@
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
-// import { BotFrameworkAdapter } from 'botbuilder-services'
 import nlp from './nlp'
 
-// import * as wolf from '../../src'
-import intake, { NlpResult } from '../../src/stages/intake'
-import fillSlots, { validateSlots, ValidateSlotsResult, FillSlotsResult } from '../../src/stages/fillSlot'
-import evaluate, { EvaluateResult } from '../../src/stages/evaluate'
-import action, { ActionResult } from '../../src/stages/action'
-import outtake, { OuttakeResult } from '../../src/stages/outtake'
-import { addMessageToQueue } from '../../src/helpers'
+import wolfMiddleware, {getStore, getMessages} from '../../src/middlewares/wolfMiddleware'
 
 // import Wolf middleware
-import initializeWolfState from '../../src/middlewares/initializeWolfState'
-
-import { Ability } from '../../src/types'
-// import difference from 'lodash.difference'
-
-import abilityData from './abilities'
+import abilities from './abilities'
 
 const restify = require('restify')
 
@@ -36,10 +24,18 @@ const conversationStore = new ConversationState(new MemoryStorage())
 
 adapter.use(conversationStore)
 // Wolf middleware
-adapter.use(initializeWolfState(conversationStore))
+adapter.use(...wolfMiddleware(
+  conversationStore,
+  (context) => {
+    return nlp(context.activity.text)
+  },
+  abilities,
+  'listAbility',
+  {enabled: true} // enable or disable devtool
+))
 
 // for wolf..
-const abilities: Ability[] = abilityData as Ability[]
+// const abilities: Ability[] = abilityData as Ability[]
 
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
@@ -48,39 +44,8 @@ server.post('/api/messages', (req, res) => {
         return
       }
 
-      const userMessage = context.activity.text
-      
-      // Load convo state from the store
-      const convoState = conversationStore.get(context)
-
-      // User defined NLP logic
-      // Requirement: user passes an NlpResult object into intake()
-      let nlpResult: NlpResult = nlp(userMessage)
-
-      // Intake
-      const intakeResult = intake(convoState.wolf, nlpResult, userMessage, 'listAbilities')
-
-      // FillSlot
-      const validatedResult: ValidateSlotsResult = validateSlots(abilities, intakeResult, nlpResult)
-      const fillSlotResult: FillSlotsResult = fillSlots(abilities, validatedResult)
-
-      // Evaluate
-      const evaluateResult: EvaluateResult = evaluate(abilities, fillSlotResult)
-      
-      // Action
-      // const actionResult: ActionResult = action(abilities, ksl, convoState, evaluateResult)
-
-      const { pendingWolfState, runOnComplete }: ActionResult = action(abilities, convoState, evaluateResult)
-      const ackMessage: string = await runOnComplete()
-
-      // Async Action (user defined function)
-      const updatedPendingWolfState = addMessageToQueue(pendingWolfState, ackMessage)
-
-      // Outtake
-      const { messageActivityArray }: OuttakeResult = outtake(convoState, updatedPendingWolfState)
-      
-      // User defined logic to display messages
-      await context.sendActivities(messageActivityArray)
+      const messages = getMessages(context)
+      await context.sendActivities(messages.messageActivityArray)
 
     } catch (err) {
       console.error(err.stack)
