@@ -7,6 +7,8 @@ import promptedSlotStack from './promptedSlotStack'
 import focusedAbility from './focusedAbility'
 import outputMessageQueue from './outputMessageQueue'
 import filledSlotsOnCurrentTurn from './filledSlotsOnCurrentTurn'
+import defaultAbility from './defaultAbility'
+import abilitiesCompleteOnCurrentTurn from './abilitiesCompleteOnCurrentTurn'
 
 export default combineReducers({
   messageData,
@@ -16,5 +18,7 @@ export default combineReducers({
   promptedSlotStack,
   focusedAbility,
   outputMessageQueue,
-  filledSlotsOnCurrentTurn
+  filledSlotsOnCurrentTurn,
+  defaultAbility,
+  abilitiesCompletedOnCurrentTurn
 })

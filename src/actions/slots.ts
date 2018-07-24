@@ -1,4 +1,4 @@
-import { PromptSlot, SlotId } from '../types'
+import { PromptSlot, SlotId, PromptSlotReason } from '../types'
 
 export const FILL_SLOT = 'FILL_SLOT'
 export const fillSlot = (slotName: string, abilityName: string, value: any) => ({
@@ -7,9 +7,12 @@ export const fillSlot = (slotName: string, abilityName: string, value: any) => (
 })
 
 export const ADD_SLOT_TO_PROMPTED_STACK = 'ADD_SLOT_TO_PROMPTED_STACK'
-export const addSlotToPromptedStack = (promptedSlot: SlotId) => ({
+export const addSlotToPromptedStack = (promptedSlot: SlotId, reason: PromptSlotReason) => ({
   type: ADD_SLOT_TO_PROMPTED_STACK,
-  payload: promptedSlot
+  payload: {
+    slotId: promptedSlot,
+    reason
+  }
 })
 
 export const REMOVE_SLOT_FROM_PROMPTED_STACK = 'REMOVE_SLOT_FROM_PROMPTED_STACK'

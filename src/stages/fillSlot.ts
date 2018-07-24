@@ -4,7 +4,7 @@ import { Slot, OutputMessageItem, OutputMessageType,
   SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity } from '../types'
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
-  confirmSlot, acceptSlot, denySlot, setAbilityCompleteOnCurrentTurn, enableSlot, disableSlot } from '../actions'
+  confirmSlot, acceptSlot, denySlot, abilityCompleted, enableSlot, disableSlot } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId } from '../selectors'
 import { addSlotTopPromptedStack, findSlotInAbilitiesBySlotId } from '../helpers'
@@ -18,6 +18,8 @@ interface PotentialSlotMatch {
 interface MatchNotValidData extends SlotId {
   value: any
 }
+
+// TODO: getState needs to be called everytime state is used, because we are calling dispatch
 
 /**
  * FillSlot Stage (S2):
@@ -100,7 +102,7 @@ export default function fillSlot(
 
     // ensure ability has slots
     if (ability && ability.slots.length === 0) {
-      dispatch(setAbilityCompleteOnCurrentTurn(ability.name))
+      dispatch(abilityCompleted(ability.name))
       return // exit stage
     }
 
@@ -142,7 +144,7 @@ export default function fillSlot(
 
     // ensure ability has slots
     if (ability && ability.slots.length === 0) {
-      dispatch(setAbilityCompleteOnCurrentTurn(ability.name))
+      dispatch(abilityCompleted(ability.name))
       return // exit stage
     }
 

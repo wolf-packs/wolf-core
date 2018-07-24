@@ -29,7 +29,7 @@ export interface PromptSlot extends SlotId {
   prompted: boolean
 }
 
-enum PromptSlotReason {
+export enum PromptSlotReason {
   query,
   retry,
   confirmation
