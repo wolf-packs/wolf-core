@@ -60,4 +60,3 @@ const createMessage = (messageQueue: OutputMessageItem[], messageType: OutputMes
   const messages = `${queue.map((_: OutputMessageItem) => _.message).join(', ')}`
   return messages
 }
-

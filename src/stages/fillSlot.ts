@@ -57,20 +57,24 @@ export default function fillSlot(
     const promptedSlot = getSlotBySlotId(abilities, { slotName, abilityName })
     let validatorResult
     if (promptedSlot) {
-      validatorResult = runSlotValidator(promptedSlot, message.rawText)
-      
-      if (validatorResult.isValid) {
-        const fulfillSlotResult = fulfillSlot(convoState, abilities, message.rawText, slotName, abilityName, getState)
-        fulfillSlotResult.forEach(dispatchActionArray(dispatch))
-  
-        // set slot fill flag
-        slotFillFlag = true
-        // remove prompted slot
-        dispatch(removeSlotFromPromptedStack({slotName, abilityName}))
-  
-        // Original prompted slot filled.. exit
-        return
+      if (message.rawText) {
+        validatorResult = runSlotValidator(promptedSlot, message.rawText)
+        
+        if (validatorResult.isValid) {
+          const fulfillSlotResult = fulfillSlot(convoState, abilities, message.rawText, slotName, abilityName, getState)
+          fulfillSlotResult.forEach(dispatchActionArray(dispatch))
+    
+          // set slot fill flag
+          slotFillFlag = true
+          // remove prompted slot
+          dispatch(removeSlotFromPromptedStack({slotName, abilityName}))
+    
+          // Original prompted slot filled.. exit
+          return
+        }
+        // not valid
       }
+      // message undefined
     }
     // Payload not valid for current slot..
     // Add reason to output queue if present
@@ -243,7 +247,7 @@ function fulfillSlot(
         actions.push(denySlot(originSlotId))
       }
     }
-    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
+    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO: Confirmation not working
     if (fillString) {
       const message: OutputMessageItem = {
         message: fillString,

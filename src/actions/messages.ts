@@ -21,9 +21,10 @@ export const addMessage = (message: OutputMessageItem) => ({
   payload: message
 })
 
-// TODO: move and implement (Done)
-// clear message queuu
-// post-condition: empty queue
+/**
+ * Clear output message array on state
+ * POSTCONDITION: empty array
+ */
 export const CLEAR_MESSAGE_QUEUE = 'CLEAR_MESSAGE_QUEUE'
 export const clearMessageQueue = () => ({
   type: CLEAR_MESSAGE_QUEUE

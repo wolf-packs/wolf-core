@@ -1,7 +1,8 @@
 import { Store } from 'redux'
 import { WolfState, Ability, SlotId, Slot, PromptSlotReason } from '../types'
-import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn, getPromptedSlotStack,
-  getFocusedAbility, getDefaultAbility, getSlotStatus, getSlotData, getTargetAbility } from '../selectors'
+import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
+  getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
+  getSlotData, getTargetAbility, getAbilityStatus } from '../selectors'
 import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted } from '../actions'
 
 /**
@@ -20,6 +21,33 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
   // Check if ability is marked to run onComplete this turn
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
+
+    // TODO: The completed ability should point to the next ability to be completed
+    // Check if the next ability has been completed already
+    // if no.. set the new focused ability to nextAbility and prompt a slot
+    // REDO this later..
+    const nextAbilityName = getNextAbility(abilities, abilityCompleteResult[0])
+    if (nextAbilityName) {
+      if (!isAbilityCompleted(nextAbilityName, getState)) {
+        dispatch(setFocusedAbility(nextAbilityName))
+
+        // FIND NEXT SLOT TO PROMPT IN FOCUSED ABILITY (duplicate of code below).. TODO: refactor
+        const nextSlot = findNextSlotToPrompt(getState, abilities)
+
+        if (!nextSlot) {
+          dispatch(setFocusedAbility(null))
+          return // no slots to prompt
+        }
+
+        // ADD SLOT TO PROMPTED STACK
+        dispatch(addSlotToPromptedStack(nextSlot, PromptSlotReason.query))
+        return
+      }
+    }
+
+    // clear focused ability for now if next ability is completed (replace with above logic)
+    dispatch(setFocusedAbility(null))
+
     return // exit stage.. S4 will run ability.onComplete()
   }
 
@@ -32,6 +60,33 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
     if (abilityName) {
       // ability complete
       dispatch(abilityCompleted(abilityName))
+
+      // TODO: The completed ability should point to the next ability to be completed
+      // Check if the next ability has been completed already
+      // if no.. set the new focused ability to nextAbility and prompt a slot
+      // REDO this later..
+      const nextAbilityName = getNextAbility(abilities, abilityName)
+      if (nextAbilityName) {
+        if (!isAbilityCompleted(nextAbilityName, getState)) {
+          dispatch(setFocusedAbility(nextAbilityName))
+
+          // FIND NEXT SLOT TO PROMPT IN FOCUSED ABILITY (duplicate of code below).. TODO: refactor
+          const nextSlot = findNextSlotToPrompt(getState, abilities)
+
+          if (!nextSlot) {
+            dispatch(setFocusedAbility(null))
+            return // no slots to prompt
+          }
+
+          // ADD SLOT TO PROMPTED STACK
+          dispatch(addSlotToPromptedStack(nextSlot, PromptSlotReason.query))
+          return
+        }
+      }
+
+      // clear focused ability for now if next ability is completed (replace with above logic)
+      dispatch(setFocusedAbility(null))
+
       return // exit stage.. S4 will run ability.onComplete()
     }
     // no ability has completed.. continue
@@ -165,3 +220,31 @@ function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focus
 
   return enabledSlots
 }
+
+function getNextAbility (abilities: Ability[], abilityName: string): string | undefined {
+  const completedAbility = getTargetAbility(abilities, abilityName)
+
+  if (completedAbility && completedAbility.nextAbility) {
+    const nextAbility = getTargetAbility(abilities, completedAbility.nextAbility)
+    
+    if (nextAbility) {
+      return nextAbility.name
+    }
+  }
+}
+
+function isAbilityCompleted (abilityName: string, getState: () => WolfState): boolean {
+  const abilityStatus = getAbilityStatus(getState())
+
+  return abilityStatus.some((ability) => ability.abilityName === abilityName && ability.isCompleted)
+}
+
+// function getNextUncompleteAbility (abilities: Ability[], getState: () => WolfState) {
+//   const abilityStatus = getAbilityStatus(getState())
+
+//   // get uncomplete abilities
+//   const uncompleteAbilities = abilities.filter((ability) => abilityStatus.some((statusAbility) => {
+//     return !(statusAbility.abilityName === ability.name && statusAbility.isCompleted)
+//   })
+
+// }

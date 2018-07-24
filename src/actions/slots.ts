@@ -15,8 +15,6 @@ export const addSlotToPromptedStack = (promptedSlot: SlotId, reason: PromptSlotR
   }
 })
 
-// TODO (Done): implement setSlotPrompted
-
 /**
  * Set slot.prompted property
  */

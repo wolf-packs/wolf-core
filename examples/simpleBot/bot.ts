@@ -2,7 +2,7 @@ import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilde
 import { NlpResult } from '../../src/types'
 
 // import Wolf middleware
-import wolfMiddleware, {getStore, getMessages} from '../../src/middlewares/wolfMiddleware'
+import wolfMiddleware, { getStore, getMessages } from '../../src/middlewares/wolfMiddleware'
 
 import { Ability, MessageData } from '../../src/types'
 
@@ -36,9 +36,10 @@ adapter.use(...wolfMiddleware(conversationStore,
       entities: []
     }
     return messageData
-  }, 
-  abilities, 'greet',
-  {enabled: true}
+  },
+  abilities,
+  'greet',
+  {enabled: false}
 )) 
 
 // for wolf..

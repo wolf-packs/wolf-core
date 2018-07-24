@@ -10,6 +10,7 @@ import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateR
 export interface Ability {
   name: string,
   slots: Slot[],
+  nextAbility?: string,
   shouldCancelAbility?: (
     convoState: ConvoState,
     messageData: MessageData

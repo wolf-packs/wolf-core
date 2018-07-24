@@ -1,8 +1,8 @@
 import { Store, Action, Dispatch } from 'redux'
 import { WolfState, Ability, Slot, ConvoState, OutputMessageType, SlotId, SlotData } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
-    getSlotBySlotId, getSlotDataByAbilityName } from '../selectors';
-import { addMessage as addMessageAction, setSlotPrompted } from '../actions';
+    getSlotBySlotId, getSlotDataByAbilityName, getTargetAbility, getAbilityStatus } from '../selectors';
+import { addMessage as addMessageAction, setSlotPrompted, setFocusedAbility, setAbilityStatus } from '../actions';
 
 export interface ExecuteResult {
   runOnComplete: () => Promise<string|void>,
@@ -32,6 +32,9 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
     addMessageAction({message: msg, type: OutputMessageType.abilityCompleteMessage})
   )
 
+  // TODO: refactor
+  let onCompleteReturnResult = null
+
   // Check if S4 should run an ability onComplete
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
@@ -48,7 +51,11 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
       returnResult = valueOrPromise
     }
 
-    return { runOnComplete: () => returnResult, addMessage }
+    // set ability status to complete
+    dispatch(setAbilityStatus(abilityCompleteResult[0], true))
+    
+    onCompleteReturnResult = { runOnComplete: () => returnResult, addMessage }
+    // return { runOnComplete: () => returnResult, addMessage }
   }
 
   // Check if S4 should prompt a slot
@@ -66,6 +73,10 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
     if (slotToPrompt) {
       const runSlotQueryResult = runSlotQuery(convoState, slotToPrompt, slot.abilityName)
       runSlotQueryResult.forEach(dispatchActionArray(dispatch))
+
+      if (onCompleteReturnResult) {
+        return onCompleteReturnResult
+      }
       return { runOnComplete: () => Promise.resolve(), addMessage }
     }
     // SLOT NOT VALID.. continue
@@ -92,6 +103,7 @@ function runAbilityOnComplete(
 
   const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
   const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
+
   return ability.onComplete(convoState, submittedData)
 }
 
@@ -121,5 +133,3 @@ function runSlotQuery(convoState: ConvoState, slot: Slot, abilityName: string): 
 const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
   dispatch(action)
 }
-
-
