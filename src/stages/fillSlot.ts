@@ -238,7 +238,7 @@ function fulfillSlot(
         actions.push(denySlot(originSlotId))
       }
     }
-    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
+    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO ?
     if (fillString) {
       const message: OutputMessageItem = {
         message: fillString,

@@ -110,7 +110,7 @@ const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
   dispatch(action)
 }
 
-// TODO: move to action and implement
+// ACTION TODO: move to action and implement
 
 /**
  * Set slot.prompted property
