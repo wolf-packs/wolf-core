@@ -5,7 +5,7 @@ import { Slot, OutputMessageItem, OutputMessageType,
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
   confirmSlot, acceptSlot, denySlot, abilityCompleted, enableSlot,
-  disableSlot, addSlotToPromptedStack } from '../actions'
+  disableSlot, addSlotToPromptedStack, removeSlotData, reqConfirmSlot } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
   getMessageData, getFocusedAbility } from '../selectors'
@@ -50,7 +50,6 @@ export default function fillSlot(
 
   // Check if we have sent a prompt to the user in the previous turn
   if (isPromptStatus(getState())) {
-    console.log('Prompted Last Turn!')
     const promptedSlotInfo = getPromptedSlotId(getState())
     const { slotName, abilityName } = promptedSlotInfo
     const promptedSlot = getSlotBySlotId(abilities, { slotName, abilityName })
@@ -67,9 +66,6 @@ export default function fillSlot(
           slotFillFlag = true
           // remove prompted slot
           dispatch(removeSlotFromPromptedStack({slotName, abilityName}))
-    
-          const state = getState()
-          console.log('fillSlot end state:', state.promptedSlotStack)
 
           // Original prompted slot filled.. exit
           return
@@ -237,7 +233,7 @@ function fulfillSlot(
     }
     const confirmFuncs: SlotConfirmationFunctions = {
       requireConfirmation: (targetSlotName: string) => {
-        actions.push(confirmSlot(
+        actions.push(reqConfirmSlot(
           {abilityName, slotName}, {abilityName, slotName: targetSlotName}
         ))
       },
@@ -249,8 +245,10 @@ function fulfillSlot(
         const originSlotId: SlotId = getRequestingSlotIdFromCurrentSlotId(getState(), {slotName, abilityName})
         actions.push(denySlot(originSlotId))
         actions.push(addSlotToPromptedStack(originSlotId, PromptSlotReason.query))
+        // actions.push(removeSlotData({ slotName, abilityName }))
       }
     }
+    actions.push(fillSlotAction(slotName, abilityName, message))
     if (slot.onFill) {
       const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO: Confirmation not working
       if (fillString) {
@@ -266,7 +264,7 @@ function fulfillSlot(
         actions.push(addMessage(message))
       }
     }
-    actions.push(fillSlotAction(slotName, abilityName, message))
+    
   }
   return actions
 }

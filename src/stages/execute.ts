@@ -30,9 +30,6 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
 export default function execute(store: Store<WolfState>, convoState: ConvoState, abilities: Ability[]): ExecuteResult {
   const { dispatch, getState } = store
 
-  const state = getState()
-  console.log('execute begin state:', state.promptedSlotStack)
-
   const addMessage = (msg: string) => dispatch(
     addMessageAction({message: msg, type: OutputMessageType.abilityCompleteMessage})
   )

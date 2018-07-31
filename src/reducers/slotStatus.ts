@@ -1,16 +1,31 @@
 import { Reducer } from 'redux'
 import { SlotStatus } from '../types'
-import { CONFIRM_SLOT, ENABLE_SLOT, DISABLE_SLOT, FILL_SLOT } from '../actions'
+import { REQ_CONFIRM_SLOT, ENABLE_SLOT, DISABLE_SLOT, FILL_SLOT, ACCEPT_SLOT, DENY_SLOT } from '../actions'
 import { SlotId } from '../types'
 import { changeArrayItemOnIndex, findIndexOfSlotIdsBySlotId } from '../helpers'
 
 const makeDefaultSlotStatus = (slotId: SlotId): SlotStatus => ({
   ...slotId,
-  isEnabled: true
+  isEnabled: true,
+  isDone: false
 })
 
-const reducer: Reducer = (prev: SlotStatus[] = [], action) => {
-  if (action.type === CONFIRM_SLOT) {
+const setIsDoneBySlotId = (prev: SlotStatus[], slotId: SlotId, isDoneValue: boolean): SlotStatus[] => {
+  const slotIndex = findIndexOfSlotIdsBySlotId(prev, slotId)
+  const slotFound = slotIndex > -1
+  const slot = slotFound ? {
+    ...prev[slotIndex],
+    isDone: isDoneValue
+  } : {
+    ...makeDefaultSlotStatus(slotId),
+    isDone: isDoneValue
+  }
+  const result = slotFound ? changeArrayItemOnIndex(prev, slotIndex, slot) : prev.concat([slot])
+  return result
+}
+
+const reducer: Reducer = (prev: SlotStatus[] = [], action): SlotStatus[] => {
+  if (action.type === REQ_CONFIRM_SLOT) {
     const {originSlotId, confirmationSlotId} = action.payload as {originSlotId: SlotId, confirmationSlotId: SlotId}
     const originSlotIndex = findIndexOfSlotIdsBySlotId(prev, originSlotId)
     const confirmationSlotIndex = findIndexOfSlotIdsBySlotId(prev, confirmationSlotId)
@@ -23,14 +38,16 @@ const reducer: Reducer = (prev: SlotStatus[] = [], action) => {
       prevOriginSlot = makeDefaultSlotStatus(originSlotId)
       const originSlot: SlotStatus = {
         ...prevOriginSlot,
-        confirmationSlot: confirmationSlotId.slotName
+        confirmationSlot: confirmationSlotId.slotName,
+        isDone: false
       }
       result.push(originSlot)
     } else {
       prevOriginSlot = prev[originSlotIndex]
       const originSlot: SlotStatus = {
         ...prevOriginSlot,
-        confirmationSlot: confirmationSlotId.slotName
+        confirmationSlot: confirmationSlotId.slotName,
+        isDone: false
       }
       result[originSlotIndex] = originSlot
     }
@@ -39,19 +56,39 @@ const reducer: Reducer = (prev: SlotStatus[] = [], action) => {
       prevConfirmationSlot = makeDefaultSlotStatus(confirmationSlotId)
       const confirmationSlot: SlotStatus = {
         ...prevConfirmationSlot,
-        requestingSlot: originSlotId.slotName
+        requestingSlot: originSlotId.slotName,
+        isDone: false
       }
       result.push(confirmationSlot)
-    } else{
+    } else {
       prevConfirmationSlot = prev[confirmationSlotIndex]
       const confirmationSlot: SlotStatus = {
         ...prevConfirmationSlot,
-        requestingSlot: originSlotId.slotName
+        requestingSlot: originSlotId.slotName,
+        isDone: false
       }
       result[confirmationSlotIndex] = confirmationSlot
     }
 
     return result
+  }
+
+  if (action.type === FILL_SLOT) {
+    // set isDone to true
+    const slotId = action.payload
+    return setIsDoneBySlotId(prev, slotId, true)
+  }
+
+  if (action.type === ACCEPT_SLOT) {
+    // set slotId (origin) isDone to true
+    const slotId = action.payload
+    return setIsDoneBySlotId(prev, slotId, true)
+  }
+
+  if (action.type === DENY_SLOT) {
+    // set slotId (origin) isDone to false
+    const slotId = action.payload
+    return setIsDoneBySlotId(prev, slotId, false)
   }
 
   if (action.type === ENABLE_SLOT) {

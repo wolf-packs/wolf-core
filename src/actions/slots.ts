@@ -42,9 +42,9 @@ export const disableSlot = (slotId: SlotId) => ({
   payload: slotId
 })
 
-export const CONFIRM_SLOT = 'CONFIRM_SLOT'
-export const confirmSlot = (originSlotId: SlotId, confirmationSlotId: SlotId) => ({
-  type: CONFIRM_SLOT,
+export const REQ_CONFIRM_SLOT = 'REQ_CONFIRM_SLOT'
+export const reqConfirmSlot = (originSlotId: SlotId, confirmationSlotId: SlotId) => ({
+  type: REQ_CONFIRM_SLOT,
   payload: {
     originSlotId,
     confirmationSlotId
