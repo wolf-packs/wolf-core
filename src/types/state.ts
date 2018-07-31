@@ -68,7 +68,7 @@ export interface SlotStatus extends SlotId {
 }
 
 export interface SlotData extends SlotId {
-  isConfirmed: boolean,
+  isConfirmed?: boolean,
   value: any
 }
 

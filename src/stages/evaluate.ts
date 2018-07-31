@@ -18,6 +18,9 @@ import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted } from '../
 export default function evaluate(store: Store<WolfState>, abilities: Ability[]): void {
   const { dispatch, getState } = store
 
+  const state = getState()
+  console.log('begin eval state:', state.promptedSlotStack)
+
   // Check if ability is marked to run onComplete this turn
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {

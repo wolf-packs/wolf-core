@@ -43,7 +43,12 @@ const reducer: Reducer = (prev: PromptSlot[] = [], action) => {
 
   if (action.type === REMOVE_SLOT_FROM_PROMPTED_STACK) {
     const {slotName, abilityName} = action.payload
-    return prev.filter((slot) => slot.slotName !== slotName && slot.abilityName !== abilityName )
+
+    console.log ('pre REMOVE_SLOT_STACK:', prev)
+    console.log('payload:', action.payload)
+    const result = prev.filter((slot) => (slot.slotName !== slotName && slot.abilityName !== abilityName) )
+    console.log('result REMOVE_SLOT_STACK:', result)
+    return result
   }
 
   return prev

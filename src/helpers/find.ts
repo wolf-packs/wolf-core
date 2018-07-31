@@ -17,3 +17,7 @@ export const findIndexOfSlotIdsBySlotId =
   (array: SlotId[], slotId: SlotId): number => array.findIndex((arrId) => {
     return arrId.abilityName === slotId.abilityName && arrId.slotName === slotId.slotName
   })
+export const findInSlotIdItemBySlotId = 
+  <T extends SlotId>(array: T[], slotId: SlotId): T => array.find(arrSlotId => {
+    return arrSlotId.abilityName === slotId.abilityName && arrSlotId.slotName === slotId.slotName
+  }) as T

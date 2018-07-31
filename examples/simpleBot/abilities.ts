@@ -23,12 +23,15 @@ export default [
   },
   {
     name: 'weather',
-
+    onComplete: (convoState, data) => {
+      const { city } = data
+      return `looks ${city} is looking good!`
+    },
     slots: [
       {
         name: 'city',
         query: () => 'what is the city?',
-        validate: (value: string) => {
+        validate: (value: any) => {
           if (value.toLowerCase() === 'chicago' || value.toLowerCase() === 'seattle') {
             return {
               isValid: true,
@@ -53,9 +56,21 @@ export default [
       },
       {
         name: 'confirmCity',
-        query: ({getSlotValues}) => `are you sure you want to set the city to ${getSlotValues().city}`,
+        query: (convoState, {getSlotValue}) => `are you sure you want to set the city to ${getSlotValue('city').value}`,
+        validate: (value) => {
+          if (value.toLowerCase() === 'yes' || value.toLowerCase() === 'no') {
+            return {
+              isValid: true,
+              reason: null
+            }
+          }
+          return {
+            isValid: false,
+            reason: 'You have to say yes or no'
+          }
+        },
         onFill: (submittedValue, convoState, {setSlotValue, setSlotEnabled}, {accept, deny}) => {
-          if (submittedValue) {
+          if (submittedValue === 'yes') {
             accept()
           } else {
             deny() 

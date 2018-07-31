@@ -8,8 +8,7 @@ import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   disableSlot, addSlotToPromptedStack } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
-    getMessageData, 
-    getFocusedAbility } from '../selectors'
+  getMessageData, getFocusedAbility } from '../selectors'
 import { findSlotInAbilitiesBySlotId } from '../helpers'
 
 interface PotentialSlotMatch {
@@ -58,17 +57,20 @@ export default function fillSlot(
     let validatorResult
     if (promptedSlot) {
       if (message.rawText) {
-        validatorResult = runSlotValidator(promptedSlot, message.rawText)
+        validatorResult = runSlotValidator(promptedSlot, message.rawText, message)
         
         if (validatorResult.isValid) {
           const fulfillSlotResult = fulfillSlot(convoState, abilities, message.rawText, slotName, abilityName, getState)
           fulfillSlotResult.forEach(dispatchActionArray(dispatch))
-    
+                    
           // set slot fill flag
           slotFillFlag = true
           // remove prompted slot
           dispatch(removeSlotFromPromptedStack({slotName, abilityName}))
     
+          const state = getState()
+          console.log('fillSlot end state:', state.promptedSlotStack)
+
           // Original prompted slot filled.. exit
           return
         }
@@ -78,6 +80,7 @@ export default function fillSlot(
     }
     // Payload not valid for current slot..
     // Add reason to output queue if present
+    // TODO: is validatorResult is undefined or validatorResult.isValid is false
     if (validatorResult) {
       const validateMessage = createValidatorReasonMessage(validatorResult, slotName, abilityName)
       validateMessage.forEach(dispatchActionArray(dispatch))
@@ -245,20 +248,23 @@ function fulfillSlot(
       deny: () => {
         const originSlotId: SlotId = getRequestingSlotIdFromCurrentSlotId(getState(), {slotName, abilityName})
         actions.push(denySlot(originSlotId))
+        actions.push(addSlotToPromptedStack(originSlotId, PromptSlotReason.query))
       }
     }
-    const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO: Confirmation not working
-    if (fillString) {
-      const message: OutputMessageItem = {
-        message: fillString,
-        type: OutputMessageType.slotFillMessage,
-        slotName: slot.name,
-        abilityName: abilityName
+    if (slot.onFill) {
+      const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO: Confirmation not working
+      if (fillString) {
+        const message: OutputMessageItem = {
+          message: fillString,
+          type: OutputMessageType.slotFillMessage,
+          slotName: slot.name,
+          abilityName: abilityName
+        }
+      
+        // Add onFill message to output message queue
+        // Add slot data to pendingData state
+        actions.push(addMessage(message))
       }
-    
-      // Add onFill message to output message queue
-      // Add slot data to pendingData state
-      actions.push(addMessage(message))
     }
     actions.push(fillSlotAction(slotName, abilityName, message))
   }
@@ -366,7 +372,7 @@ function checkValidatorAndFill (
   abilities: Ability[],
   match: PotentialSlotMatch): boolean {
   const { dispatch, getState } = store
-  const validatorResult = runSlotValidator(match.slot, match.entity)
+  const validatorResult = runSlotValidator(match.slot, match.entity, getMessageData(getState()))
     
   if (validatorResult.isValid) {
     const fulfillSlotResult =
@@ -395,8 +401,14 @@ const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
 /**
  * Run slot validator.
  */
-function runSlotValidator(slot: Slot, submittedValue: string): ValidateResult {
-  return slot.validate(submittedValue)
+function runSlotValidator(slot: Slot, submittedData: any, messageData: MessageData): ValidateResult {
+  if (!slot.validate) {
+    return {
+      isValid: true,
+      reason: null
+    }
+  }
+  return slot.validate(submittedData, messageData)
 }
 
 /**

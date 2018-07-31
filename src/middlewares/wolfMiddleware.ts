@@ -30,7 +30,7 @@ export default function initializeWolfStoreMiddleware(
     const remotedev = require('remotedev-server')
     const { composeWithDevTools } = require('remote-redux-devtools')
     remotedev({ hostname: 'localhost', port: devTools.port || 8100 })
-    composeEnhancers = composeWithDevTools({ realtime: true, port: 8100 })
+    composeEnhancers = composeWithDevTools({ realtime: true, port: 8100, latency: 0 })
   }
 
   const storeCreator = (wolfStateFromConvoState: {[key: string]: any} | null) => {
@@ -54,22 +54,26 @@ export default function initializeWolfStoreMiddleware(
     botbuilderReduxMiddleware(conversationStore, storeCreator, '__WOLF_STORE__'),
     {
       onTurn: async (context: TurnContext, next: () => any) => {
-        const store = getStore(context)
-        const nlpResult: NlpResult = await userMessageData(context)
-        intake(store, nlpResult, defaultAbility)
-        fillSlot(store, conversationStore.get(context), abilities)
-        evaluate(store, abilities)
-        const {runOnComplete, addMessage} = execute(store, conversationStore.get(context), abilities)
-        
-        const message = await runOnComplete()
+        if (context.activity.type !== 'message') {
+          await next()
+        } else {
+          const store = getStore(context)
+          const nlpResult: NlpResult = await userMessageData(context)
+          intake(store, nlpResult, defaultAbility)
+          fillSlot(store, conversationStore.get(context), abilities)
+          evaluate(store, abilities)
+          const {runOnComplete, addMessage} = execute(store, conversationStore.get(context), abilities)
+          
+          const message = await runOnComplete()
 
-        addMessage(message)
+          addMessage(message)
 
-        const messagesObj = outtake(store)
+          const messagesObj = outtake(store)
 
-        // save the messages in context.services
-        context.services.set(wolfMessagesKey, messagesObj)
-        await next()
+          // save the messages in context.services
+          context.services.set(wolfMessagesKey, messagesObj)
+          await next()
+        }
       }
    }]
 }
