@@ -1,6 +1,7 @@
 import { MessageData, NlpResult } from '../types'
 import { setMessageData, setDefaultAbility }  from '../actions'
 import { Store } from 'redux'
+const log = require('debug')('wolf:s1')
 
 /**
  * Intake Stage (S1):
@@ -11,7 +12,12 @@ import { Store } from 'redux'
  * 
  * @returns void
  */
-export default function intake({dispatch}: Store, nlpResult: NlpResult, defaultAbility: string | null = null): void {
+export default function intake(
+  {dispatch, getState}: Store,
+  nlpResult: NlpResult,
+  defaultAbility: string | null = null
+): void {
+  log('enter', getState())
   // MessageData derived from user nlpResult
   const messageData: MessageData = {
     rawText: nlpResult.message,

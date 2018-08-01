@@ -5,7 +5,7 @@ import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
     getSlotBySlotId, getSlotDataByAbilityName, getTargetAbility, getAbilityStatus } from '../selectors'
 import { addMessage as addMessageAction, setSlotPrompted, setFocusedAbility, setAbilityStatus } from '../actions'
 import { findInSlotIdItemBySlotId } from '../helpers'
-
+const log = require('debug')('wolf:s4')
 export interface ExecuteResult {
   runOnComplete: () => Promise<string|void>,
   addMessage: (msg: string) => void
@@ -29,7 +29,7 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  */
 export default function execute(store: Store<WolfState>, convoState: ConvoState, abilities: Ability[]): ExecuteResult {
   const { dispatch, getState } = store
-
+  log('enter:', getState())
   const addMessage = (msg: string) => dispatch(
     addMessageAction({message: msg, type: OutputMessageType.abilityCompleteMessage})
   )

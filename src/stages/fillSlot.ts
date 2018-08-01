@@ -4,12 +4,13 @@ import { Slot, OutputMessageItem, OutputMessageType,
   SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason } from '../types'
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
-  confirmSlot, acceptSlot, denySlot, abilityCompleted, enableSlot,
-  disableSlot, addSlotToPromptedStack, removeSlotData, reqConfirmSlot } from '../actions'
+  acceptSlot, denySlot, abilityCompleted, enableSlot,
+  disableSlot, addSlotToPromptedStack, reqConfirmSlot } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
-  getMessageData, getFocusedAbility } from '../selectors'
+  getMessageData, getFocusedAbility, getDefaultAbility } from '../selectors'
 import { findSlotInAbilitiesBySlotId } from '../helpers'
+const log = require('debug')('wolf:s2')
 
 interface PotentialSlotMatch {
   slot: Slot,
@@ -47,7 +48,7 @@ export default function fillSlot(
   let matchNotValid: MatchNotValidData | null = null // reset
 
   const message = getMessageData(getState())
-
+  log('enter', getState())
   // Check if we have sent a prompt to the user in the previous turn
   if (isPromptStatus(getState())) {
     const promptedSlotInfo = getPromptedSlotId(getState())
@@ -88,11 +89,28 @@ export default function fillSlot(
 
   // set focused ability if there is none already
   if (!isFocusedAbilitySet(getState())) {
-    // TODO: what if the message.intent is null? aka, "hello" or "blahblah"
-    // do we set the focusAbility to default Ability here?
-    // if not here, where do we set the default Ability?
-    dispatch(setFocusedAbility(message.intent))
+    const msgIntent = message.intent ? message.intent : getDefaultAbility(getState())
+    dispatch(setFocusedAbility(msgIntent))
   }
+  
+  // Check if focused ability has any slots to check
+  const focusedAbility = getFocusedAbility(getState())
+
+  log('focusedAbility:', focusedAbility)
+
+  if (focusedAbility) {
+    const ability = getTargetAbility(abilities, focusedAbility)
+    log('target ability', ability)
+    // ensure ability has slots
+      if (ability && ability.slots.length === 0) {
+        // no slots in ability.. should be completed
+        log('dispatch ABILITY_COMPLETE')
+        dispatch(abilityCompleted(ability.name))
+        return // exit stage
+      }
+  }
+
+  // SLOTS EXIST ON FOCUSED ABILITY..
 
   // Check for alternative slot matches if entities present
   if (!isEntityPresent(message)) {
@@ -104,17 +122,10 @@ export default function fillSlot(
 
   // ENTITIES EXIST.. continue checking potential matches for each entity
 
-  // CHECK FOR POTENTIAL SLOTS.. in focused ability
-  const focusedAbility = getFocusedAbility(getState())
+  // CHECK FOR POTENTIAL SLOTS.. in focused ability  
   if (focusedAbility) {
     // get ability match
     const ability = getTargetAbility(abilities, focusedAbility)
-
-    // ensure ability has slots
-    if (ability && ability.slots.length === 0) {
-      dispatch(abilityCompleted(ability.name))
-      return // exit stage
-    }
 
     // ABILITY EXISTS AND HAS SLOTS TO CHECK..
     // TODO: I think there is a logic error here somewhere...
@@ -250,7 +261,7 @@ function fulfillSlot(
     }
     actions.push(fillSlotAction(slotName, abilityName, message))
     if (slot.onFill) {
-      const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs) // TODO: Confirmation not working
+      const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
       if (fillString) {
         const message: OutputMessageItem = {
           message: fillString,

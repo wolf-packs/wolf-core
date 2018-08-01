@@ -19,7 +19,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
   const { dispatch, getState } = store
 
   const state = getState()
-  log('beginning state:', state)
+  log('enter:', state)
 
   // Check if ability is marked to run onComplete this turn
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())

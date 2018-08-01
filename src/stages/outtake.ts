@@ -3,7 +3,7 @@ import { Activity } from 'botbuilder'
 import { WolfState, OutputMessageItem, OutputMessageType } from '../types'
 import { getOutputMessageQueue } from '../selectors'
 import { clearMessageQueue } from '../actions'
-
+const log = require('debug')('wolf:s5')
 export interface OuttakeResult {
   messageStringArray: string[],
   messageItemArray: OutputMessageItem[]

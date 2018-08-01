@@ -31,7 +31,7 @@ adapter.use(...wolfMiddleware(
   },
   abilities,
   'listAbility',
-  {enabled: true} // enable or disable devtool
+  {enabled: false} // enable or disable devtool
 ))
 
 // for wolf..
@@ -40,7 +40,11 @@ adapter.use(...wolfMiddleware(
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
     try {
+      if (context.activity.type !== 'message') {
+        return
+      }
       const messages = getMessages(context)
+      console.log('messages', messages)
       await context.sendActivities(messages.messageActivityArray)
     } catch (err) {
       console.error(err.stack)

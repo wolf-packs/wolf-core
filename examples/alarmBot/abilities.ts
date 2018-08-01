@@ -33,7 +33,7 @@ export default [
         name: 'alarmTime',
         type: 'string',
         query: () => { return 'What is the time you want to set?' },
-        retry: (turnCount) => {
+        retry: (convoState, submittedData, turnCount) => {
           const phrases: string[] = ['let\'s try again', 'what is the time you want to set?']
           return randomElement(phrases)
         },
@@ -106,9 +106,9 @@ export default [
     }
   },
   {
-    name: 'listAbilities',
+    name: 'listAbility',
     slots: [],
-    onComplete: ({ getAbilityList }) => {
+    onComplete: (convoState, submittedData, { getAbilityList }) => {
       const abilityList = getAbilityList()
       const abilities = abilityList.map((ability) => ability.name).join(', ')
       const message = `Here are my abilities: ${abilities}`
