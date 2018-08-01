@@ -4,7 +4,7 @@ import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
   getSlotData, getTargetAbility, getAbilityStatus } from '../selectors'
 import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted } from '../actions'
-
+const log = require('debug')('wolf:s3')
 /**
  * Evaluate Stage (S3):
  * 
@@ -19,8 +19,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
   const { dispatch, getState } = store
 
   const state = getState()
-  console.log('--------------------')
-  console.log('beginning S3:', state)
+  log('beginning state:', state)
 
   // Check if ability is marked to run onComplete this turn
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())

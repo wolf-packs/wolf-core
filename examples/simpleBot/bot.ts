@@ -1,3 +1,4 @@
+require('dotenv').config() 
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
 import { NlpResult } from '../../src/types'
 
