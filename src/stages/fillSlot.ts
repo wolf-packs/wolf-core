@@ -96,15 +96,11 @@ export default function fillSlot(
   // Check if focused ability has any slots to check
   const focusedAbility = getFocusedAbility(getState())
 
-  log('focusedAbility:', focusedAbility)
-
   if (focusedAbility) {
     const ability = getTargetAbility(abilities, focusedAbility)
-    log('target ability', ability)
     // ensure ability has slots
       if (ability && ability.slots.length === 0) {
         // no slots in ability.. should be completed
-        log('dispatch ABILITY_COMPLETE')
         dispatch(abilityCompleted(ability.name))
         return // exit stage
       }
@@ -447,10 +443,11 @@ function getPotentialMatches(entities: Entity[], targetAbility: Ability): Potent
         entity: entityMatch.value
       }
     }
-  })
+  }).filter(_ => _) as PotentialSlotMatch[]
 
-  if (typeof matches !== 'undefined') {
+  if (matches.length === 0) {
     return []
   }
+
   return matches
 }

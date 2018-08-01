@@ -67,3 +67,9 @@ export const START_FILL_SLOT_STAGE = 'START_FILL_SLOT_STAGE'
 export const startFillSlotStage = () => ({
   type: START_FILL_SLOT_STAGE
 })
+
+export const RESET_SLOT_STATUS_BY_ABILITY_NAME = 'RESET_SLOT_STATUS_BY_ABILITY_NAME'
+export const resetSlotStatusByAbilityName = (abilityName: string) => ({
+  type: RESET_SLOT_STATUS_BY_ABILITY_NAME,
+  payload: abilityName
+})

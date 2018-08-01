@@ -48,7 +48,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
       }
     }
 
-    // clear focused ability for now if next ability is completed (replace with above logic)
+    // clear focused ability for now if next ability does not exist
     dispatch(setFocusedAbility(null))
 
     return // exit stage.. S4 will run ability.onComplete()

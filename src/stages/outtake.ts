@@ -21,6 +21,8 @@ export default function outtake(store: Store<WolfState>): OuttakeResult {
   const { dispatch, getState } = store
   const messageQueue = getOutputMessageQueue(getState())
 
+  log('enter', getState())
+
   // order and format messageQueue
   const slotFillMessage = createMessage(messageQueue, OutputMessageType.slotFillMessage)
   const abilityCompleteMessage = createMessage(messageQueue, OutputMessageType.abilityCompleteMessage)

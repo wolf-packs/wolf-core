@@ -23,9 +23,9 @@ export default [
         },
         validate: (value) => {
           if (value.toLowerCase() === 'hao') {
-            return { valid: false, reason: `${value} is not a good name.`}
+            return { isValid: false, reason: `${value} is not a good name.`}
           }
-          return { valid: true, reason: null }
+          return { isValid: true, reason: null }
         },
         onFill: (value) => `ok! name is set to ${value}.`
       },
@@ -40,12 +40,12 @@ export default [
         validate: (value: string) => {
           if (!value.toLowerCase().endsWith('pm') && !value.toLowerCase().endsWith('am')) {
             return {
-              valid: false,
+              isValid: false,
               reason: 'Needs to set PM or AM',
             }
           }
           return {
-            valid: true
+            isValid: true
           }
         },
         onFill: (value) => `ok! time is set to ${value}.`
@@ -95,8 +95,7 @@ export default [
   {
     name: 'listAlarms',
     slots: [],
-    onComplete: ({ getConvoState }) => {
-      const convoState = getConvoState()
+    onComplete: (convoState) => {
       const alarms = convoState.alarms || []
 
       if (alarms.length === 0) {

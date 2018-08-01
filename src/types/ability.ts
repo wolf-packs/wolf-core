@@ -1,5 +1,5 @@
 import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateResult } from './state'
-import { SetSlotDataFunctions, GetSlotDataFunctions } from './function'
+import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions } from './function'
 
 /**
  * Defines conversation abilities, used to control overall flow
@@ -27,7 +27,7 @@ export interface Ability {
       abilityStatus: AbilityStatus[]
     }
   ) => ShouldRunCompleteResult,
-  onComplete: (convoState: ConvoState, submittedData: any) => Promise<string|void> | string | void
+  onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => Promise<string|void> | string | void
 }
 
 /**

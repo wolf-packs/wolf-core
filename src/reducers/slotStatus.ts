@@ -1,6 +1,6 @@
 import { Reducer } from 'redux'
 import { SlotStatus } from '../types'
-import { REQ_CONFIRM_SLOT, ENABLE_SLOT, DISABLE_SLOT, FILL_SLOT, ACCEPT_SLOT, DENY_SLOT } from '../actions'
+import { REQ_CONFIRM_SLOT, ENABLE_SLOT, DISABLE_SLOT, FILL_SLOT, ACCEPT_SLOT, DENY_SLOT, RESET_SLOT_STATUS_BY_ABILITY_NAME } from '../actions'
 import { SlotId } from '../types'
 import { changeArrayItemOnIndex, findIndexOfSlotIdsBySlotId } from '../helpers'
 
@@ -134,6 +134,22 @@ const reducer: Reducer = (prev: SlotStatus[] = [], action): SlotStatus[] => {
     const slotMissing = slotIndex === -1
     const result = slotMissing ? [...prev, makeDefaultSlotStatus({slotName, abilityName})] : prev
     return result
+  }
+
+  if (action.type === RESET_SLOT_STATUS_BY_ABILITY_NAME) {
+    const allSlots = prev
+    const abilityName = action.payload
+    const abilitySlots = allSlots.filter((_) => _.abilityName === abilityName)
+    const updatedSlots = abilitySlots.map((_) => {
+      return { ..._, value: null, isDone: false }
+    })
+    // slots that will remain the same
+    const untouchedSlots = allSlots.filter((_) => _.abilityName !== abilityName)
+
+    return [
+      ...untouchedSlots,
+      ...updatedSlots
+    ]
   }
 
   return prev

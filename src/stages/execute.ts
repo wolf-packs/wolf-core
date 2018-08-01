@@ -1,9 +1,9 @@
 import { Store, Action, Dispatch } from 'redux'
 import { WolfState, Ability, Slot, ConvoState,
-  OutputMessageType, SlotId, SlotData, GetSlotDataFunctions } from '../types'
+  OutputMessageType, SlotId, SlotData, GetSlotDataFunctions, GetStateFunctions } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
-    getSlotBySlotId, getSlotDataByAbilityName, getTargetAbility, getAbilityStatus } from '../selectors'
-import { addMessage as addMessageAction, setSlotPrompted, setFocusedAbility, setAbilityStatus } from '../actions'
+    getSlotBySlotId, getSlotDataByAbilityName } from '../selectors'
+import { addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,resetSlotStatusByAbilityName } from '../actions'
 import { findInSlotIdItemBySlotId } from '../helpers'
 const log = require('debug')('wolf:s4')
 export interface ExecuteResult {
@@ -54,9 +54,11 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
 
     // set ability status to complete
     dispatch(setAbilityStatus(abilityCompleteResult[0], true))
+
+    // reset all slot status to pending (isDone = false)
+    dispatch(resetSlotStatusByAbilityName(abilityCompleteResult[0]))
     
     onCompleteReturnResult = { runOnComplete: () => returnResult, addMessage }
-    // return { runOnComplete: () => returnResult, addMessage }
   }
 
   // Check if S4 should prompt a slot
@@ -109,7 +111,11 @@ function runAbilityOnComplete(
   const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
   const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
 
-  return ability.onComplete(convoState, submittedData)
+  const getStateFuncs: GetStateFunctions = {
+    getAbilityList: () => abilities
+  }
+
+  return ability.onComplete(convoState, submittedData, getStateFuncs)
 }
 
 /**

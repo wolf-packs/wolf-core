@@ -1,4 +1,5 @@
 import { SlotStatus, SlotData } from './state';
+import { Ability } from './ability';
 
 /**
  * The object passed to onFill to allow slots
@@ -17,4 +18,8 @@ export interface SlotConfirmationFunctions {
   requireConfirmation: (slotName: string) => void
   accept: () => void
   deny: () => void
+}
+
+export interface GetStateFunctions {
+  getAbilityList: () => Ability[]
 }

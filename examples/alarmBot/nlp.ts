@@ -27,7 +27,7 @@ const testers = [
     }
   },
   {
-    name: 'listAbilities',
+    name: 'listAbility',
     tester: (input) => {
       return listAbilitiesTester.test(input)
     }
