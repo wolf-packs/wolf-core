@@ -40,13 +40,8 @@ adapter.use(...wolfMiddleware(
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
     try {
-      if (context.activity.type !== 'message') {
-        return
-      }
-
       const messages = getMessages(context)
       await context.sendActivities(messages.messageActivityArray)
-
     } catch (err) {
       console.error(err.stack)
     }

@@ -60,7 +60,6 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[]):
   if (filledSlotsResult.length > 0) {
     // Check if any abilities have been completed as a result of the filled slot(s)
     const abilityName = checkForAbilityCompletion(getState, abilities)
-
     if (abilityName) {
       // ability complete
       dispatch(abilityCompleted(abilityName))
@@ -173,23 +172,42 @@ function findNextSlotToPrompt(getState: () => WolfState, abilities: Ability[]): 
  * Check if there are any abilities with all enabled slots filled.
  */
 function checkForAbilityCompletion(getState: () => WolfState, abilities: Ability[]): string | null {
-  const filledSlotsResult = getfilledSlotsOnCurrentTurn(getState())
+  // const filledSlotsResult = getfilledSlotsOnCurrentTurn(getState())
 
-  if (filledSlotsResult.length === 0) {
+  // if (filledSlotsResult.length === 0) {
+  //   return null
+  // }
+  // const {slotStatus} = getState()
+
+  // let result = null
+  // filledSlotsResult.forEach((filledSlot) => {
+  //   const unfilledSlots = getUnfilledSlots(getState, abilities, filledSlot.abilityName)
+  //   if (unfilledSlots.length === 0) {
+  //     // all slots filled in current ability.. complete
+  //     result = filledSlot.abilityName
+  //   }
+  // })
+
+  const {focusedAbility, slotStatus} = getState()
+  const ability = abilities.find(_ => _.name === focusedAbility)
+  if (!ability) {
     return null
   }
-  const {slotStatus} = getState()
+  const focusedSlotStatus = slotStatus.filter(_ => _.abilityName === ability.name)
+  const isEveryAbilitySlotInSlotStatus = ability.slots
+    .every(_ => !!focusedSlotStatus.find(status => status.slotName === _.name))
+  if (!isEveryAbilitySlotInSlotStatus) {
+    return null
+  }
 
-  let result = null
-  filledSlotsResult.forEach((filledSlot) => {
-    const unfilledSlots = getUnfilledSlots(getState, abilities, filledSlot.abilityName)
-    if (unfilledSlots.length === 0) {
-      // all slots filled in current ability.. complete
-      result = filledSlot.abilityName
-    }
-  })
+  const isEveryEnabledSlotStatusDone = slotStatus
+    .filter(_ => _.isEnabled)
+    .every(_ => _.isDone)
 
-  return result
+  if (!isEveryEnabledSlotStatusDone) {
+    return null
+  }
+  return ability.name
 }
 
 /**

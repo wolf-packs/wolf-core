@@ -25,7 +25,7 @@ export default [
     name: 'weather',
     onComplete: (convoState, data) => {
       const { city } = data
-      return `looks ${city} is looking good!`
+      return `looks like ${city} is looking good!`
     },
     slots: [
       {

@@ -65,7 +65,7 @@ export default function initializeWolfStoreMiddleware(
           const {runOnComplete, addMessage} = execute(store, conversationStore.get(context), abilities)
           
           const message = await runOnComplete()
-
+    
           addMessage(message)
 
           const messagesObj = outtake(store)

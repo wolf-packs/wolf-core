@@ -41,7 +41,6 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
     const valueOrPromise = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult[0])
-
     let returnResult: Promise<string|void>
     if (typeof valueOrPromise === 'string') {
       returnResult = Promise.resolve(valueOrPromise)
@@ -84,6 +83,10 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
     // SLOT NOT VALID.. continue
   }
   
+  if (onCompleteReturnResult) {
+    return onCompleteReturnResult
+  }
+
   // NO ABILITY TO COMPLETE..
   // NO SLOT TO PROMPT..
   return { runOnComplete: () => Promise.resolve(), addMessage }
