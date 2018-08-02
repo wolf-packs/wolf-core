@@ -30,10 +30,12 @@ export default function outtake(store: Store<WolfState>): OuttakeResult {
   const validateMessage = createMessage(messageQueue, OutputMessageType.validateReason)
   const retryMessage = createMessage(messageQueue, OutputMessageType.retryMessage)
   const queryMessage = createMessage(messageQueue, OutputMessageType.queryMessage)
+  const nextAbilityMessage = createMessage(messageQueue, OutputMessageType.nextAbilityMessage)
 
   const messageStringArray = [
     slotFillMessage,
     abilityCompleteMessage,
+    nextAbilityMessage,
     validateMessage,
     retryMessage,
     queryMessage

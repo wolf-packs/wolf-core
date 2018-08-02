@@ -1,9 +1,9 @@
 import { Store } from 'redux'
-import { WolfState, Ability, SlotId, Slot, PromptSlotReason, ConvoState } from '../types'
+import { WolfState, Ability, SlotId, Slot, PromptSlotReason, ConvoState, NextAbilityResult, OutputMessageItem, OutputMessageType } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
   getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots } from '../selectors'
-import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted } from '../actions'
+import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
 const logState = require('debug')('wolf:s3:enterState')
 const log = require('debug')('wolf:s3')
 /**
@@ -31,9 +31,10 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
     // Check if the next ability has been completed already
     // if no.. set the new focused ability to nextAbility and prompt a slot
     // REDO this later..
-    const nextAbilityName = getNextAbility(abilities, abilityCompleteResult[0], convoState, getState())
+    const nextAbilityResult = getNextAbility(abilities, abilityCompleteResult[0], convoState, getState())
     log('check if first ability to complete has a nextAbilityName')
-    if (nextAbilityName) {
+    if (nextAbilityResult && nextAbilityResult.abilityName) {
+      const { abilityName: nextAbilityName, message } = nextAbilityResult
       log('next ability to set: %s', nextAbilityName)
       log('check to see if %s is completed', nextAbilityName)
       if (!isAbilityCompleted(nextAbilityName, getState)) {
@@ -49,6 +50,12 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
           dispatch(setFocusedAbility(null))
           log('exit stage')
           return // no slots to prompt
+        }
+
+        // ADD nextAbility.message to queue
+        if (message) {
+          log('nextAbility message is a string, add to output message queue')
+          dispatch(addMessage({ message, type: OutputMessageType.nextAbilityMessage }))
         }
         
         // ADD SLOT TO PROMPTED STACK
@@ -88,9 +95,10 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
       // Check if the next ability has been completed already
       // if no.. set the new focused ability to nextAbility and prompt a slot
       // REDO this later..
-      const nextAbilityName = getNextAbility(abilities, abilityList[0], convoState, getState())
+      const nextAbilityResult = getNextAbility(abilities, abilityList[0], convoState, getState())
       log('check if first ability to complete has a nextAbilityName')
-      if (nextAbilityName) {
+      if (nextAbilityResult && nextAbilityResult.abilityName) {
+        const { abilityName: nextAbilityName, message } = nextAbilityResult
         log('next ability to set: %s', nextAbilityName)
         log('check to see if %s is completed', nextAbilityName)
         if (!isAbilityCompleted(nextAbilityName, getState)) {
@@ -106,6 +114,12 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
             dispatch(setFocusedAbility(null))
             log('exit stage')
             return // no slots to prompt
+          }
+
+          // ADD nextAbility.message to queue
+          if (message) {
+            log('nextAbility message is a string, add to output message queue')
+            dispatch(addMessage({ message, type: OutputMessageType.nextAbilityMessage }))
           }
 
           // ADD SLOT TO PROMPTED STACK
@@ -320,16 +334,14 @@ function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focus
     .filter(_ => _) as Slot[]
 }
 
-function getNextAbility (abilities: Ability[], abilityName: string, convoState: ConvoState, state: WolfState): string | undefined {
+function getNextAbility (abilities: Ability[], abilityName: string, convoState: ConvoState, state: WolfState): NextAbilityResult | null {
   const completedAbility = getTargetAbility(abilities, abilityName)
 
   if (completedAbility && completedAbility.nextAbility) {
-    const nextAbility = getTargetAbility(abilities, completedAbility.nextAbility(convoState, state))
-    
-    if (nextAbility) {
-      return nextAbility.name
-    }
+    const nextAbilityResult = completedAbility.nextAbility(convoState, state)
+    return nextAbilityResult
   }
+  return null
 }
 
 function isAbilityCompleted (abilityName: string, getState: () => WolfState): boolean {
@@ -337,13 +349,3 @@ function isAbilityCompleted (abilityName: string, getState: () => WolfState): bo
 
   return abilityStatus.some((ability) => ability.abilityName === abilityName && ability.isCompleted)
 }
-
-// function getNextUncompleteAbility (abilities: Ability[], getState: () => WolfState) {
-//   const abilityStatus = getAbilityStatus(getState())
-
-//   // get uncomplete abilities
-//   const uncompleteAbilities = abilities.filter((ability) => abilityStatus.some((statusAbility) => {
-//     return !(statusAbility.abilityName === ability.name && statusAbility.isCompleted)
-//   })
-
-// }
