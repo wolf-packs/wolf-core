@@ -1,6 +1,6 @@
 {
   "name": "botbuilder-wolf",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index",
   "typings": "dist/index",
@@ -12,15 +12,18 @@
     "test": "jest"
   },
   "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/src/tests/.*|(\\.|/)(test|spec))\\.(tsx?)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
-      "js"
-    ],
-    "transform": {
-      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "/test/.*\\.(ts|tsx|js)$"
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   },
   "keywords": [
     "botbuilder",
@@ -29,20 +32,27 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^22.2.0",
+    "@types/jest": "^22.2.3",
     "botbuilder": "^4.0.0-preview1.2",
     "botbuilder-node": "^4.0.0-m1.10",
     "botbuilder-services": "^4.0.0-m1.10",
     "bravey": "^0.1.5",
-    "jest": "^22.4.2",
+    "dotenv": "^6.0.0",
+    "jest": "^22.4.4",
+    "remote-redux-devtools": "^0.5.12",
+    "remotedev-server": "^0.2.4",
     "restify": "^6.3.4",
-    "ts-jest": "^22.4.1",
+    "ts-jest": "^22.4.6",
     "typescript": "^2.7.2"
   },
   "dependencies": {
+    "botbuilder-redux": "^2.1.0",
+    "debug": "^3.1.0",
     "immutable": "^3.8.2",
     "lodash.difference": "^4.5.0",
     "lodash.get": "^4.4.2",
-    "lodash.set": "^4.3.2"
+    "lodash.set": "^4.3.2",
+    "redux": "^4.0.0",
+    "reselect": "^3.0.1"
   }
 }
