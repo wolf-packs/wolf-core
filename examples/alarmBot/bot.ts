@@ -1,7 +1,7 @@
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
 import nlp from './nlp'
 
-import wolfMiddleware, {getStore, getMessages} from '../../src/middlewares/wolfMiddleware'
+import { wolfMiddleware, getMessages } from '../../src'
 
 // import Wolf middleware
 import abilities from './abilities'
@@ -26,16 +26,13 @@ adapter.use(conversationStore)
 // Wolf middleware
 adapter.use(...wolfMiddleware(
   conversationStore,
-  (context) => {
-    return nlp(context.activity.text)
-  },
+  (context) => nlp(context.activity.text),
   abilities,
   'listAbility',
   {enabled: false} // enable or disable devtool
 ))
 
 // for wolf..
-// const abilities: Ability[] = abilityData as Ability[]
 
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {

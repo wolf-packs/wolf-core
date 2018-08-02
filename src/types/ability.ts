@@ -11,22 +11,6 @@ export interface Ability {
   name: string,
   slots: Slot[],
   nextAbility?: (convoState: ConvoState, wolfState: WolfState) => NextAbilityResult,
-  shouldCancelAbility?: (
-    convoState: ConvoState,
-    messageData: MessageData
-  ) => boolean,
-  onCancel?: (
-    convoState: ConvoState,
-    slotData: SlotData[]
-  ) => Promise<string|void> | string | void,
-  shouldRunComplete?: (
-    convoState: ConvoState,
-    stateDerivedObj: {
-      slotStatus: SlotStatus[],
-      slotData: SlotData[],
-      abilityStatus: AbilityStatus[]
-    }
-  ) => ShouldRunCompleteResult,
   onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => Promise<string|void> | string | void
 }
 
@@ -43,7 +27,6 @@ export interface NextAbilityResult {
  */
 export interface Slot {
   name: string,
-  isRequired?: boolean,
   defaultIsEnabled?: boolean,
   order?: number,
   query: (convoState: ConvoState, getSlotDataFunctions: GetSlotDataFunctions) => string,

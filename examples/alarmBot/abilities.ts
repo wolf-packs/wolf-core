@@ -12,7 +12,6 @@ export default [
     slots: [
       {
         name: 'alarmName',
-        type: 'string',
         query: () => { return 'What is the name of the alarm?'},
         retry: (convoState, submittedData, turnCount) => {
           const phrase = [`Please try a new name (attempt: ${turnCount})`, `Try harder.. (attempt: ${turnCount})`]
@@ -31,7 +30,6 @@ export default [
       },
       {
         name: 'alarmTime',
-        type: 'string',
         query: () => { return 'What is the time you want to set?' },
         retry: (convoState, submittedData, turnCount) => {
           const phrases: string[] = ['let\'s try again', 'what is the time you want to set?']
@@ -71,7 +69,6 @@ export default [
     slots: [
       {
         name: 'alarmName',
-        type: 'string',
         query: () => {
           return 'What is the name of the alarm you would like to remove?'
         }

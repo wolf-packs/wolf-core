@@ -91,7 +91,7 @@ export interface NlpResult {
 }
 
 export interface NlpEntity {
-  value: string,  // normalized value
+  value: any,  // normalized value
   text: string,   // raw value
   name: string    // entity name
 }
