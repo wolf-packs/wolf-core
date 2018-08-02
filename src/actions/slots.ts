@@ -73,3 +73,9 @@ export const resetSlotStatusByAbilityName = (abilityName: string) => ({
   type: RESET_SLOT_STATUS_BY_ABILITY_NAME,
   payload: abilityName
 })
+
+export const INCREMENT_TURN_COUNT_BY_ID = 'INCREMENT_TURN_COUNT_BY_ID'
+export const incrementTurnCountBySlotId = (slotId: SlotId) => ({
+  type: INCREMENT_TURN_COUNT_BY_ID,
+  payload: slotId
+})

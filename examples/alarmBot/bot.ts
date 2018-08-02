@@ -44,7 +44,6 @@ server.post('/api/messages', (req, res) => {
         return
       }
       const messages = getMessages(context)
-      console.log('messages', messages)
       await context.sendActivities(messages.messageActivityArray)
     } catch (err) {
       console.error(err.stack)

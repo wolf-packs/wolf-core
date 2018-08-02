@@ -15,7 +15,7 @@ export default [
         type: 'string',
         query: () => { return 'What is the name of the alarm?'},
         retry: (convoState, submittedData, turnCount) => {
-          const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
+          const phrase = [`Please try a new name (attempt: ${turnCount})`, `Try harder.. (attempt: ${turnCount})`]
           if (turnCount > phrase.length - 1) {
             return phrase[phrase.length - 1]
           }
@@ -89,7 +89,7 @@ export default [
       // Remove alarm
       const alarms = stateAlarms.filter(alarm => alarm.alarmName !== alarmName)
       convoState.alarms = alarms
-      return `The ${alarmName} has been removed`                                                
+      return `The ${alarmName} has been removed`
     }
   },
   {

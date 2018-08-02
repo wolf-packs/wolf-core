@@ -3,8 +3,10 @@ import { WolfState, Ability, Slot, ConvoState,
   OutputMessageType, SlotId, SlotData, GetSlotDataFunctions, GetStateFunctions } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
     getSlotBySlotId, getSlotDataByAbilityName } from '../selectors'
-import { addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,resetSlotStatusByAbilityName } from '../actions'
+import { addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,
+  resetSlotStatusByAbilityName } from '../actions'
 import { findInSlotIdItemBySlotId } from '../helpers'
+const logState = require('debug')('wolf:s4:enterState')
 const log = require('debug')('wolf:s4')
 export interface ExecuteResult {
   runOnComplete: () => Promise<string|void>,
@@ -29,7 +31,7 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  */
 export default function execute(store: Store<WolfState>, convoState: ConvoState, abilities: Ability[]): ExecuteResult {
   const { dispatch, getState } = store
-  log('enter:', getState())
+  logState(getState())
   const addMessage = (msg: string) => dispatch(
     addMessageAction({message: msg, type: OutputMessageType.abilityCompleteMessage})
   )
@@ -38,6 +40,8 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
   let onCompleteReturnResult = null
 
   // Check if S4 should run an ability onComplete
+  // TODO: run ALL abilities on abilityCompleteResult on this turn
+  // ... currently only completing first ability
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
     const valueOrPromise = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult[0])

@@ -3,6 +3,7 @@ import { Activity } from 'botbuilder'
 import { WolfState, OutputMessageItem, OutputMessageType } from '../types'
 import { getOutputMessageQueue } from '../selectors'
 import { clearMessageQueue } from '../actions'
+const logState = require('debug')('wolf:s5:enterState')
 const log = require('debug')('wolf:s5')
 export interface OuttakeResult {
   messageStringArray: string[],
@@ -21,7 +22,7 @@ export default function outtake(store: Store<WolfState>): OuttakeResult {
   const { dispatch, getState } = store
   const messageQueue = getOutputMessageQueue(getState())
 
-  log('enter', getState())
+  logState(getState())
 
   // order and format messageQueue
   const slotFillMessage = createMessage(messageQueue, OutputMessageType.slotFillMessage)
