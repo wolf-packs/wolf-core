@@ -15,7 +15,7 @@ export default [
         onFill: () => null
       }
     ],
-    nextAbility: 'weather',
+    nextAbility: () => 'weather',
     onComplete: (convoState, data) => {
       const { name } = data
       return `Oh! Hello ${name!}`
