@@ -1,9 +1,14 @@
+require('dotenv').config() 
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
-import nlp from './nlp'
-
-import wolfMiddleware, {getStore, getMessages} from '../../src/middlewares/wolfMiddleware'
+import { NlpResult } from '../../src/types'
 
 // import Wolf middleware
+import wolfMiddleware, { getStore, getMessages } from '../../src/middlewares/wolfMiddleware'
+
+import { Ability, MessageData } from '../../src/types'
+
+// import difference from 'lodash.difference'
+
 import abilities from './abilities'
 
 const restify = require('restify')
@@ -24,15 +29,19 @@ const conversationStore = new ConversationState(new MemoryStorage())
 
 adapter.use(conversationStore)
 // Wolf middleware
-adapter.use(...wolfMiddleware(
-  conversationStore,
+adapter.use(...wolfMiddleware(conversationStore,
   (context) => {
-    return nlp(context.activity.text)
+    const messageData: NlpResult = {
+      message: context.activity.text,
+      intent: context.activity.text === 'hi' ? 'greet' : null,
+      entities: []
+    }
+    return messageData
   },
   abilities,
-  'listAbility',
-  {enabled: false} // enable or disable devtool
-))
+  'greet',
+  {enabled: true}
+)) 
 
 // for wolf..
 // const abilities: Ability[] = abilityData as Ability[]
@@ -43,8 +52,10 @@ server.post('/api/messages', (req, res) => {
       if (context.activity.type !== 'message') {
         return
       }
+
       const messages = getMessages(context)
       await context.sendActivities(messages.messageActivityArray)
+
     } catch (err) {
       console.error(err.stack)
     }

@@ -37,15 +37,22 @@
     "botbuilder-node": "^4.0.0-m1.10",
     "botbuilder-services": "^4.0.0-m1.10",
     "bravey": "^0.1.5",
+    "dotenv": "^6.0.0",
     "jest": "^22.4.4",
+    "remote-redux-devtools": "^0.5.12",
+    "remotedev-server": "^0.2.4",
     "restify": "^6.3.4",
     "ts-jest": "^22.4.6",
     "typescript": "^2.7.2"
   },
   "dependencies": {
+    "botbuilder-redux": "^2.1.0",
+    "debug": "^3.1.0",
     "immutable": "^3.8.2",
     "lodash.difference": "^4.5.0",
     "lodash.get": "^4.4.2",
-    "lodash.set": "^4.3.2"
+    "lodash.set": "^4.3.2",
+    "redux": "^4.0.0",
+    "reselect": "^3.0.1"
   }
 }

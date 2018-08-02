@@ -1,18 +1,18 @@
-import { MessageType, MessageQueueItem, PendingWolfState } from '../types'
+import { OutputMessageItem, OutputMessageType, WolfState } from '../types'
 
 export function addMessageToQueue(
-  pendingWolfState: PendingWolfState,
+  state: WolfState,
   message: string,
-  messageType: MessageType = MessageType.abilityCompleteMessage,
+  messageType: OutputMessageType = OutputMessageType.abilityCompleteMessage,
   slotName?: string
-): PendingWolfState {
-  let messageItem: MessageQueueItem = {
+): WolfState {
+  let messageItem: OutputMessageItem = {
     message,
     type: messageType,
     slotName
   }
 
-  const updatedState = Object.assign({}, pendingWolfState)
-  updatedState.messageQueue.push(messageItem)
+  const updatedState = Object.assign({}, state)
+  updatedState.outputMessageQueue.push(messageItem)
   return updatedState
 }

@@ -1,32 +1,35 @@
-import { Activity, ConsoleTranscriptLogger } from 'botbuilder'
-import { MessageType, MessageQueueItem, PendingWolfState, ConvoState } from '../types'
-
+import { Store } from 'redux'
+import { Activity } from 'botbuilder'
+import { WolfState, OutputMessageItem, OutputMessageType } from '../types'
+import { getOutputMessageQueue } from '../selectors'
+import { clearMessageQueue } from '../actions'
+const logState = require('debug')('wolf:s5:enterState')
+const log = require('debug')('wolf:s5')
 export interface OuttakeResult {
   messageStringArray: string[],
-  messageItemArray: MessageQueueItem[]
+  messageItemArray: OutputMessageItem[]
   messageActivityArray: Partial<Activity>[]
 }
 
-const createMessage = (messageQueue: MessageQueueItem[], messageType: MessageType) => {
-  const queue = messageQueue
-    .filter((item: MessageQueueItem) => item.type === messageType)
-    .filter((item: MessageQueueItem) => item.message)
-  const messages = `${queue.map((_: MessageQueueItem) => _.message).join(', ')}`
-  return messages
-}
+/**
+ * Outtake Stage (S5)
+ * 
+ * Ensure developer has access to all `OutputMessageItems`
+ * 
+ * @param store redux
+ */
+export default function outtake(store: Store<WolfState>): OuttakeResult {
+  const { dispatch, getState } = store
+  const messageQueue = getOutputMessageQueue(getState())
 
-export default function outtake(
-  convoState: ConvoState,
-  result: PendingWolfState
-): OuttakeResult {
-  const pendingWolfState = result
+  logState(getState())
 
   // order and format messageQueue
-  const slotFillMessage = createMessage(pendingWolfState.messageQueue, MessageType.slotFillMessage)
-  const abilityCompleteMessage = createMessage(pendingWolfState.messageQueue, MessageType.abilityCompleteMessage)
-  const validateMessage = createMessage(pendingWolfState.messageQueue, MessageType.validateReason)
-  const retryMessage = createMessage(pendingWolfState.messageQueue, MessageType.retryMessage)
-  const queryMessage = createMessage(pendingWolfState.messageQueue, MessageType.queryMessage)
+  const slotFillMessage = createMessage(messageQueue, OutputMessageType.slotFillMessage)
+  const abilityCompleteMessage = createMessage(messageQueue, OutputMessageType.abilityCompleteMessage)
+  const validateMessage = createMessage(messageQueue, OutputMessageType.validateReason)
+  const retryMessage = createMessage(messageQueue, OutputMessageType.retryMessage)
+  const queryMessage = createMessage(messageQueue, OutputMessageType.queryMessage)
 
   const messageStringArray = [
     slotFillMessage,
@@ -35,13 +38,12 @@ export default function outtake(
     retryMessage,
     queryMessage
   ].filter((message) => message) // remove all undefined messages
-  
-  const messageItemArray = pendingWolfState.messageQueue
+
+  // store rich message objects
+  const messageItemArray = messageQueue
+
   // clear messageQueue for next turn
-  pendingWolfState.messageQueue = []
-  
-  // update wolfState with changes from pendingWolfState
-  convoState.wolf = pendingWolfState
+  dispatch(clearMessageQueue())
 
   const messageActivityArray: Partial<Activity>[] = messageStringArray.map((msg) => ({
     type: 'message',
@@ -49,4 +51,15 @@ export default function outtake(
   }))
 
   return { messageStringArray, messageItemArray, messageActivityArray } 
+}
+
+/**
+ * Create a single string from grouped messageTypes
+ */
+const createMessage = (messageQueue: OutputMessageItem[], messageType: OutputMessageType) => {
+  const queue = messageQueue
+    .filter((item: OutputMessageItem) => item.type === messageType)
+    .filter((item: OutputMessageItem) => item.message)
+  const messages = `${queue.map((_: OutputMessageItem) => _.message).join(', ')}`
+  return messages
 }
