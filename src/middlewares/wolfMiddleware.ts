@@ -59,10 +59,11 @@ export default function initializeWolfStoreMiddleware(
         } else {
           const store = getStore(context)
           const nlpResult: NlpResult = await userMessageData(context)
+          const convoState: ConvoState = conversationStore.get(context)
           intake(store, nlpResult, defaultAbility)
-          fillSlot(store, conversationStore.get(context), abilities)
-          evaluate(store, abilities)
-          const {runOnComplete, addMessage} = execute(store, conversationStore.get(context), abilities)
+          fillSlot(store, convoState, abilities)
+          evaluate(store, abilities, convoState)
+          const {runOnComplete, addMessage} = execute(store, convoState, abilities)
           
           const message = await runOnComplete()
           if (message) {

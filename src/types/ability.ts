@@ -1,4 +1,4 @@
-import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateResult } from './state'
+import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateResult, WolfState } from './state'
 import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions } from './function'
 
 /**
@@ -10,7 +10,7 @@ import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions } from '.
 export interface Ability {
   name: string,
   slots: Slot[],
-  nextAbility?: string,
+  nextAbility?: (convoState: ConvoState, wolfState: WolfState) => string,
   shouldCancelAbility?: (
     convoState: ConvoState,
     messageData: MessageData

@@ -40,7 +40,7 @@ adapter.use(...wolfMiddleware(conversationStore,
   },
   abilities,
   'greet',
-  {enabled: true}
+  {enabled: false}
 )) 
 
 // for wolf..
