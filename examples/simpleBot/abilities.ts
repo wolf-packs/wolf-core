@@ -15,9 +15,15 @@ export default [
         onFill: () => null
       }
     ],
-    nextAbility: () => 'weather',
+    nextAbility: () => {
+      return {
+        abilityName: 'weather',
+        message: `nice, lets check the weather now.`
+      }
+    },
     onComplete: (convoState, data) => {
       const { name } = data
+      convoState.name = name
       return `Oh! Hello ${name!}`
     }
   },

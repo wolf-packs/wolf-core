@@ -10,7 +10,7 @@ import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions } from '.
 export interface Ability {
   name: string,
   slots: Slot[],
-  nextAbility?: (convoState: ConvoState, wolfState: WolfState) => string,
+  nextAbility?: (convoState: ConvoState, wolfState: WolfState) => NextAbilityResult,
   shouldCancelAbility?: (
     convoState: ConvoState,
     messageData: MessageData
@@ -28,6 +28,14 @@ export interface Ability {
     }
   ) => ShouldRunCompleteResult,
   onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => Promise<string|void> | string | void
+}
+
+/**
+ * result of the nextAbility function
+ */
+export interface NextAbilityResult {
+  abilityName: string,
+  message: string | null
 }
 
 /**

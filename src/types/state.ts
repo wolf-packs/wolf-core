@@ -58,6 +58,7 @@ export enum OutputMessageType {
   retryMessage,
   queryMessage,
   slotFillMessage,
+  nextAbilityMessage,
   abilityCompleteMessage
 }
 
