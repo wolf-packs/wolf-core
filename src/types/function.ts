@@ -1,3 +1,6 @@
+import { SlotStatus, SlotData } from './state';
+import { Ability } from './ability';
+
 /**
  * The object passed to onFill to allow slots
  */
@@ -6,8 +9,17 @@ export interface SetSlotDataFunctions {
   setSlotEnabled: (abilityName: string, slotName: string, isEnabled: boolean) => void
 }
 
+export interface GetSlotDataFunctions {
+  getSlotValue: (slotName: string) => SlotData | undefined,
+  getSlotStatus: (slotName: string) => SlotStatus | undefined
+}
+
 export interface SlotConfirmationFunctions {
   requireConfirmation: (slotName: string) => void
   accept: () => void
   deny: () => void
+}
+
+export interface GetStateFunctions {
+  getAbilityList: () => Ability[]
 }

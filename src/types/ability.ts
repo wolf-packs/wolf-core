@@ -1,5 +1,5 @@
 import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateResult } from './state'
-// import { SetSlotDataObj } from './function'
+import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions } from './function'
 
 /**
  * Defines conversation abilities, used to control overall flow
@@ -10,6 +10,7 @@ import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateR
 export interface Ability {
   name: string,
   slots: Slot[],
+  nextAbility?: string,
   shouldCancelAbility?: (
     convoState: ConvoState,
     messageData: MessageData
@@ -26,7 +27,7 @@ export interface Ability {
       abilityStatus: AbilityStatus[]
     }
   ) => ShouldRunCompleteResult,
-  onComplete: (convoState: ConvoState, submittedData: any) => Promise<string|void> | string | void
+  onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => Promise<string|void> | string | void
 }
 
 /**
@@ -37,13 +38,13 @@ export interface Slot {
   isRequired?: boolean,
   defaultIsEnabled?: boolean,
   order?: number,
-  query: (convoState: ConvoState) => string,
-  validate: (submittedValue: any) => ValidateResult,
+  query: (convoState: ConvoState, getSlotDataFunctions: GetSlotDataFunctions) => string,
+  validate: (submittedValue: any, messageData: MessageData) => ValidateResult,
   retry: (convoState: ConvoState, submittedData: any, turnCount: number) => string,
   onFill: (
     submittedValue: any,
     convoState: ConvoState,
-    setOtherSlotFunctions: SetSlotDataObj,
+    setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: ConfirmationFunctions
   ) => string | void
 }

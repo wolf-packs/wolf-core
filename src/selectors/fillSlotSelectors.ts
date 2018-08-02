@@ -48,3 +48,4 @@ export const getRequestingSlotIdFromCurrentSlotId = (state: WolfState, slotId: S
 }
 
 export const getMessageData = (state: WolfState) => state.messageData
+export const getDefaultAbility = (state: WolfState) => state.defaultAbility

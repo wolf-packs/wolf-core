@@ -27,3 +27,15 @@ export const getSlotStatus = (state: WolfState): SlotStatus[] => {
 export const getSlotData = (state: WolfState): SlotData[] => {
   return state.slotData
 }
+
+export const getUnfilledEnabledSlots = (state: WolfState, focusedAbility: string): SlotId[] => {
+  const slotStatus = state.slotStatus
+  const slotStatusInFocusedAbility = slotStatus.filter(_ => _.abilityName === focusedAbility) 
+  return slotStatusInFocusedAbility
+    .filter(_ => _.isEnabled)
+    .filter(_ => !_.isDone)
+    .map(({slotName, abilityName}) => ({
+      slotName,
+      abilityName
+    }))
+}

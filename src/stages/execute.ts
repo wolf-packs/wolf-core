@@ -1,9 +1,13 @@
 import { Store, Action, Dispatch } from 'redux'
-import { WolfState, Ability, Slot, ConvoState, OutputMessageType, SlotId, SlotData } from '../types'
+import { WolfState, Ability, Slot, ConvoState,
+  OutputMessageType, SlotId, SlotData, GetSlotDataFunctions, GetStateFunctions } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
-    getSlotBySlotId, getSlotDataByAbilityName } from '../selectors';
-import { addMessage as addMessageAction, setSlotPrompted } from '../actions';
-
+    getSlotBySlotId, getSlotDataByAbilityName } from '../selectors'
+import { addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,
+  resetSlotStatusByAbilityName } from '../actions'
+import { findInSlotIdItemBySlotId } from '../helpers'
+const logState = require('debug')('wolf:s4:enterState')
+const log = require('debug')('wolf:s4')
 export interface ExecuteResult {
   runOnComplete: () => Promise<string|void>,
   addMessage: (msg: string) => void
@@ -27,16 +31,20 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  */
 export default function execute(store: Store<WolfState>, convoState: ConvoState, abilities: Ability[]): ExecuteResult {
   const { dispatch, getState } = store
-
+  logState(getState())
   const addMessage = (msg: string) => dispatch(
     addMessageAction({message: msg, type: OutputMessageType.abilityCompleteMessage})
   )
 
+  // TODO: refactor
+  let onCompleteReturnResult = null
+
   // Check if S4 should run an ability onComplete
+  // TODO: run ALL abilities on abilityCompleteResult on this turn
+  // ... currently only completing first ability
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
     const valueOrPromise = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult[0])
-
     let returnResult: Promise<string|void>
     if (typeof valueOrPromise === 'string') {
       returnResult = Promise.resolve(valueOrPromise)
@@ -48,7 +56,13 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
       returnResult = valueOrPromise
     }
 
-    return { runOnComplete: () => returnResult, addMessage }
+    // set ability status to complete
+    dispatch(setAbilityStatus(abilityCompleteResult[0], true))
+
+    // reset all slot status to pending (isDone = false)
+    dispatch(resetSlotStatusByAbilityName(abilityCompleteResult[0]))
+    
+    onCompleteReturnResult = { runOnComplete: () => returnResult, addMessage }
   }
 
   // Check if S4 should prompt a slot
@@ -64,13 +78,21 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
     // slot has not been prompted yet.. prompt here
     const slotToPrompt = getSlotBySlotId(abilities, { slotName: slot.slotName, abilityName: slot.abilityName })
     if (slotToPrompt) {
-      const runSlotQueryResult = runSlotQuery(convoState, slotToPrompt, slot.abilityName)
+      const runSlotQueryResult = runSlotQuery(convoState, store, slotToPrompt, slot.abilityName)
       runSlotQueryResult.forEach(dispatchActionArray(dispatch))
+
+      if (onCompleteReturnResult) {
+        return onCompleteReturnResult
+      }
       return { runOnComplete: () => Promise.resolve(), addMessage }
     }
     // SLOT NOT VALID.. continue
   }
   
+  if (onCompleteReturnResult) {
+    return onCompleteReturnResult
+  }
+
   // NO ABILITY TO COMPLETE..
   // NO SLOT TO PROMPT..
   return { runOnComplete: () => Promise.resolve(), addMessage }
@@ -92,14 +114,34 @@ function runAbilityOnComplete(
 
   const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
   const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
-  return ability.onComplete(convoState, submittedData)
+
+  const getStateFuncs: GetStateFunctions = {
+    getAbilityList: () => abilities
+  }
+
+  return ability.onComplete(convoState, submittedData, getStateFuncs)
+}
+
+/**
+ * makeGetSlotFillFunctions
+ * 
+ * create an object that has the correct getters for slot information
+ */
+function makeGetSlotDataFunctions({getState}: Store<WolfState>, abilityName: string): GetSlotDataFunctions {
+  const wolfState = getState()
+  const {slotStatus, slotData} = wolfState
+  return {
+    getSlotStatus: <SlotStatus>(slotName: string) => findInSlotIdItemBySlotId(slotStatus, {abilityName, slotName}),
+    getSlotValue: <SlotData>(slotName: string) => findInSlotIdItemBySlotId(slotData, {abilityName, slotName})
+  }
 }
 
 /**
  * Execute slot.query()
  */
-function runSlotQuery(convoState: ConvoState, slot: Slot, abilityName: string): Action[] {
-  const queryString = slot.query(convoState)
+function runSlotQuery(convoState: ConvoState, store: Store<WolfState>, slot: Slot, abilityName: string): Action[] {
+  const getSlotDataFunctions = makeGetSlotDataFunctions(store, abilityName)
+  const queryString = slot.query(convoState, getSlotDataFunctions)
 
   // add query to output message queue
   const message = {
@@ -121,5 +163,3 @@ function runSlotQuery(convoState: ConvoState, slot: Slot, abilityName: string): 
 const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
   dispatch(action)
 }
-
-

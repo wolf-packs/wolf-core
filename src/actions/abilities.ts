@@ -4,17 +4,16 @@ export const setFocusedAbility = (focusedAbility: string | null) => ({
   payload: focusedAbility
 })
 
-// export const SET_ABILITY_COMPLETE_ON_CURRENT_TURN = 'SET_ABILITY_COMPLETE_ON_CURRENT_TURN'
-// // TODO: Implement Reducer (Renamed. See ABILITY_COMPLETED)
-// export const setAbilityCompleteOnCurrentTurn = (abilityName: string | null) => ({
-//   type: SET_ABILITY_COMPLETE_ON_CURRENT_TURN,
-//   payload: abilityName
-// })
-
-export const SET_DEFAULT_ABILITY = 'SET_DEFAULT_ABILITY' // TODO: implement reducer (Done)
+export const SET_DEFAULT_ABILITY = 'SET_DEFAULT_ABILITY'
 export const setDefaultAbility = (defaultAbilityName: string | null) => ({
   type: SET_DEFAULT_ABILITY,
   payload: defaultAbilityName
+})
+
+export const SET_ABILITY_STATUS = 'SET_ABILITY_STATUS'
+export const setAbilityStatus = (abilityName: string, value: boolean) => ({
+  type: SET_ABILITY_STATUS,
+  payload: { abilityName, value }
 })
 
 export const ABILITY_COMPLETED = 'ABILITY_COMPLETED'

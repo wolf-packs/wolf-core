@@ -15,8 +15,6 @@ export const addSlotToPromptedStack = (promptedSlot: SlotId, reason: PromptSlotR
   }
 })
 
-// TODO (Done): implement setSlotPrompted
-
 /**
  * Set slot.prompted property
  */
@@ -44,9 +42,9 @@ export const disableSlot = (slotId: SlotId) => ({
   payload: slotId
 })
 
-export const CONFIRM_SLOT = 'CONFIRM_SLOT'
-export const confirmSlot = (originSlotId: SlotId, confirmationSlotId: SlotId) => ({
-  type: CONFIRM_SLOT,
+export const REQ_CONFIRM_SLOT = 'REQ_CONFIRM_SLOT'
+export const reqConfirmSlot = (originSlotId: SlotId, confirmationSlotId: SlotId) => ({
+  type: REQ_CONFIRM_SLOT,
   payload: {
     originSlotId,
     confirmationSlotId
@@ -68,4 +66,16 @@ export const denySlot = (originSlotId: SlotId) => ({
 export const START_FILL_SLOT_STAGE = 'START_FILL_SLOT_STAGE'
 export const startFillSlotStage = () => ({
   type: START_FILL_SLOT_STAGE
+})
+
+export const RESET_SLOT_STATUS_BY_ABILITY_NAME = 'RESET_SLOT_STATUS_BY_ABILITY_NAME'
+export const resetSlotStatusByAbilityName = (abilityName: string) => ({
+  type: RESET_SLOT_STATUS_BY_ABILITY_NAME,
+  payload: abilityName
+})
+
+export const INCREMENT_TURN_COUNT_BY_ID = 'INCREMENT_TURN_COUNT_BY_ID'
+export const incrementTurnCountBySlotId = (slotId: SlotId) => ({
+  type: INCREMENT_TURN_COUNT_BY_ID,
+  payload: slotId
 })

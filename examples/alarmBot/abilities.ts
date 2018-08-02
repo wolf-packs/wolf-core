@@ -15,7 +15,7 @@ export default [
         type: 'string',
         query: () => { return 'What is the name of the alarm?'},
         retry: (convoState, submittedData, turnCount) => {
-          const phrase = ['Please try a new name (attempt: 2)', 'Try harder.. (attempt: 3)']
+          const phrase = [`Please try a new name (attempt: ${turnCount})`, `Try harder.. (attempt: ${turnCount})`]
           if (turnCount > phrase.length - 1) {
             return phrase[phrase.length - 1]
           }
@@ -23,9 +23,9 @@ export default [
         },
         validate: (value) => {
           if (value.toLowerCase() === 'hao') {
-            return { valid: false, reason: `${value} is not a good name.`}
+            return { isValid: false, reason: `${value} is not a good name.`}
           }
-          return { valid: true, reason: null }
+          return { isValid: true, reason: null }
         },
         onFill: (value) => `ok! name is set to ${value}.`
       },
@@ -33,19 +33,19 @@ export default [
         name: 'alarmTime',
         type: 'string',
         query: () => { return 'What is the time you want to set?' },
-        retry: (turnCount) => {
+        retry: (convoState, submittedData, turnCount) => {
           const phrases: string[] = ['let\'s try again', 'what is the time you want to set?']
           return randomElement(phrases)
         },
         validate: (value: string) => {
           if (!value.toLowerCase().endsWith('pm') && !value.toLowerCase().endsWith('am')) {
             return {
-              valid: false,
+              isValid: false,
               reason: 'Needs to set PM or AM',
             }
           }
           return {
-            valid: true
+            isValid: true
           }
         },
         onFill: (value) => `ok! time is set to ${value}.`
@@ -89,14 +89,13 @@ export default [
       // Remove alarm
       const alarms = stateAlarms.filter(alarm => alarm.alarmName !== alarmName)
       convoState.alarms = alarms
-      return `The ${alarmName} has been removed`                                                
+      return `The ${alarmName} has been removed`
     }
   },
   {
     name: 'listAlarms',
     slots: [],
-    onComplete: ({ getConvoState }) => {
-      const convoState = getConvoState()
+    onComplete: (convoState) => {
       const alarms = convoState.alarms || []
 
       if (alarms.length === 0) {
@@ -106,9 +105,9 @@ export default [
     }
   },
   {
-    name: 'listAbilities',
+    name: 'listAbility',
     slots: [],
-    onComplete: ({ getAbilityList }) => {
+    onComplete: (convoState, submittedData, { getAbilityList }) => {
       const abilityList = getAbilityList()
       const abilities = abilityList.map((ability) => ability.name).join(', ')
       const message = `Here are my abilities: ${abilities}`

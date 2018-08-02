@@ -1,4 +1,4 @@
-import { NlpEntity, NlpResult } from '../../src/stages/intake'
+import { NlpEntity, NlpResult } from '../../src/types'
 
 type recognizer = (input: string) => NlpEntity | null
 
@@ -27,7 +27,7 @@ const testers = [
     }
   },
   {
-    name: 'listAbilities',
+    name: 'listAbility',
     tester: (input) => {
       return listAbilitiesTester.test(input)
     }
@@ -44,7 +44,7 @@ const recognizers: recognizer[] = [
     return {
       name: 'alarmName',
       value: result[1],
-      string: result[1]
+      text: result[1]
     }
   }
   ,
@@ -57,7 +57,7 @@ const recognizers: recognizer[] = [
     return {
       name: 'alarmTime',
       value: result[1],
-      string: result[1]
+      text: result[1]
     }
   }
 ]
@@ -66,6 +66,7 @@ function nlp(input: string): NlpResult {
   const found = {...testers.find((tester) => tester.tester(input))}
   if (!found) {
     return {
+      message: input,
       intent: null,
       entities: []
     }
@@ -77,6 +78,7 @@ function nlp(input: string): NlpResult {
     .filter(_ => _)
   
   return {
+    message: input,
     intent,
     entities
   }
