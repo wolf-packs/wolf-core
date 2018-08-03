@@ -9,12 +9,18 @@
     "build:watch": "tsc -w",
     "build:dev": "tsc --p tsconfig.example.json",
     "build:dev:watch": "tsc --p tsconfig.example.json -w",
+    "preversion": "git-branch-is master && echo Branch In Master",
+    "release:patch": "npm version patch",
+    "release:minor": "npm version minor",
+    "release:major": "npm version major",
+    "postversion": "git push && git push --tags",
     "test": "jest"
   },
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
+    "testEnvironment": "node",
     "testRegex": "(/src/tests/.*|(\\.|/)(test|spec))\\.(tsx?)$",
     "moduleFileExtensions": [
       "ts",
@@ -38,12 +44,13 @@
     "botbuilder-services": "^4.0.0-m1.10",
     "bravey": "^0.1.5",
     "dotenv": "^6.0.0",
+    "git-branch-is": "^2.0.0",
     "jest": "^22.4.4",
     "remote-redux-devtools": "^0.5.12",
     "remotedev-server": "^0.2.4",
     "restify": "^6.3.4",
     "ts-jest": "^22.4.6",
-    "typescript": "^2.7.2"
+    "typescript": "^3.0.0"
   },
   "dependencies": {
     "botbuilder-redux": "^2.1.0",
