@@ -44,7 +44,7 @@
     "remotedev-server": "^0.2.4",
     "restify": "^6.3.4",
     "ts-jest": "^22.4.6",
-    "typescript": "^2.7.2"
+    "typescript": "^3.0.0"
   },
   "dependencies": {
     "botbuilder-redux": "^2.1.0",
