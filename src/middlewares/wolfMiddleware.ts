@@ -1,14 +1,13 @@
 import { ConversationState, TurnContext, Promiseable } from 'botbuilder'
 import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder-redux/dist'
-import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
+import { Store, createStore, applyMiddleware, compose } from 'redux'
 import rootReducer from '../reducers'
-import { MessageData, NlpResult } from '../types'
+import { NlpResult, Ability, ConvoState, WolfState } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
 import evaluate from '../stages/evaluate'
-import execuate from '../stages/execute'
+import execute from '../stages/execute'
 import outtake from '../stages/outtake'
-import execute from '../stages/execute';
 
 const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
@@ -59,7 +58,7 @@ export default function initializeWolfStoreMiddleware(
         } else {
           const store = getStore(context)
           const nlpResult: NlpResult = await userMessageData(context)
-          const convoState: ConvoState = conversationStore.get(context)
+          const convoState: ConvoState = conversationStore.get(context) || {}
           intake(store, nlpResult, defaultAbility)
           fillSlot(store, convoState, abilities)
           evaluate(store, abilities, convoState)
@@ -80,7 +79,7 @@ export default function initializeWolfStoreMiddleware(
    }]
 }
 
-export function getStore(context: TurnContext) {
+export function getStore(context: TurnContext): Store<WolfState> {
   return getReduxStore(context, '__WOLF_STORE__')
 }
 

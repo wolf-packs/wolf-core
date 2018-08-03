@@ -1,5 +1,5 @@
-import { ConvoState, MessageData, SlotData, SlotStatus, AbilityStatus, ValidateResult, WolfState } from './state'
-import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions } from './function'
+import { ConvoState, MessageData, ValidateResult, WolfState } from './state'
+import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions, SlotConfirmationFunctions } from './function'
 
 /**
  * Defines conversation abilities, used to control overall flow
@@ -36,14 +36,8 @@ export interface Slot {
     submittedValue: any,
     convoState: ConvoState,
     setOtherSlotFunctions: SetSlotDataFunctions,
-    confirmationFunctions: ConfirmationFunctions
+    confirmationFunctions: SlotConfirmationFunctions
   ) => string | void
-}
-
-export interface ConfirmationFunctions {
-  requireConfirmation: (slotName: string) => boolean,
-  accept: () => void,
-  deny: () => void
 }
 
 export interface ShouldRunCompleteResult {

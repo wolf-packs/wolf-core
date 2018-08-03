@@ -1,6 +1,6 @@
 {
   "name": "botbuilder-wolf",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index",
   "typings": "dist/index",
@@ -15,6 +15,7 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
+    "testEnvironment": "node",
     "testRegex": "(/src/tests/.*|(\\.|/)(test|spec))\\.(tsx?)$",
     "moduleFileExtensions": [
       "ts",
