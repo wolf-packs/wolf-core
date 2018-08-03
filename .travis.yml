@@ -4,26 +4,19 @@ node_js:
   - "8"
   - "7"
 
-cache:
-  directories:
-    - "node_modules"
-
 script:
   - npm test
+
+stages:
+  - name: npm release
+    if: branch = master AND type = push AND tag = true
 
 jobs:
   include:
     - stage: npm release
       node_js: "node"
       script:
-        - echo "Building dist directory"
         - npm run build
-        - echo "Deploying to npm ..."
-      deploy:
-        provider: npm
-        email: $NPM_PUBLISH_EMAIL
-        api_key: $NPM_PUBLISH_AUTH_TOKEN
-        skip_cleanup: true
-        on:
-          tags: true
-          branch: master
+        - touch ~/.npmrc
+        - echo "//registry.npmjs.org/:_authToken=$NPM_PUBLISH_AUTH_TOKEN" >> ~/.npmrc
+        - npm publish
