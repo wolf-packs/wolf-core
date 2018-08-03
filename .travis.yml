@@ -14,13 +14,20 @@ cache:
 
 script:
   - npm test
-  - npm run build
 
-deploy:
-  provider: npm
-  email: $NPM_PUBLISH_EMAIL
-  api_key: $NPM_PUBLISH_AUTH_TOKEN
-  skip_cleanup: true
-  on:
-    tags: true
-    branch: master
+jobs:
+  include:
+    - stage: npm release
+      node_js: "node"
+      script:
+        - echo "Building dist directory"
+        - npm run build
+        - echo "Deploying to npm ..."
+      deploy:
+        provider: npm
+        email: $NPM_PUBLISH_EMAIL
+        api_key: $NPM_PUBLISH_AUTH_TOKEN
+        skip_cleanup: true
+        on:
+          tags: true
+          branch: master
