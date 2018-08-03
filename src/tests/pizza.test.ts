@@ -17,5 +17,7 @@ type PizzaData = {
 }
 
 describe('Add a Pizza a cart', () => { // Feature (ability)
-  
+ it('should run', () => {
+   expect(true).toBeTruthy()
+ }) 
 })
