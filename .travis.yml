@@ -7,14 +7,11 @@ node_js:
 script:
   - npm test
 
-stages:
-  - name: npm release
-    if: branch = master AND type = push AND tag = true
-
 jobs:
   include:
     - stage: npm release
       node_js: "node"
+      if: branch = master AND tag = true
       script:
         - npm run build
         - touch ~/.npmrc
