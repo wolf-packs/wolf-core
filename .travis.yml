@@ -3,6 +3,11 @@ node_js:
   - "node"
   - "7"
 
+branches:
+  only:
+  - master
+  - development
+
 cache:
   directories:
     - "node_modules"
