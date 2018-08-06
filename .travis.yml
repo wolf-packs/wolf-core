@@ -6,13 +6,13 @@ node_js:
 
 stages:
   - test
-  - name: npm release
-    if: branch = master AND tag = true AND type = push
+  - name: publish
+    if: branch = master AND tag = true
 
 jobs:
   include:
     - script: npm test
-    - stage: npm release
+    - stage: publish
       node_js: "node"
       script: skip # skips test because test has already ran
     - script:
