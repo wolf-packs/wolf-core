@@ -1,4 +1,8 @@
 language: node_js
+node_js:
+  - "10"
+  - "8"
+  - "7"
 
 stages:
   - test
@@ -8,10 +12,6 @@ stages:
 jobs:
   include:
     - stage: test
-      node_js:
-        - "node"
-        - "8"
-        - "7"
       script: npm test
     - stage: npm release
       node_js: "node"
