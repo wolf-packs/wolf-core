@@ -7,15 +7,14 @@ node_js:
 stages:
   - test
   - name: publish
-    if: tag IS present
+    if: tag IS present AND branch = master
 
 jobs:
   include:
     - script: npm test
     - stage: publish
-      node_js: "node"
-      script: skip # skips test because test has already ran
-    - script:
+      # node_js: "node"
+      script:
         - npm run build
         - touch ~/.npmrc
         - echo "//registry.npmjs.org/:_authToken=$NPM_PUBLISH_AUTH_TOKEN" >> ~/.npmrc
