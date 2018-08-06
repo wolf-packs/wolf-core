@@ -6,8 +6,8 @@ node_js:
 
 stages:
   - test
-  - name: deploy
-    if: branch = master AND tag = true
+  - name: npm release
+    if: branch = master AND tag = true AND type = push
 
 jobs:
   include:
