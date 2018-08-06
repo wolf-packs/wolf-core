@@ -121,31 +121,41 @@ npm install botbuilder-wolf
 ```
 
 ## How to Use
+1. Install `botbuilder-wolf`.
+2. Import Wolf into a pre-existing Microsft Bot Framework v4 bot.
 ```js
-import { wolfMiddleware, getStore, getMessages } from 'botbuilder-wolf'
+import { wolfMiddleware, getMessages } from 'botbuilder-wolf'
+```
 
-// ... create the bot adapter
+3. Create an abilities definition 
+(see example [alarmBot abilities](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/alarmBot/abilities.ts))
+4. Import the abilities definition
+```js
+import abilities from './abilities'
+```
 
-// Adding the wolfMiddleware
+3. Setup the Wolf middleware
+```js
+// Wolf middleware
 adapter.use(...wolfMiddleware(
   conversationStore,
-  (context) => nlp(context.activity.text), // custom NLP function that conforms to the NlpResult type
+  (context) => nlp(context.activity.text),
   abilities,
-  'listAbility', // <-- default Ability
+  'listAbility',
   {enabled: false} // enable or disable devtool
 ))
+```
 
+4. Handle the output messages in the `server.post`
+```js
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
     try {
       if (context.activity.type !== 'message') {
         return
       }
-
-      const messages = getMessages(context) // Get the messages from wolf
-
-      await context.sendActivities(messages.messageActivityArray)
-
+      const messages = getMessages(context) // retrieve output messages from Wolf
+      await context.sendActivities(messages.messageActivityArray) // send messages to user
     } catch (err) {
       console.error(err.stack)
     }

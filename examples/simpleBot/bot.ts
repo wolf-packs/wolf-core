@@ -1,14 +1,6 @@
 require('dotenv').config() 
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
-import { NlpResult } from '../../src/types'
-
-// import Wolf middleware
-import { wolfMiddleware, getStore, getMessages } from '../../src'
-
-import { Ability, MessageData } from '../../src/types'
-
-// import difference from 'lodash.difference'
-
+import { wolfMiddleware, getMessages, NlpResult } from '../../src'
 import abilities from './abilities'
 
 const restify = require('restify')
@@ -25,11 +17,11 @@ const adapter = new BotFrameworkAdapter({
   appPassword: process.env.MICROSOFT_APP_PASSWORD
 })
 
-const conversationStore = new ConversationState(new MemoryStorage())
+const conversationState = new ConversationState(new MemoryStorage())
 
-adapter.use(conversationStore)
+adapter.use(conversationState)
 // Wolf middleware
-adapter.use(...wolfMiddleware(conversationStore,
+adapter.use(...wolfMiddleware(conversationState,
   (context) => {
     const messageData: NlpResult = {
       message: context.activity.text,
@@ -42,9 +34,6 @@ adapter.use(...wolfMiddleware(conversationStore,
   'greet',
   {enabled: false}
 )) 
-
-// for wolf..
-// const abilities: Ability[] = abilityData as Ability[]
 
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {

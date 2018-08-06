@@ -1,10 +1,7 @@
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
-import nlp from './nlp'
-
 import { wolfMiddleware, getMessages } from '../../src'
-
-// import Wolf middleware
 import abilities from './abilities'
+import nlp from './nlp'
 
 const restify = require('restify')
 
@@ -20,19 +17,17 @@ const adapter = new BotFrameworkAdapter({
   appPassword: process.env.MICROSOFT_APP_PASSWORD
 })
 
-const conversationStore = new ConversationState(new MemoryStorage())
+const conversationState = new ConversationState(new MemoryStorage())
 
-adapter.use(conversationStore)
+adapter.use(conversationState)
 // Wolf middleware
 adapter.use(...wolfMiddleware(
-  conversationStore,
+  conversationState,
   (context) => nlp(context.activity.text),
   abilities,
-  'listAbility',
+  'listAbility', // default ability (choose one from your abilities)
   {enabled: false} // enable or disable devtool
 ))
-
-// for wolf..
 
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {

@@ -2,6 +2,7 @@ import wolfMiddleware, { getMessages, getStore } from './middlewares/wolfMiddlew
 import {
   Ability,
   Slot,
+  NlpResult,
   SetSlotDataFunctions,
   GetSlotDataFunctions,
   GetStateFunctions,
@@ -14,6 +15,7 @@ export {
   getStore,
   Ability,
   Slot,
+  NlpResult,
   SetSlotDataFunctions,
   GetSlotDataFunctions,
   GetStateFunctions,

@@ -4,15 +4,18 @@ node_js:
   - "8"
   - "7"
 
-script:
-  - npm test
+stages:
+  - test
+  - name: npm release
+    if: branch = master AND tag = true AND type = push
 
 jobs:
   include:
+    - script: npm test
     - stage: npm release
       node_js: "node"
-      if: branch = master AND tag = true
-      script:
+      script: skip # skips test because test has already ran
+    - script:
         - npm run build
         - touch ~/.npmrc
         - echo "//registry.npmjs.org/:_authToken=$NPM_PUBLISH_AUTH_TOKEN" >> ~/.npmrc
