@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "10"
+  - "node"
   - "8"
   - "7"
 
@@ -11,11 +11,11 @@ stages:
 
 jobs:
   include:
-    - stage: test
-      script: npm test
+    - script: npm test
     - stage: npm release
       node_js: "node"
-      script:
+      script: skip # skips test because test has already ran
+    - script:
         - npm run build
         - touch ~/.npmrc
         - echo "//registry.npmjs.org/:_authToken=$NPM_PUBLISH_AUTH_TOKEN" >> ~/.npmrc
