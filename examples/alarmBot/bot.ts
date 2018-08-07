@@ -1,9 +1,16 @@
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
-import { wolfMiddleware, getMessages } from '../../src'
+import { wolfMiddleware, getMessages, createWolfStore } from '../../src'
 import abilities from './abilities'
 import nlp from './nlp'
-
 const restify = require('restify')
+
+/**
+ * Starting dev tools server
+ */
+const remotedev = require('remotedev-server')
+const { composeWithDevTools } = require('remote-redux-devtools')
+remotedev({ hostname: 'localhost', port: 8100 })
+const composeEnhancers = composeWithDevTools({ realtime: true, port: 8100, latency: 0 })
 
 // Create server
 let server =  restify.createServer()
@@ -26,7 +33,7 @@ adapter.use(...wolfMiddleware(
   (context) => nlp(context.activity.text),
   abilities,
   'listAbility', // default ability (choose one from your abilities)
-  {enabled: false} // enable or disable devtool
+  createWolfStore([], composeEnhancers)
 ))
 
 server.post('/api/messages', (req, res) => {
