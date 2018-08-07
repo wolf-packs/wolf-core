@@ -1,6 +1,6 @@
 import { ConversationState, TurnContext, Promiseable } from 'botbuilder'
 import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder-redux/dist'
-import { Store, createStore, applyMiddleware, compose } from 'redux'
+import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
 import rootReducer from '../reducers'
 import { NlpResult, Ability, ConvoState, WolfState } from '../types'
 import intake from '../stages/intake'
@@ -13,6 +13,41 @@ const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
 
 /**
+ * Create WolfStore
+ * 
+ * @param middlewares 
+ * @param compose 
+ */
+export const createWolfStore = (
+  middlewares?: Middleware[], 
+  compose?: any
+) => (
+  wolfStateFromConvoState: {[key: string]: any} | null
+) => {
+  if (typeof middlewares === 'undefined') {
+    middlewares = []
+  }
+  if (typeof compose === 'undefined') {
+    compose = composeFunc
+  }
+  
+  const defaultWolfState = {
+    messageData: null,
+    slotStatus: [],
+    slotData: [],
+    abilityStatus: [],
+    promptedSlotStack: [],
+    focusedAbility: null,
+    outputMessageQueue: [],
+    filledSlotsOnCurrentTurn: [],
+    abilitiesCompleteOnCurrentTurn: [],
+    defaultAbility: null
+  }
+  const state = wolfStateFromConvoState || defaultWolfState
+  return createStore(rootReducer, state, compose(applyMiddleware(...middlewares)))
+}
+
+/**
  * wolf middleware
  * 
  * @return Promise<>
@@ -22,33 +57,8 @@ export default function initializeWolfStoreMiddleware(
   userMessageData: (context: TurnContext) => Promiseable<NlpResult>,
   abilities: Ability[],
   defaultAbility: string,
-  devTools: {enabled: boolean, port?: number} = {enabled: false}
+  storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>
 ) {
-  let composeEnhancers = compose
-  if (devTools.enabled) {
-    const remotedev = require('remotedev-server')
-    const { composeWithDevTools } = require('remote-redux-devtools')
-    remotedev({ hostname: 'localhost', port: devTools.port || 8100 })
-    composeEnhancers = composeWithDevTools({ realtime: true, port: 8100, latency: 0 })
-  }
-
-  const storeCreator = (wolfStateFromConvoState: {[key: string]: any} | null) => {
-    const defaultWolfState = {
-      messageData: null,
-      slotStatus: [],
-      slotData: [],
-      abilityStatus: [],
-      promptedSlotStack: [],
-      focusedAbility: null,
-      outputMessageQueue: [],
-      filledSlotsOnCurrentTurn: [],
-      abilitiesCompleteOnCurrentTurn: [],
-      defaultAbility: null
-    }
-    const state = wolfStateFromConvoState || defaultWolfState
-    return createStore(rootReducer, state, composeEnhancers(applyMiddleware()))
-  }
-
   return [
     botbuilderReduxMiddleware(conversationStore, storeCreator, '__WOLF_STORE__'),
     {

@@ -1,6 +1,6 @@
 require('dotenv').config() 
 import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
-import { wolfMiddleware, getMessages, NlpResult } from '../../src'
+import { wolfMiddleware, getMessages, NlpResult, createWolfStore } from '../../src'
 import abilities from './abilities'
 
 const restify = require('restify')
@@ -32,7 +32,7 @@ adapter.use(...wolfMiddleware(conversationState,
   },
   abilities,
   'greet',
-  {enabled: false}
+  createWolfStore()
 )) 
 
 server.post('/api/messages', (req, res) => {

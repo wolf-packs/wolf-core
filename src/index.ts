@@ -1,4 +1,4 @@
-import wolfMiddleware, { getMessages, getStore } from './middlewares/wolfMiddleware'
+import wolfMiddleware, { getMessages, getStore, createWolfStore } from './middlewares/wolfMiddleware'
 import {
   Ability,
   Slot,
@@ -13,6 +13,7 @@ export {
   wolfMiddleware,
   getMessages,
   getStore,
+  createWolfStore,
   Ability,
   Slot,
   NlpResult,
