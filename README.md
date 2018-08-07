@@ -124,7 +124,7 @@ npm install botbuilder-wolf
 1. Install `botbuilder-wolf`.
 2. Import Wolf into a pre-existing Microsft Bot Framework v4 bot.
 ```js
-import { wolfMiddleware, getMessages } from 'botbuilder-wolf'
+import { wolfMiddleware, getMessages, createWolfStore } from 'botbuilder-wolf'
 ```
 
 3. Create an abilities definition 
@@ -138,11 +138,11 @@ import abilities from './abilities'
 ```js
 // Wolf middleware
 adapter.use(...wolfMiddleware(
-  conversationStore,
+  conversationState,
   (context) => nlp(context.activity.text),
   abilities,
   'listAbility',
-  {enabled: false} // enable or disable devtool
+  createWolfStore()
 ))
 ```
 
