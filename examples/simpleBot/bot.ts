@@ -30,7 +30,7 @@ adapter.use(...wolfMiddleware(conversationState,
     }
     return messageData
   },
-  abilities,
+  () => abilities,
   'greet',
   createWolfStore()
 )) 

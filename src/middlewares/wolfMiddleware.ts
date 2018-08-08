@@ -55,7 +55,7 @@ export const createWolfStore = (
 export default function initializeWolfStoreMiddleware(
   conversationStore: ConversationState,
   userMessageData: (context: TurnContext) => Promiseable<NlpResult>,
-  abilities: Ability[],
+  getAbilitiesFunc: (context: TurnContext) => Promiseable<Ability[]>,
   defaultAbility: string,
   storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>
 ) {
@@ -68,6 +68,7 @@ export default function initializeWolfStoreMiddleware(
         } else {
           const store = getStore(context)
           const nlpResult: NlpResult = await userMessageData(context)
+          const abilities: Ability[] = await getAbilitiesFunc(context)
           const convoState: ConvoState = conversationStore.get(context) || {}
           intake(store, nlpResult, defaultAbility)
           fillSlot(store, convoState, abilities)
