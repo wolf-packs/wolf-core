@@ -31,7 +31,7 @@ adapter.use(conversationState)
 adapter.use(...wolfMiddleware(
   conversationState,
   (context) => nlp(context.activity.text),
-  abilities,
+  () => abilities,
   'listAbility', // default ability (choose one from your abilities)
   createWolfStore([], composeEnhancers)
 ))

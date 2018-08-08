@@ -140,7 +140,7 @@ import abilities from './abilities'
 adapter.use(...wolfMiddleware(
   conversationState,
   (context) => nlp(context.activity.text),
-  abilities,
+  (context) => abilities,
   'listAbility',
   createWolfStore()
 ))
