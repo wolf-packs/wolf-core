@@ -2,7 +2,7 @@ import { ConversationState, TurnContext, Promiseable } from 'botbuilder'
 import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder-redux/dist'
 import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
 import rootReducer from '../reducers'
-import { NlpResult, Ability, ConvoState, WolfState } from '../types'
+import { NlpResult, Ability, ConvoState, WolfState, IncomingSlotData } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
 import evaluate from '../stages/evaluate'
@@ -57,7 +57,8 @@ export default function initializeWolfStoreMiddleware(
   userMessageData: (context: TurnContext) => Promiseable<NlpResult>,
   getAbilitiesFunc: (context: TurnContext) => Promiseable<Ability[]>,
   defaultAbility: string,
-  storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>
+  storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>,
+  getSlotDataFunc?: (context: TurnContext) => Promiseable<IncomingSlotData[]>
 ) {
   return [
     botbuilderReduxMiddleware(conversationStore, storeCreator, '__WOLF_STORE__'),
@@ -70,7 +71,10 @@ export default function initializeWolfStoreMiddleware(
           const nlpResult: NlpResult = await userMessageData(context)
           const abilities: Ability[] = await getAbilitiesFunc(context)
           const convoState: ConvoState = conversationStore.get(context) || {}
-          intake(store, nlpResult, defaultAbility)
+          console.log(abilities)
+          const incomingSlotData: IncomingSlotData[] = getSlotDataFunc ? 
+            await getSlotDataFunc(context) : []
+          intake(store, nlpResult, incomingSlotData, defaultAbility)
           fillSlot(store, convoState, abilities)
           evaluate(store, abilities, convoState)
           const {runOnComplete, addMessage} = execute(store, convoState, abilities)
