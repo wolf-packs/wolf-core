@@ -142,7 +142,10 @@ adapter.use(...wolfMiddleware(
   (context) => nlp(context.activity.text),
   (context) => abilities,
   'listAbility',
-  createWolfStore()
+  createWolfStore(),
+  async (context) => {
+    return await fetch('data.com').then(processStringData) //type return is IncomingSlotData[]
+  }
 ))
 ```
 

@@ -1,7 +1,7 @@
-import { BotFrameworkAdapter, MemoryStorage, ConversationState } from 'botbuilder'
+import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 'botbuilder'
 import { wolfMiddleware, getMessages, NlpResult, createWolfStore } from '../../src'
 import abilities from './abilities'
-import { IncomingSlotData } from '../../src/types';
+import { IncomingSlotData, OutputMessageType } from '../../src/types';
 
 const restify = require('restify')
 
@@ -59,8 +59,34 @@ server.post('/api/messages', (req, res) => {
         return
       }
 
-      const messages = getMessages(context)
-      await context.sendActivities(messages.messageActivityArray)
+      const { messageItemArray } = getMessages(context)
+      
+      const desiredOrder = [
+        'greet',
+        'profile'
+      ]
+
+      const messages: Partial<Activity>[] = messageItemArray
+        .filter(_ => _.type !== OutputMessageType.abilityCompleteMessage)
+        .map(_ => ({
+          type: 'message',
+          text: _.message
+        }))
+
+      const onCompleteMessage: string = desiredOrder
+        .map(_ => {
+          return messageItemArray.find(item =>
+            item.abilityName === _ && item.type === OutputMessageType.abilityCompleteMessage)
+        })
+        .filter(_ => _)
+        .map(_ => _.message)
+        .join(' ')
+
+      await context.sendActivities(messages)
+      await context.sendActivities([{
+        type: 'message',
+        text: onCompleteMessage
+      }])
 
     } catch (err) {
       console.error(err.stack)
