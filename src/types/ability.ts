@@ -11,7 +11,8 @@ export interface Ability {
   name: string,
   slots: Slot[],
   nextAbility?: (convoState: ConvoState, wolfState: WolfState) => NextAbilityResult,
-  onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => Promise<string|void> | string | void
+  onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => 
+    Promise<string|void> | string | void
 }
 
 /**
@@ -44,4 +45,10 @@ export interface ShouldRunCompleteResult {
   shouldComplete: boolean,
   reason?: string,
   nextAbility?: string
+}
+
+export interface IncomingSlotData {
+  slotName: string,
+  abilityName: string,
+  value: string
 }

@@ -84,7 +84,7 @@ export default function fillSlot(
         if (validatorResult.isValid) {
           log('users response was valid according to the prompted slots validator')
           const fulfillSlotResult = fulfillSlot(convoState, abilities, message.rawText, slotName, abilityName, getState)
-          fulfillSlotResult.forEach(dispatchActionArray(dispatch))
+          fulfillSlotResult.forEach(dispatch)
           log('so fulfill the slot by running these actions: %O', fulfillSlotResult)
                     
           // add to slotFillArr
@@ -100,7 +100,7 @@ export default function fillSlot(
         // Add reason to output queue if present
         log('users response was not valid.. creating the validator message')
         const validateMessage = createValidatorReasonMessage(validatorResult, slotName, abilityName)
-        validateMessage.forEach(dispatchActionArray(dispatch))
+        validateMessage.forEach(dispatch)
         matchNotValid = {slotName, abilityName, value: message.rawText}
       }
     }
@@ -367,7 +367,7 @@ function runRetryCheck(
     // should prompt retry on matched 
     dispatch(incrementTurnCountBySlotId({ slotName, abilityName }))
     const retryResult = runRetry(convoState, getState, abilities, slotName, abilityName, value)
-    retryResult.forEach(dispatchActionArray(dispatch))
+    retryResult.forEach(dispatch)
 
     log('adding %s slot to stack', slotName)
     // add slot to stack
@@ -388,7 +388,7 @@ function runRetryCheck(
     dispatch(incrementTurnCountBySlotId({ slotName, abilityName }))
     const retryResult = runRetry(convoState, getState, abilities, promptedSlotInfo.slotName,
       promptedSlotInfo.abilityName, message.rawText)
-    retryResult.forEach(dispatchActionArray(dispatch))
+    retryResult.forEach(dispatch)
 
     // no need to update prompted slot.. same slot
     log('exiting runRetryCheck()..')
@@ -476,7 +476,7 @@ function checkValidatorAndFill (
     log('isValid is true.. fulfillSlot')
     const fulfillSlotResult =
       fulfillSlot(convoState, abilities, match.entity, match.slot.name, match.abilityName, getState)
-    fulfillSlotResult.forEach(dispatchActionArray(dispatch))
+    fulfillSlotResult.forEach(dispatch)
 
     // slot filled.. exit true
     log('exiting checkValidatorAndFill with true')
@@ -486,18 +486,11 @@ function checkValidatorAndFill (
   // Add reason to output queue if present
   log('isValid is false.. create validator message')
   const validateMessage = createValidatorReasonMessage(validatorResult, match.slot.name, match.abilityName)
-  validateMessage.forEach(dispatchActionArray(dispatch))
+  validateMessage.forEach(dispatch)
 
   // slot not filled.. exit false
   log('exiting checkValidatorAndFill with false')
   return null
-}
-
-/**
- * Dispatch on all Action items in array.
- */
-const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
-  dispatch(action)
 }
 
 /**

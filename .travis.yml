@@ -2,7 +2,6 @@ language: node_js
 node_js:
   - "node"
   - "8"
-  - "7"
 
 stages:
   - test
@@ -13,7 +12,7 @@ jobs:
   include:
     - script: npm test
     - stage: publish
-      # node_js: "node"
+      node_js: "node"
       script:
         - npm run build
         - touch ~/.npmrc
