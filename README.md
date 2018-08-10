@@ -36,7 +36,6 @@ ___
 ## Ability Structure
 __*Slot*__: A slot is structure that represents any piece of information that is required from the user and obtained through conversation or a system. This can be the user's name, address, etc.. A slot structure has a few properties which allows Wolf to dynamically search for possible matches. Anatomy of a slot:
 - `name`: name of slot. **should match an entity name from your NLP**
-- `defaultIsEnabled?`: boolean to initialize status.
 - `order`: optimal order to fill slot. (ascending order)
 - `query`: string to prompt user to obtain information.
 - `validate`: function to test if the information is valid before fulfilling.
@@ -97,23 +96,6 @@ name: 'addAlarm',
 ```
 
 ___
-## Wolf Stages:
-### **Intake**
-`Intake` captures the user message payload to be used throughout future stages.
-
-### **FillSlot**
-`FillSlot` validates and fills the slot(s) based on the user message determined by `intake`. If there is any information that is invalid, as determined by the validators, the bot will prompt for a retry. If information is valid, `slot.onFill()` will be called.
-
-### **Evaluate**
-`Evaluate` determines the next slot to be filled (next item to prompt the user) within the active ability.  If all slots are filled, `evaluate` marks the ability as "complete". All slots that are identified to be prompted will be added to the `slotPromptedStack`.
-
-### **Execute**
-`Execute` checks if any abilities are ready to be completed, if so, `ability.onComplete()` will be run. Next, the `slotPromptedStack` will be checked for any unprompted slots. If a slot exists ontop of the stack that is not prompted, `slot.query()` will be run.
-
-### **Outtake**
-`Outtake` organizes the message queue, and outputs an array of messages that the bot should send to the user.
-
-___
 ## Install
 Open a pre-existing Microsft Bot Framework v4 project directory and run:
 ```
@@ -124,7 +106,7 @@ npm install botbuilder-wolf
 1. Install `botbuilder-wolf`.
 2. Import Wolf into a pre-existing Microsft Bot Framework v4 bot.
 ```js
-import { wolfMiddleware, getMessages, createWolfStore } from 'botbuilder-wolf'
+import { wolfMiddleware, getMessages, createWolfStore, IncomingSlotData } from 'botbuilder-wolf'
 ```
 
 3. Create an abilities definition 
@@ -142,10 +124,7 @@ adapter.use(...wolfMiddleware(
   (context) => nlp(context.activity.text),
   (context) => abilities,
   'listAbility',
-  createWolfStore(),
-  async (context) => {
-    return await fetch('data.com').then(processStringData) //type return is IncomingSlotData[]
-  }
+  createWolfStore()
 ))
 ```
 
@@ -166,9 +145,13 @@ server.post('/api/messages', (req, res) => {
 })
 ```
 
-See [examples](https://github.com/great-lakes/botbuilder-wolf/tree/master/examples) for full implemnetation.
+___
+## Resources
+
+See [Wolf Core Concepts](https://github.com/great-lakes/botbuilder-wolf/wiki/Core-Concepts) for more information about middleware usage.
+
+See [examples](https://github.com/great-lakes/botbuilder-wolf/tree/master/examples) for full implementation.
 
 ___
-
 ## Contribution
 Please refer to [Wolf Wiki](https://github.com/great-lakes/botbuilder-wolf/wiki) for roadmap and contribution information.
