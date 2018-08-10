@@ -1,9 +1,20 @@
 import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 'botbuilder'
-import { wolfMiddleware, getMessages, NlpResult, createWolfStore, OutputMessageType, IncomingSlotData, Ability } from '../../src'
+import {
+  wolfMiddleware, 
+  getMessages,
+  NlpResult,
+  createWolfStore,
+  OutputMessageType,
+  IncomingSlotData,
+  Ability
+} from '../../src'
 import abilities from './abilities'
 
 const restify = require('restify')
 
+/**
+ * Bot Boilerplate code
+ */
 // Create server
 let server =  restify.createServer()
 server.listen(process.env.port || 3978, () => {
@@ -17,17 +28,21 @@ const adapter = new BotFrameworkAdapter({
 })
 
 const conversationState = new ConversationState(new MemoryStorage())
+adapter.use(conversationState)
 
-// Create storage to store incoming data
+/**
+ * Set SlotData API memory
+ */
 const apiStorage = new MemoryStorage()
 
-// Setup custom endpoint to collect slot data
 import { slotDataEndpoint } from './slotDataApi'
 server.use(restify.plugins.bodyParser())
 server.post('/api/slotdata', slotDataEndpoint(apiStorage, abilities))
 
+/**
+ * User defined data getters for both ability definition and slot data
+ */
 
-// Define custom slot data getter function
 const customSlotDataGetter = async (context): Promise<IncomingSlotData[]> => {
   // read from apiStorage by conversationId
   const conversationId = context.activity.conversation.id
@@ -57,22 +72,28 @@ const customAbilityGetter = (context): Ability[] => {
   return abilities.default ? abilities.default : abilities
 }
 
-adapter.use(conversationState)
+/**
+ * Add the wolf middleware
+ */
+
 // Wolf middleware
-adapter.use(...wolfMiddleware(conversationState,
-  (context) => {
-    const messageData: NlpResult = {
-      message: context.activity.text,
-      intent: context.activity.text === 'hi' ? 'greet' : null,
-      entities: []
-    }
-    return messageData
-  },
-  customAbilityGetter,
-  'greet',
-  createWolfStore(),
-  customSlotDataGetter
-)) 
+adapter.use(
+  ...wolfMiddleware(
+    conversationState,
+    (context) => {
+      const messageData: NlpResult = {
+        message: context.activity.text,
+        intent: context.activity.text === 'hi' ? 'greet' : null,
+        entities: []
+      }
+      return messageData
+    },
+    customAbilityGetter,
+    'greet',
+    createWolfStore(),
+    customSlotDataGetter
+  )
+) 
 
 server.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
