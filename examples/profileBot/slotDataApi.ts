@@ -1,4 +1,4 @@
-import { MemoryStorage, StoreItems } from "../../node_modules/botbuilder"
+import { MemoryStorage, StoreItems, Storage } from "../../node_modules/botbuilder"
 import { Ability } from "../../src"
 
 export interface ApiValidateResult {
@@ -23,58 +23,63 @@ interface bodyValue {
  *  conversationId: 'abc123',
  *  values: [
  *    {
- *      value: 'kevin',
- *      slotName: 'foo',
- *      abilityName: 'bar'
+ *      value: '100',
+ *      slotName: 'age',
+ *      abilityName: 'profile'
  *    }
  *  ]
  * }
  */
-export const slotDataEndpoint = (apiStorage: MemoryStorage, abilities: Ability[]) => async (req: any, res: any) => {
-const body = {
-    conversationId: req.body.conversationId, 
-    values: req.body.values
-}
+export const slotDataEndpoint = (apiStorage: Storage, abilities: Ability[]) => async (req: any, res: any) => {
+  const body = {
+      conversationId: req.body.conversationId, 
+      values: req.body.values
+  }
 
-    // get data corresponding to conversationid
-    const slotData = await apiStorage.read([body.conversationId])
-    
-    // test validation
-    const validatorResults = body.values.map((payload: bodyValue): ApiValidateResult => {
-      // get ability
-      const ability = abilities.filter((ability) => payload.abilityName === ability.name)
-      if (ability.length === 0) { // empty check
-        return { isValid: false, reason: 'Ability does not exist.', value: payload.value }
-      } 
+  // get data corresponding to conversationid
+  const slotData = await apiStorage.read([body.conversationId])
+  
+  // test validation
+  const validatorResults = body.values.map((payload: bodyValue): ApiValidateResult => {
+    // get ability
+    const ability = abilities.filter((ability) => payload.abilityName === ability.name)
+    if (ability.length === 0) { // empty check
+      return { isValid: false, reason: 'Ability does not exist.', value: payload.value }
+    } 
 
-      // get slot
-      const slot = ability[0].slots.filter((slot) => payload.slotName === slot.name)
-      if (slot.length === 0) { //empty check
-        return { isValid: false, reason: 'Slot does not exist.', value: payload.value }
-      } 
-      
-      const result = slot[0].validate(payload.value, { rawText: payload.value, intent: '', entities: [] })
-      return { ...result, value: payload.value, slotName: payload.slotName, abilityName: payload.abilityName }
-    })
+    // get slot
+    const slot = ability[0].slots.filter((slot) => payload.slotName === slot.name)
+    if (slot.length === 0) { //empty check
+      return { isValid: false, reason: 'Slot does not exist.', value: payload.value }
+    } 
     
-    // store results that passed
-    const validResults = validatorResults.filter((_: ApiValidateResult) => _.isValid === true)
-    
-    let delta: ApiValidateResult[] = validResults
-
-    if (slotData && slotData[body.conversationId]) {
-      // prexisting data.. append changes
-      // concat array with new objects
-      delta = slotData[body.conversationId].data.concat(delta)
+    let result ={ isValid: true, reason: null, value: payload.value, slotName: payload.slotName, abilityName: payload.abilityName }
+    if(slot[0].validate) {
+      const valResult = slot[0].validate(payload.value, { rawText: payload.value, intent: '', entities: [] })
+      result = { ...valResult, ...result}
     }
 
-    // write to storage which will be made available to S1
-    const state = { data: delta, eTag: '*' }
-    const changes: StoreItems = {}
-    changes[body.conversationId] = state
-    await apiStorage.write(changes)
+    return { ...result, value: payload.value, slotName: payload.slotName, abilityName: payload.abilityName }
+  })
+  
+  // store results that passed
+  const validResults = validatorResults.filter((_: ApiValidateResult) => _.isValid === true)
+  
+  let delta: ApiValidateResult[] = validResults
 
-    const responseString = validatorResults
-    res.send(responseString)
+  if (slotData && slotData[body.conversationId]) {
+    // prexisting data.. append changes
+    // concat array with new objects
+    delta = slotData[body.conversationId].data.concat(delta)
   }
+
+  // write to storage which will be made available to S1
+  const state = { data: delta, eTag: '*' }
+  const changes: StoreItems = {}
+  changes[body.conversationId] = state
+  await apiStorage.write(changes)
+
+  const responseString = validatorResults
+  res.send(responseString)
+}
   

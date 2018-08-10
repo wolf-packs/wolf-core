@@ -31,9 +31,11 @@ server.post('/api/slotdata', slotDataEndpoint(apiStorage, abilities))
 const customSlotDataGetter = async (context): Promise<IncomingSlotData[]> => {
   // read from apiStorage by conversationId
   const conversationId = context.activity.conversation.id
+  console.log('conversationId:', conversationId)
   const slotRawData = await apiStorage.read([conversationId])
   .then((state) => state)
   .catch((err) => console.log(err))
+  console.log('slotRawData:', slotRawData)
 
   let slotData = []
   if (slotRawData && slotRawData[conversationId]) {
@@ -105,10 +107,12 @@ server.post('/api/messages', (req, res) => {
         .join(' ')
 
       await context.sendActivities(messages)
-      await context.sendActivities([{
-        type: 'message',
-        text: onCompleteMessage
-      }])
+      if (onCompleteMessage) {
+        await context.sendActivities([{
+          type: 'message',
+          text: onCompleteMessage
+        }])
+      }
 
     } catch (err) {
       console.error(err.stack)
