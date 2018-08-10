@@ -8,9 +8,15 @@ import { addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,
 import { findInSlotIdItemBySlotId } from '../helpers'
 const logState = require('debug')('wolf:s4:enterState')
 const log = require('debug')('wolf:s4')
+
 export interface ExecuteResult {
-  runOnComplete: () => Promise<string|void>,
-  addMessage: (msg: string) => void
+  runOnComplete: () => Promise<OnCompletePromiseResult<string>[]>,
+  addMessage: (msgData: OnCompletePromiseResult<string>) => void
+}
+
+interface OnCompletePromiseResult<T> {
+  result: T,
+  abilityName: string
 }
 
 const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
@@ -29,40 +35,56 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  * @param convoState conversationState
  * @param abilities user defined abilities and slots
  */
-export default function execute(store: Store<WolfState>, convoState: ConvoState, abilities: Ability[]): ExecuteResult {
+export default function execute(
+  store: Store<WolfState>,
+  convoState: ConvoState,
+  abilities: Ability[]
+): ExecuteResult | void {
   const { dispatch, getState } = store
   logState(getState())
-  const addMessage = (msg: string) => dispatch(
-    addMessageAction({message: msg, type: OutputMessageType.abilityCompleteMessage})
+  const addMessage = (msg: OnCompletePromiseResult<string>) => dispatch(
+    addMessageAction(
+      { message: msg.result,
+        abilityName: msg.abilityName,
+        type: OutputMessageType.abilityCompleteMessage
+      }
+    )
   )
 
-  // TODO: refactor
   let onCompleteReturnResult = null
 
   // Check if S4 should run an ability onComplete
-  // TODO: run ALL abilities on abilityCompleteResult on this turn
-  // ... currently only completing first ability
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
-    const valueOrPromise = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult[0])
-    let returnResult: Promise<string|void>
-    if (typeof valueOrPromise === 'string') {
-      returnResult = Promise.resolve(valueOrPromise)
-    } else if (!valueOrPromise) {
-      // void
-      returnResult = Promise.resolve()
-    } else if (typeof valueOrPromise.then === 'function') {
+    const valueOrPromiseArr = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult)
+    const allPromises: Promise<(OnCompletePromiseResult<string|void>)>[] = valueOrPromiseArr.map((_) => {
+      const { result: valueOrPromise, abilityName } = _
+      if (typeof valueOrPromise === 'string') {
+        return Promise.resolve({result: valueOrPromise, abilityName})
+      }
+      
+      if (!valueOrPromise) {
+        // void
+        return Promise.resolve({result: undefined, abilityName})
+      }
+      
       // promise
-      returnResult = valueOrPromise
-    }
-
-    // set ability status to complete
-    dispatch(setAbilityStatus(abilityCompleteResult[0], true))
-
-    // reset all slot status to pending (isDone = false)
-    dispatch(resetSlotStatusByAbilityName(abilityCompleteResult[0]))
+      return valueOrPromise.then((result) => ({ result, abilityName }))
+    })
     
-    onCompleteReturnResult = { runOnComplete: () => returnResult, addMessage }
+    abilityCompleteResult.forEach((abilityName: string) => {
+      // set ability status to complete
+      dispatch(setAbilityStatus(abilityName, true))
+
+      // reset all slot status to pending (isDone = false)
+      dispatch(resetSlotStatusByAbilityName(abilityName))
+    })
+    
+    onCompleteReturnResult = { 
+      runOnComplete: () => Promise.all(allPromises)
+        .then(result => result.filter((_) => _.result)) as Promise<OnCompletePromiseResult<string>[]>,
+      addMessage
+    }
   }
 
   // Check if S4 should prompt a slot
@@ -72,19 +94,19 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
 
     // check if slot is already prompted
     if (slot.prompted) {
-      return { runOnComplete: () => Promise.resolve(), addMessage }
+      return
     }
 
     // slot has not been prompted yet.. prompt here
     const slotToPrompt = getSlotBySlotId(abilities, { slotName: slot.slotName, abilityName: slot.abilityName })
     if (slotToPrompt) {
       const runSlotQueryResult = runSlotQuery(convoState, store, slotToPrompt, slot.abilityName)
-      runSlotQueryResult.forEach(dispatchActionArray(dispatch))
+      runSlotQueryResult.forEach(dispatch)
 
       if (onCompleteReturnResult) {
         return onCompleteReturnResult
       }
-      return { runOnComplete: () => Promise.resolve(), addMessage }
+      return
     }
     // SLOT NOT VALID.. continue
   }
@@ -95,31 +117,46 @@ export default function execute(store: Store<WolfState>, convoState: ConvoState,
 
   // NO ABILITY TO COMPLETE..
   // NO SLOT TO PROMPT..
-  return { runOnComplete: () => Promise.resolve(), addMessage }
+  return
 }
 
 /**
- * Execute ability.onComplte()
+ * Execute ability.onComplete()
  */
 function runAbilityOnComplete(
   getState: () => WolfState,
   convoState: ConvoState,
   abilities: Ability[],
-  abilityToComplete: string
-): Promise<string|void> | string | void {
-  const ability = abilities.find((ability) => ability.name === abilityToComplete)
-  if (!ability) {
-    return Promise.resolve()
-  }
+  abilitiesToComplete: string[]
+): {
+  result: Promise<string|void> | string | void, 
+  abilityName: string
+}[] {
 
-  const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
-  const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
+  return abilitiesToComplete.map((abilityToComplete) => {
+    const ability = abilities.find((ability) => ability.name === abilityToComplete)
+    log(`according to the wolfstate, ability ${abilityToComplete}'s onComplete needs to run`)
+    if (!ability) {
+      log(`  however, ${abilityToComplete} is not found in the abilities definition`)
+      // ability is not found. the result gets filtered out because result is void
+      return {
+        result: Promise.resolve(),
+        abilityName: abilityToComplete
+      }
+    }
 
-  const getStateFuncs: GetStateFunctions = {
-    getAbilityList: () => abilities
-  }
+    const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
+    const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
 
-  return ability.onComplete(convoState, submittedData, getStateFuncs)
+    const getStateFuncs: GetStateFunctions = {
+      getAbilityList: () => abilities
+    }
+
+    return {
+      result: ability.onComplete(convoState, submittedData, getStateFuncs),
+      abilityName: ability.name
+    }
+  })
 }
 
 /**
@@ -155,11 +192,4 @@ function runSlotQuery(convoState: ConvoState, store: Store<WolfState>, slot: Slo
     abilityName
   }
   return [addMessageAction(message), setSlotPrompted(slotId, true)]
-}
-
-/**
- * Dispatch on all Action items in array.
- */
-const dispatchActionArray = (dispatch: Dispatch) => (action: Action): void => {
-  dispatch(action)
 }

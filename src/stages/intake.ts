@@ -1,6 +1,6 @@
-import { MessageData, NlpResult } from '../types'
-import { setMessageData, setDefaultAbility }  from '../actions'
-import { Store } from 'redux'
+import { MessageData, NlpResult, IncomingSlotData } from '../types'
+import { setMessageData, setDefaultAbility, fillSlot, startIntakeStage }  from '../actions'
+import { Store, Dispatch, Action } from 'redux'
 const logState = require('debug')('wolf:s1:enterState')
 const log = require('debug')('wolf:s1')
 
@@ -16,9 +16,11 @@ const log = require('debug')('wolf:s1')
 export default function intake(
   {dispatch, getState}: Store,
   nlpResult: NlpResult,
+  incomingSlotData: IncomingSlotData[],
   defaultAbility: string | null = null
 ): void {
   logState(getState())
+  dispatch(startIntakeStage())
   // MessageData derived from user nlpResult
   const messageData: MessageData = {
     rawText: nlpResult.message,
@@ -31,4 +33,10 @@ export default function intake(
 
   // Write messageData object to state
   dispatch(setMessageData(messageData))
+
+  // Process incoming slot data
+  const actions: Action[] = incomingSlotData.map((_) => fillSlot(_.slotName, _.abilityName, _.value))
+  actions.forEach(dispatch)
+
+  log('incomingSlotData:', incomingSlotData)
 } 

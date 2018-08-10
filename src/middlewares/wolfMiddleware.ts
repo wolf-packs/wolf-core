@@ -2,12 +2,12 @@ import { ConversationState, TurnContext, Promiseable } from 'botbuilder'
 import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder-redux/dist'
 import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
 import rootReducer from '../reducers'
-import { NlpResult, Ability, ConvoState, WolfState } from '../types'
+import { NlpResult, Ability, ConvoState, WolfState, IncomingSlotData } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
 import evaluate from '../stages/evaluate'
 import execute from '../stages/execute'
-import outtake from '../stages/outtake'
+import outtake, { OuttakeResult } from '../stages/outtake'
 
 const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
@@ -57,7 +57,8 @@ export default function initializeWolfStoreMiddleware(
   userMessageData: (context: TurnContext) => Promiseable<NlpResult>,
   getAbilitiesFunc: (context: TurnContext) => Promiseable<Ability[]>,
   defaultAbility: string,
-  storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>
+  storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>,
+  getSlotDataFunc?: (context: TurnContext) => Promiseable<IncomingSlotData[]>
 ) {
   return [
     botbuilderReduxMiddleware(conversationStore, storeCreator, '__WOLF_STORE__'),
@@ -70,14 +71,17 @@ export default function initializeWolfStoreMiddleware(
           const nlpResult: NlpResult = await userMessageData(context)
           const abilities: Ability[] = await getAbilitiesFunc(context)
           const convoState: ConvoState = conversationStore.get(context) || {}
-          intake(store, nlpResult, defaultAbility)
+          const incomingSlotData: IncomingSlotData[] = getSlotDataFunc ? 
+            await getSlotDataFunc(context) : []
+          intake(store, nlpResult, incomingSlotData, defaultAbility)
           fillSlot(store, convoState, abilities)
           evaluate(store, abilities, convoState)
-          const {runOnComplete, addMessage} = execute(store, convoState, abilities)
-          
-          const message = await runOnComplete()
-          if (message) {
-            addMessage(message)
+          const executeResult = execute(store, convoState, abilities)
+
+          if (executeResult) {
+            const { runOnComplete, addMessage } = executeResult
+            const messages = await runOnComplete()
+            messages.forEach(addMessage)
           }
 
           const messagesObj = outtake(store)
@@ -94,6 +98,6 @@ export function getStore(context: TurnContext): Store<WolfState> {
   return getReduxStore(context, '__WOLF_STORE__')
 }
 
-export function getMessages(context: TurnContext) {
+export function getMessages(context: TurnContext): OuttakeResult {
   return context.services.get(wolfMessagesKey)
 }

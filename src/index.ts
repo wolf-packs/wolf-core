@@ -6,7 +6,10 @@ import {
   SetSlotDataFunctions,
   GetSlotDataFunctions,
   GetStateFunctions,
-  SlotConfirmationFunctions
+  SlotConfirmationFunctions,
+  OutputMessageType,
+  OutputMessageItem,
+  IncomingSlotData
 } from './types'
 
 export {
@@ -20,5 +23,8 @@ export {
   SetSlotDataFunctions,
   GetSlotDataFunctions,
   GetStateFunctions,
-  SlotConfirmationFunctions
+  SlotConfirmationFunctions,
+  OutputMessageType,
+  OutputMessageItem,
+  IncomingSlotData
 }

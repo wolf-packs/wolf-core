@@ -1,9 +1,9 @@
 import { Reducer } from 'redux'
 import { SlotId } from '../types'
-import { START_FILL_SLOT_STAGE, FILL_SLOT } from '../actions'
+import { START_INTAKE_STAGE, FILL_SLOT } from '../actions'
 
 const reducer: Reducer = (prev: SlotId[] = [], action) => {
-  if (action.type === START_FILL_SLOT_STAGE) {
+  if (action.type === START_INTAKE_STAGE) {
     return []
   }
 

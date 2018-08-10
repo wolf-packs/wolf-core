@@ -1,11 +1,13 @@
 import { Store } from 'redux'
-import { WolfState, Ability, SlotId, Slot, PromptSlotReason, ConvoState, NextAbilityResult, OutputMessageItem, OutputMessageType } from '../types'
+import { WolfState, Ability, SlotId, Slot, PromptSlotReason, ConvoState,
+  NextAbilityResult, OutputMessageItem, OutputMessageType } from '../types'
 import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
   getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots } from '../selectors'
 import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
 const logState = require('debug')('wolf:s3:enterState')
 const log = require('debug')('wolf:s3')
+
 /**
  * Evaluate Stage (S3):
  * 
@@ -81,7 +83,10 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
     log('slots have been filled this turn')
     // Check if any abilities have been completed as a result of the filled slot(s)
     log('check if there are any abilities that have been completed as a result of the filled slots this turn')
-    const abilityList = getAbilitiesCompleted(getState, abilities)
+    const abilityListUnfiltered = getAbilitiesCompleted(getState, abilities)
+
+    // filtering out
+    const abilityList = [... new Set(abilityListUnfiltered)]
     log('abilityList:', abilityList)
     if (abilityList.length > 0) {
       // ability complete
@@ -334,7 +339,12 @@ function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focus
     .filter(_ => _) as Slot[]
 }
 
-function getNextAbility (abilities: Ability[], abilityName: string, convoState: ConvoState, state: WolfState): NextAbilityResult | null {
+function getNextAbility (
+  abilities: Ability[],
+  abilityName: string,
+  convoState: ConvoState,
+  state: WolfState
+): NextAbilityResult | null {
   const completedAbility = getTargetAbility(abilities, abilityName)
 
   if (completedAbility && completedAbility.nextAbility) {
