@@ -1,7 +1,6 @@
 import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 'botbuilder'
-import { wolfMiddleware, getMessages, NlpResult, createWolfStore } from '../../src'
+import { wolfMiddleware, getMessages, NlpResult, createWolfStore, OutputMessageType, IncomingSlotData, Ability } from '../../src'
 import abilities from './abilities'
-import { IncomingSlotData, OutputMessageType } from '../../src/types';
 
 const restify = require('restify')
 
@@ -19,16 +18,41 @@ const adapter = new BotFrameworkAdapter({
 
 const conversationState = new ConversationState(new MemoryStorage())
 
-const customSlotDataGetter = (context) => {
-  if (conversationState.get(context).name === 'kevin') {
-    return []
+// Create storage to store incoming data
+const apiStorage = new MemoryStorage()
+
+// Setup custom endpoint to collect slot data
+import { slotDataEndpoint } from './slotDataApi'
+server.use(restify.plugins.bodyParser())
+server.post('/api/slotdata', slotDataEndpoint(apiStorage, abilities))
+
+
+// Define custom slot data getter function
+const customSlotDataGetter = async (context): Promise<IncomingSlotData[]> => {
+  // read from apiStorage by conversationId
+  const conversationId = context.activity.conversation.id
+  const slotRawData = await apiStorage.read([conversationId])
+  .then((state) => state)
+  .catch((err) => console.log(err))
+
+  let slotData = []
+  if (slotRawData && slotRawData[conversationId]) {
+  slotData = slotRawData[conversationId].data
+  // Accessed data, delete data..
+  await apiStorage.delete([conversationId])
   }
 
-  return [
-    { slotName: 'age', abilityName: 'profile', value: '24' },
-    { slotName: 'name', abilityName: 'greet', value: 'kevin' },
-    { slotName: 'date', abilityName: 'profile', value: '3/4' }
-  ]
+  // return either empty array or slot data from api
+  return slotData
+}
+
+// Define custom ability getter function
+const customAbilityGetter = (context): Ability[] => {
+  // Delete old abilities cache.. require stores a cache
+  delete require.cache[require.resolve('./abilities')]
+  // Requre new abilities in case there are any changes to ability definition
+  const abilities = require('./abilities')
+  return abilities.default ? abilities.default : abilities
 }
 
 adapter.use(conversationState)
@@ -42,11 +66,7 @@ adapter.use(...wolfMiddleware(conversationState,
     }
     return messageData
   },
-  (context) => {
-    delete require.cache[require.resolve('./abilities')]
-    const abilities = require('./abilities')
-    return abilities.default ? abilities.default : abilities
-  },
+  customAbilityGetter,
   'greet',
   createWolfStore(),
   customSlotDataGetter
@@ -59,8 +79,10 @@ server.post('/api/messages', (req, res) => {
         return
       }
 
+      // get messageItemArray that Wolf has created
       const { messageItemArray } = getMessages(context)
       
+      // Sort messages with type abilityCompleteMessage to desired order.
       const desiredOrder = [
         'greet',
         'profile'
