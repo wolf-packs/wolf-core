@@ -74,3 +74,9 @@ export const incrementTurnCountBySlotId = (slotId: SlotId) => ({
   type: INCREMENT_TURN_COUNT_BY_ID,
   payload: slotId
 })
+
+export const SET_SLOT_DONE = 'SET_SLOT_DONE'
+export const setSlotDone = (slotId: SlotId, isDone: boolean) => ({
+  type: SET_SLOT_DONE,
+  payload: {slotId, isDone}
+})

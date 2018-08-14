@@ -2,12 +2,13 @@ import { ConversationState, TurnContext, Promiseable } from 'botbuilder'
 import botbuilderReduxMiddleware, { getStore as getReduxStore } from 'botbuilder-redux/dist'
 import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
 import rootReducer from '../reducers'
-import { NlpResult, Ability, ConvoState, WolfState, IncomingSlotData } from '../types'
+import { NlpResult, Ability, ConvoState, WolfState, IncomingSlotData, SetSlotDataFunctions } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
 import evaluate from '../stages/evaluate'
 import execute from '../stages/execute'
 import outtake, { OuttakeResult } from '../stages/outtake'
+import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone } from '../actions'
 
 const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
@@ -58,7 +59,7 @@ export default function initializeWolfStoreMiddleware(
   getAbilitiesFunc: (context: TurnContext) => Promiseable<Ability[]>,
   defaultAbility: string,
   storeCreator: (wolfStateFromConvoState: {[key: string]: any} | null) => Store<WolfState>,
-  getSlotDataFunc?: (context: TurnContext) => Promiseable<IncomingSlotData[]>
+  getSlotDataFunc?: (context: TurnContext, setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
 ) {
   return [
     botbuilderReduxMiddleware(conversationStore, storeCreator, '__WOLF_STORE__'),
@@ -72,7 +73,21 @@ export default function initializeWolfStoreMiddleware(
           const abilities: Ability[] = await getAbilitiesFunc(context)
           const convoState: ConvoState = conversationStore.get(context) || {}
           const incomingSlotData: IncomingSlotData[] = getSlotDataFunc ? 
-            await getSlotDataFunc(context) : []
+            await getSlotDataFunc(context, {
+              setSlotValue: (abilityName, slotName, value) => {
+                store.dispatch(fillSlotAction(slotName, abilityName, value))
+              },
+              setSlotEnabled: (abilityName, slotName, enable) => {
+                if (enable) {
+                  store.dispatch(enableSlot({abilityName, slotName}))
+                  return
+                }
+                store.dispatch(disableSlot({abilityName, slotName}))
+              },
+              setSlotDone: (abilityName, slotName, done) => {
+                store.dispatch(setSlotDone({slotName, abilityName}, done))
+              }
+            }) : []
           intake(store, nlpResult, incomingSlotData, defaultAbility)
           fillSlot(store, convoState, abilities)
           evaluate(store, abilities, convoState)
