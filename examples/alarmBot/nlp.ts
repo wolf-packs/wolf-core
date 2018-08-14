@@ -49,7 +49,7 @@ const recognizers: recognizer[] = [
   }
   ,
   (input: string) => {
-    const timeReg = /at (\d\s?(am|pm))/
+    const timeReg = /at (\d\d?\s?(am|pm))/
     const result = timeReg.exec(input)
     if (!result) {
       return null

@@ -31,7 +31,11 @@ adapter.use(conversationState)
 adapter.use(...wolfMiddleware(
   conversationState,
   (context) => nlp(context.activity.text),
-  () => abilities,
+  () => {
+    delete require.cache[require.resolve('./abilities')]
+    const abilities = require('./abilities')
+    return abilities.default ? abilities.default : abilities
+  },
   'listAbility', // default ability (choose one from your abilities)
   createWolfStore([], composeEnhancers)
 ))

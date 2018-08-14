@@ -22,7 +22,7 @@ export default [
         },
         validate: (value) => {
           if (value.toLowerCase() === 'hao') {
-            return { isValid: false, reason: `${value} is not a good name.`}
+            return { isValid: false, reason: `${value} is not a good alarm name.`}
           }
           return { isValid: true, reason: null }
         },
@@ -59,8 +59,8 @@ export default [
         ]                                             
         
         setTimeout(() => {
-          resolve(`Your ${value.alarmName} alarm is added!`)
-        }, 2000)
+          resolve(`Your ${value.alarmName} is added!`)
+        }, 500)
       })
     }
   },

@@ -1,7 +1,8 @@
 import { Reducer } from 'redux'
 import { SlotStatus } from '../types'
 import { REQ_CONFIRM_SLOT, ENABLE_SLOT, DISABLE_SLOT, FILL_SLOT, ACCEPT_SLOT, DENY_SLOT,
-  RESET_SLOT_STATUS_BY_ABILITY_NAME } from '../actions'
+  RESET_SLOT_STATUS_BY_ABILITY_NAME, 
+  SET_SLOT_DONE} from '../actions'
 import { SlotId } from '../types'
 import { changeArrayItemOnIndex, findIndexOfSlotIdsBySlotId } from '../helpers'
 
@@ -144,6 +145,10 @@ const reducer: Reducer = (prev: SlotStatus[] = [], action): SlotStatus[] => {
       ...untouchedSlots,
       ...updatedSlots
     ]
+  }
+
+  if (action.type === SET_SLOT_DONE) {
+    return setIsDoneBySlotId(prev, action.payload.slotId, action.payload.isDone);
   }
 
   return prev

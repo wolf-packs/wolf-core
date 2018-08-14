@@ -34,9 +34,5 @@ export default function intake(
   // Write messageData object to state
   dispatch(setMessageData(messageData))
 
-  // Process incoming slot data
-  const actions: Action[] = incomingSlotData.map((_) => fillSlot(_.slotName, _.abilityName, _.value))
-  actions.forEach(dispatch)
-
   log('incomingSlotData:', incomingSlotData)
 } 

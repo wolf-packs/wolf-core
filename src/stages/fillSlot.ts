@@ -5,7 +5,7 @@ import { Slot, OutputMessageItem, OutputMessageType,
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
   acceptSlot, denySlot, abilityCompleted, enableSlot,
-  disableSlot, addSlotToPromptedStack, reqConfirmSlot, incrementTurnCountBySlotId, setSlotPrompted } from '../actions'
+  disableSlot, addSlotToPromptedStack, reqConfirmSlot, incrementTurnCountBySlotId, setSlotPrompted, setSlotDone } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
   getMessageData, getFocusedAbility, getDefaultAbility } from '../selectors'
@@ -289,6 +289,9 @@ function fulfillSlot(
           const setActions = fulfillSlot(convoState, abilities, value, slotName, abilityName, getState)
           actions.push(...setActions)
         }
+      },
+      setSlotDone: (abilityName: string, slotName: string, isDone: boolean) => {
+        actions.push(setSlotDone({slotName, abilityName}, isDone))
       }
     }
     const confirmFuncs: SlotConfirmationFunctions = {
