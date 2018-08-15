@@ -5,10 +5,11 @@ import { Slot, OutputMessageItem, OutputMessageType,
 import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   setFocusedAbility, removeSlotFromPromptedStack,
   acceptSlot, denySlot, abilityCompleted, enableSlot,
-  disableSlot, addSlotToPromptedStack, reqConfirmSlot, incrementTurnCountBySlotId, setSlotPrompted, setSlotDone } from '../actions'
+  disableSlot, addSlotToPromptedStack, reqConfirmSlot,
+  incrementTurnCountBySlotId, setSlotPrompted, setSlotDone, removeSlotFromOnFillStack } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
-  getMessageData, getFocusedAbility, getDefaultAbility } from '../selectors'
+  getMessageData, getFocusedAbility, getDefaultAbility, getRunOnFillStack } from '../selectors'
 import { findSlotInAbilitiesBySlotId } from '../helpers'
 const logState = require('debug')('wolf:s2:enterState')
 const log = require('debug')('wolf:s2')
@@ -68,6 +69,18 @@ export default function fillSlot(
 
   const message = getMessageData(getState())
   logState(getState())
+  
+  log('first wolf checks to see if there is anything in the runOnFillStack')
+  const runOnFillStack = getRunOnFillStack(getState())
+  if (runOnFillStack) {
+    runOnFillStack.forEach((onFillStackItem) => {
+      const {slotName, abilityName, message} = onFillStackItem
+      const actions: Action[] = fulfillSlot(convoState, abilities, message, slotName, abilityName, getState)
+      actions.forEach(dispatch)
+      dispatch(removeSlotFromOnFillStack({slotName, abilityName}))
+    })
+  }
+
   // Check if we have sent a prompt to the user in the previous turn
   if (isPromptStatus(getState())) {
     log('was prompted previous turn')
@@ -292,6 +305,16 @@ function fulfillSlot(
       },
       setSlotDone: (abilityName: string, slotName: string, isDone: boolean) => {
         actions.push(setSlotDone({slotName, abilityName}, isDone))
+      },
+      fulfillSlot: (abilityName: string, slotName: string, value: any) => {
+        // Similar implementation 
+        actions.push(fillSlotAction(slotName, abilityName, value))
+        const targetSlot = findSlotInAbilitiesBySlotId(abilities, {abilityName, slotName})
+        if (!targetSlot) {
+          throw new Error('There is no slot with that name')
+        }
+        const setActions = fulfillSlot(convoState, abilities, value, slotName, abilityName, getState)
+        actions.push(...setActions)
       }
     }
     const confirmFuncs: SlotConfirmationFunctions = {
@@ -315,6 +338,8 @@ function fulfillSlot(
     if (slot.onFill) {
       log('slot.onFill exists.. run slot.onFill()')      
       const fillString = slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
+      actions.push(removeSlotFromOnFillStack({slotName, abilityName}))
+
       if (fillString) {
         log('slot.onFill() return string: %s', fillString)                
         const message: OutputMessageItem = {

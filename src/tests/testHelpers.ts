@@ -45,6 +45,7 @@ export const getInitialWolfState = (): WolfState => {
     outputMessageQueue: [],
     filledSlotsOnCurrentTurn: [],
     abilitiesCompleteOnCurrentTurn: [],
-    defaultAbility: null
+    defaultAbility: null,
+    runOnFillStack: []
   }
 }
