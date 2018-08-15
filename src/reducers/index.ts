@@ -9,6 +9,7 @@ import outputMessageQueue from './outputMessageQueue'
 import filledSlotsOnCurrentTurn from './filledSlotsOnCurrentTurn'
 import defaultAbility from './defaultAbility'
 import abilitiesCompleteOnCurrentTurn from './abilitiesCompleteOnCurrentTurn'
+import runOnFillStack from './runOnFillStack'
 
 export default combineReducers({
   messageData,
@@ -20,5 +21,6 @@ export default combineReducers({
   outputMessageQueue,
   filledSlotsOnCurrentTurn,
   defaultAbility,
-  abilitiesCompleteOnCurrentTurn
+  abilitiesCompleteOnCurrentTurn,
+  runOnFillStack
 })

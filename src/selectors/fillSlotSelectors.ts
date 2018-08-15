@@ -1,5 +1,5 @@
 // import { createSelector } from 'reselect'
-import { WolfState, PromptSlot, SlotId, Ability, Slot, SlotStatus, MessageData } from '../types'
+import { WolfState, PromptSlot, SlotId, Ability, Slot, SlotStatus, MessageData, OnFillStackItem } from '../types'
 import { findIndexOfSlotIdsBySlotId } from '../helpers'
 
 // export const getSlotAbilityName = (state: WolfState): string => state. 
@@ -48,3 +48,5 @@ export const getRequestingSlotIdFromCurrentSlotId = (state: WolfState, slotId: S
 }
 
 export const getMessageData = (state: WolfState): MessageData => state.messageData
+
+export const getRunOnFillStack = (state: WolfState): OnFillStackItem[] => state.runOnFillStack

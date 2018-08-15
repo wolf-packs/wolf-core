@@ -80,3 +80,15 @@ export const setSlotDone = (slotId: SlotId, isDone: boolean) => ({
   type: SET_SLOT_DONE,
   payload: {slotId, isDone}
 })
+
+export const ADD_SLOT_TO_ON_FILL_STACK = 'ADD_SLOT_TO_ON_FILL_STACK'
+export const addSlotToOnFillStack = (slotId: SlotId, value: any) => ({
+  type: ADD_SLOT_TO_ON_FILL_STACK,
+  payload: { slotName: slotId.slotName, abilityName: slotId.abilityName, value }
+})
+
+export const REMOVE_SLOT_FROM_ON_FILL_STACK = 'REMOVE_SLOT_FROM_ON_FILL_STACK'
+export const removeSlotFromOnFillStack = (slotId: SlotId) => ({
+  type: REMOVE_SLOT_FROM_ON_FILL_STACK,
+  payload: slotId
+})

@@ -20,7 +20,8 @@ export interface WolfState {
   outputMessageQueue: OutputMessageItem[],
   filledSlotsOnCurrentTurn: SlotId[],
   abilitiesCompleteOnCurrentTurn: string[],
-  defaultAbility: string | null
+  defaultAbility: string | null,
+  runOnFillStack: OnFillStackItem[]
 }
 
 export interface PromptSlot extends SlotId {
@@ -98,4 +99,9 @@ export interface NlpEntity {
 
 export interface Entity extends NlpEntity {
 
+}
+
+export interface OnFillStackItem extends SlotId {
+  value?: any,
+  message: string
 }

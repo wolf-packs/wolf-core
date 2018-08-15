@@ -8,7 +8,7 @@ import fillSlot from '../stages/fillSlot'
 import evaluate from '../stages/evaluate'
 import execute from '../stages/execute'
 import outtake, { OuttakeResult } from '../stages/outtake'
-import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone } from '../actions'
+import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone, addSlotToOnFillStack } from '../actions'
 
 const userMessageDataKey = Symbol('userMessageDataKey')
 const wolfMessagesKey = Symbol('wolfMessageKey')
@@ -42,7 +42,8 @@ export const createWolfStore = (
     outputMessageQueue: [],
     filledSlotsOnCurrentTurn: [],
     abilitiesCompleteOnCurrentTurn: [],
-    defaultAbility: null
+    defaultAbility: null,
+    runOnFillStack: []
   }
   const state = wolfStateFromConvoState || defaultWolfState
   return createStore(rootReducer, state, compose(applyMiddleware(...middlewares)))
@@ -85,7 +86,10 @@ export default function initializeWolfStoreMiddleware(
                 store.dispatch(disableSlot({abilityName, slotName}))
               },
               setSlotDone: (abilityName, slotName, done) => {
-                store.dispatch(setSlotDone({slotName, abilityName}, done))
+                store.dispatch(setSlotDone({abilityName, slotName}, done))
+              },
+              fulfillSlot: (abilityName, slotName, value) => {
+                store.dispatch(addSlotToOnFillStack({slotName, abilityName}, value))
               }
             }) : []
           intake(store, nlpResult, incomingSlotData, defaultAbility)

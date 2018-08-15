@@ -8,6 +8,7 @@ export interface SetSlotDataFunctions {
   setSlotValue: (abilityName: string, slotName: string, value: any, runOnFill?: boolean) => void,
   setSlotEnabled: (abilityName: string, slotName: string, isEnabled: boolean) => void,
   setSlotDone: (abilityName: string, slotName: string, isDone: boolean) => void,
+  fulfillSlot: (abilityName: string, slotName: string, value: any) => void
 }
 
 export interface GetSlotDataFunctions {
