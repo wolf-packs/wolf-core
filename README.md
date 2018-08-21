@@ -12,6 +12,11 @@ Developing intelligent chatbots often lead to complex dialog trees which results
 Wolf aims to provide a highly flexible and convenient framework for enabling state driven dynamic prompt flow. Simply define all the `slots` to be filled (information required from the user, prompts to issue, and actions to take after the information is fulfilled) and Wolf will handle the rest to ensure all information is collected. `Slot` can be defined as dependencies on other `slots` if desired. A collection of `slots` are grouped by `abilities` which also can have dependencies on another to help drive dynamic conversation flow.
 
 All functions from `botbuilder-wolf` are pure functions.
+
+<img src="./static/demo-gif.gif" width="800">
+
+AlarmBot demo with hot-loading abilities and Redux DevTools to visualize bot state in development.
+
 ___
 
 ## Bring Your Own Natural Language Processing.. BYONLP
@@ -144,6 +149,45 @@ server.post('/api/messages', (req, res) => {
   })
 })
 ```
+___
+
+## Setup Redux Dev Tools
+1. Have a pre-existing v4 bot running with Wolf (see above)
+2. Setup the dev tool server
+```js
+/**
+ * Starting dev tools server
+ */
+const remotedev = require('remotedev-server')
+const { composeWithDevTools } = require('remote-redux-devtools')
+remotedev({ hostname: 'localhost', port: 8100 })
+const composeEnhancers = composeWithDevTools({ realtime: true, port: 8100, latency: 0 })
+```
+3. Edit the fith argument (createWolfStore) for the `wolfMiddleware`
+```js
+// Wolf middleware
+adapter.use(...wolfMiddleware(
+  conversationState,
+  (context) => nlp(context.activity.text),
+  () => {
+    delete require.cache[require.resolve('./abilities')]
+    const abilities = require('./abilities')
+    return abilities.default ? abilities.default : abilities
+  },
+  'listAbility',
+  createWolfStore([], composeEnhancers) // replace createWolfStore()
+))
+```
+4. Download [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd) from the Chrome store.
+5. In the Chrome browser, click on the DevTools icon (top right) > 'Open Remote DevTools'
+6. Settings (bottom right) > tick 'Use custom (local) server' and fill in information > Submit
+```
+Host name: localhost, Port: 8100  // port edefined in step 2
+```
+7. To view the state in a chart display, change 'Inspector' dropdown to 'Chart' option
+8. Run the bot and the websocket server should start with chart visuals.
+
+_Note: See alarmBot example with Redux Dev Tools enabled._
 
 ___
 ## Resources
@@ -151,6 +195,9 @@ ___
 See [Wolf Core Concepts](https://github.com/great-lakes/botbuilder-wolf/wiki/Core-Concepts) for more information about middleware usage.
 
 See [examples](https://github.com/great-lakes/botbuilder-wolf/tree/master/examples) for full implementation.
+* [simpleBot](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/simpleBot/bot.ts) - Basic example.
+* [alarmBot](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/alarmBot/bot.ts) - Redux DevTools and hot-loading.
+* [profileBot](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/profileBot/bot.ts) - More complex example. SlotData push model, setting up api endpoint to accept slotdata by conversationId.
 
 ___
 ## Contribution

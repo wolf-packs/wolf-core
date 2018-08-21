@@ -9,7 +9,7 @@ import { addMessage, fillSlot as fillSlotAction, startFillSlotStage,
   incrementTurnCountBySlotId, setSlotPrompted, setSlotDone, removeSlotFromOnFillStack } from '../actions'
 import { getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
-  getMessageData, getFocusedAbility, getDefaultAbility, getRunOnFillStack } from '../selectors'
+  getMessageData, getFocusedAbility, getDefaultAbility, getRunOnFillStack, getfilledSlotsOnCurrentTurn } from '../selectors'
 import { findSlotInAbilitiesBySlotId } from '../helpers'
 const logState = require('debug')('wolf:s2:enterState')
 const log = require('debug')('wolf:s2')
@@ -67,6 +67,11 @@ export default function fillSlot(
    */
   let matchNotValid: MatchNotValidData | null = null
 
+  /**
+   * save validator fail reason for prompted slot
+   */
+  let promptedSlotReason: ValidateResult | null = null
+
   const message = getMessageData(getState())
   logState(getState())
   
@@ -110,11 +115,10 @@ export default function fillSlot(
           return
         }
         // Payload not valid for current slot..
-        // Add reason to output queue if present
-        log('users response was not valid.. creating the validator message')
-        const validateMessage = createValidatorReasonMessage(validatorResult, slotName, abilityName)
-        validateMessage.forEach(dispatch)
-        matchNotValid = {slotName, abilityName, value: message.rawText}
+        // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
+        // Save validator reason to create output message if necessary later in stage
+        promptedSlotReason = validatorResult
+        matchNotValid = { slotName, abilityName, value: message.rawText }
       }
     }
   }
@@ -150,6 +154,12 @@ export default function fillSlot(
     // No entities exist to check for potential slot matches.. exit
     // Check if retry() is necessary before exiting
     runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+
+    // check if original prompt failed validation and has not been filled by entities matched
+    if (promptedSlotReason) {
+      tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
+    }
+    
     log('finished running "runRetryCheck", exit stage')
     return
   }
@@ -195,6 +205,12 @@ export default function fillSlot(
         // Check if retry() is necessary before exiting
         log('checking to see if retry is necessary in retry')
         runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+
+        // check if original prompt failed validation and has not been filled by entities matched
+        if (promptedSlotReason) {
+          tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
+        }
+
         log('checked retry, now exiting')
         return
       }
@@ -213,6 +229,12 @@ export default function fillSlot(
     if (ability && ability.slots.length === 0) {
       log('ability is found, but there is no slots on the ability.')
       dispatch(abilityCompleted(ability.name))
+
+      // check if original prompt failed validation and has not been filled by entities matched
+      if (promptedSlotReason) {
+        tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
+      }
+
       log('exiting')
       return // exit stage
     }
@@ -249,9 +271,14 @@ export default function fillSlot(
         // Exit through alternative slot match route..
         // Check if retry() is necessary before exiting
         runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+
+        // check if original prompt failed validation and has not been filled by entities matched
+        if (promptedSlotReason) {
+          tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
+        }
         log('exiting stage')
         return
-      }
+      } 
       // No alternative matches found in all abilities
     }
     log('ability was not found from the message intent, so the intent on messageData does not exist in abilities.ts')
@@ -263,6 +290,11 @@ export default function fillSlot(
   // Check if retry() is necessary before exiting
   log('check to see if any not valid slots needs to run retry')
   runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+
+  // check if original prompt failed validation and has not been filled by entities matched
+  if (promptedSlotReason) {
+    tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
+  }
   log('exit stage')
   return
 }
@@ -353,7 +385,15 @@ function fulfillSlot(
         // Add slot data to pendingData state
         actions.push(addMessage(message))
       }
-    } 
+    }
+    // remove prompted slot from stack
+    const promptedSlotId = getPromptedSlotId(getState())
+    if (promptedSlotId) {
+      const { slotName: promptedSlotName, abilityName: promptedAbilityName } = promptedSlotId
+      if (slotName === promptedSlotName && abilityName === promptedAbilityName) {
+        actions.push(removeSlotFromPromptedStack(promptedSlotId))
+      }
+    }
   }
   log('exiting fulfillSlot()..')
   return actions
@@ -374,6 +414,7 @@ function runRetryCheck(
 ) {
   log('in runRetryCheck().., matchNotValid: %O, potentialMatch: %s, slotFill: %O'
     , matchNotValid, potentialMatchFoundFlag, slotFillArr)
+
   // If there has been an alternative slot match found but not been filled.. retry
   log('checking if there are alternative slot matches that have not been filled..')
   if (matchNotValid === null) {
@@ -567,4 +608,26 @@ function getPotentialMatches(entities: Entity[], targetAbility: Ability): Potent
   }
 
   return matches
+}
+
+function tryPromptedSlotValidatorMessage(dispatch: Dispatch, getState: () => WolfState, validatorResult: ValidateResult): void {
+  // Check if original prompt has been filled
+
+  const promptedSlotId = getPromptedSlotId(getState())
+  if (!promptedSlotId) {
+    return
+  }
+  const { slotName, abilityName } = promptedSlotId
+  const slotsFilledArr = getfilledSlotsOnCurrentTurn(getState())
+  const isOriginalSlotFilled = slotsFilledArr.some(_ => _.slotName === slotName && _.abilityName === abilityName)
+  
+  if (isOriginalSlotFilled) {
+    // original prompt filled, do not send validator result message
+    return
+  }
+
+  // Add reason to output queue if present
+  log('users response was not valid.. creating the validator message')
+  const validateMessage = createValidatorReasonMessage(validatorResult, slotName, abilityName)
+  validateMessage.forEach(dispatch)
 }
