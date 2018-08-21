@@ -10,25 +10,25 @@ const listAbilitiesTester = new RegExp('what')
 const testers = [
   {
     name: 'addAlarm',
-    tester: (input) => {
+    tester: (input: string) => {
       return addAlarmTester.test(input)
     }
   },
   {
     name: 'listAlarms',
-    tester: (input) => {
+    tester: (input: string) => {
       return listAlarmsTester.test(input)
     }
   },
   {
     name: 'removeAlarm',
-    tester: (input) => {
+    tester: (input: string) => {
       return removeAlarmTester.test(input)
     }
   },
   {
     name: 'listAbility',
-    tester: (input) => {
+    tester: (input: string) => {
       return listAbilitiesTester.test(input)
     }
   }
@@ -71,7 +71,7 @@ function nlp(input: string): NlpResult {
       entities: []
     }
   }
-  const {name: intent} = found
+  const { name: intent } = found
 
   const entities = recognizers
     .map(rec => rec(input))

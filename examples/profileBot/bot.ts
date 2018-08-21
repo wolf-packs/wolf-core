@@ -1,4 +1,4 @@
-import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity } from 'botbuilder'
+import { BotFrameworkAdapter, MemoryStorage, ConversationState, Activity, TurnContext } from 'botbuilder'
 import {
   wolfMiddleware, 
   getMessages,
@@ -43,7 +43,7 @@ server.post('/api/slotdata', slotDataEndpoint(apiStorage, abilities))
  * User defined data getters for both ability definition and slot data
  */
 
-const customSlotDataGetter = async (context): Promise<IncomingSlotData[]> => {
+const customSlotDataGetter = async (context: TurnContext): Promise<IncomingSlotData[]> => {
   // read from apiStorage by conversationId
   const conversationId = context.activity.conversation.id
   console.log('conversationId:', conversationId)
@@ -64,7 +64,7 @@ const customSlotDataGetter = async (context): Promise<IncomingSlotData[]> => {
 }
 
 // Define custom ability getter function
-const customAbilityGetter = (context): Ability[] => {
+const customAbilityGetter = (context: TurnContext): Ability[] => {
   // Delete old abilities cache.. require stores a cache
   delete require.cache[require.resolve('./abilities')]
   // Requre new abilities in case there are any changes to ability definition
@@ -95,7 +95,7 @@ adapter.use(
   )
 ) 
 
-server.post('/api/messages', (req, res) => {
+server.post('/api/messages', (req: any, res: any) => {
   adapter.processActivity(req, res, async (context) => {
     try {
       if (context.activity.type !== 'message') {

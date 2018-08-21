@@ -40,7 +40,7 @@ adapter.use(...wolfMiddleware(
   createWolfStore([], composeEnhancers)
 ))
 
-server.post('/api/messages', (req, res) => {
+server.post('/api/messages', (req: any, res: any) => {
   adapter.processActivity(req, res, async (context) => {
     try {
       if (context.activity.type !== 'message') {
