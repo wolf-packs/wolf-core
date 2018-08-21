@@ -13,11 +13,9 @@ Wolf aims to provide a highly flexible and convenient framework for enabling sta
 
 All functions from `botbuilder-wolf` are pure functions.
 
-<center>
 <img src="./static/demo-gif.gif" width="800">
 
 AlarmBot demo with hot-loading abilities and Redux DevTools to visualize bot state in development.
-</center>
 
 ___
 
