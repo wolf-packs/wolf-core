@@ -163,7 +163,7 @@ const { composeWithDevTools } = require('remote-redux-devtools')
 remotedev({ hostname: 'localhost', port: 8100 })
 const composeEnhancers = composeWithDevTools({ realtime: true, port: 8100, latency: 0 })
 ```
-3. Edit the fith argument (createWolfStore) for the `wolfMiddleware`
+3. Edit the fifth argument (createWolfStore) for the `wolfMiddleware`
 ```js
 // Wolf middleware
 adapter.use(...wolfMiddleware(
