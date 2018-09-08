@@ -60,7 +60,7 @@
     "redux": "^4.0.0",
     "reselect": "^3.0.1"
   },
-  "optionalDependencies": {
+  "peerDependencies": {
     "remote-redux-devtools": "^0.5.13",
     "remotedev-server": "^0.2.5"
   }
