@@ -1,9 +1,14 @@
 # Botbuilder Wolf
+
 Wolf was created to integrate seamlessly with [Microsoft Bot Framework v4](https://github.com/Microsoft/botbuilder-js).
 
 Wolf aims to allows the user to dynamically change the behavior of the bot with one configuration point. The configuration point is hot-loadable, allowing the owner of the bot to change the bot behavior while it is still running. Botbuilder Wolf facilitates information gathering, either by asking a question or accepting a piece of information parsed by NLP.  The library is also an abstraction layer that ensures stability, which means if the Botbuilder SDKv4 interface changes, the configuration can stay the same.
 
 _Please see [Roadmap](https://github.com/great-lakes/botbuilder-wolf/wiki/Roadmap) for more details and planned features. If you do not see a feature, please feel free to open an issue._
+
+[![npm version](https://badge.fury.io/js/botbuilder-wolf.svg)](https://badge.fury.io/js/botbuilder-wolf)
+[![Build Status](https://travis-ci.org/great-lakes/botbuilder-wolf.svg?branch=master)](https://travis-ci.org/great-lakes/botbuilder-wolf)
+
 ___
 
 ## Purpose
