@@ -38,6 +38,14 @@
     "botbuilder",
     "Microsoft Bot Framework"
   ],
+  "homepage": "https://github.com/great-lakes/botbuilder-wolf",
+  "repository": {
+    "type" : "git",
+    "url" : "git://github.com/great-lakes/botbuilder-wolf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/great-lakes/botbuilder-wolf/issues"
+  },
   "author": "",
   "license": "MIT",
   "devDependencies": {
