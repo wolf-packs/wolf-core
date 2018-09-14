@@ -1,0 +1,49 @@
+> topic defualt_ability
++ blah blah
+- what is your name?
+
+> topic greet_happy_case
++ hello
+- what is your name?
+
++ Remington
+- Oh! Hello Remington
+- nice, lets check the weather now.
+- what is the city?
+
++ Chicago
+- are you sure you want to set the city to Chicago
+
++ yes
+- What day would you like me to look up?
+
++ today
+-looks like Chicago is looking good!
+
+> topic greet_weather_validation
++ hello
+- what is your name?
+
++ Remington
+- Oh! Hello Remington
+- nice, lets check the weather now.
+- what is the city?
+
++ NYC
+- I can only look up chicago or seattle
+- try again
+
++ Seattle
+- are you sure you want to set the city to Seattle
+
++ no
+- what is the city?
+
++ Seattle
+- are you sure you want to set the city to Seattle
+
++ yes
+- What day would you like me to look up?
+
++ today
+-looks like Seattle is looking good!

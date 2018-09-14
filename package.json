@@ -21,7 +21,10 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testEnvironment": "node",
-    "testRegex": "(/src/tests/.*\\.test)\\.(tsx?)$",
+    "testMatch": [
+      "<rootDir>/src/tests/**/?(*.)(spec|test).(j|t)s?(x)",
+      "<rootDir>/examples/**/?(*.)(spec|test).(j|t)s?(x)"
+    ],
     "moduleFileExtensions": [
       "ts",
       "tsx",
@@ -42,6 +45,7 @@
     "botbuilder": "^4.0.0-preview1.2",
     "botbuilder-node": "^4.0.0-m1.10",
     "botbuilder-services": "^4.0.0-m1.10",
+    "botbuilder-wolf-rive": "^1.1.2",
     "bravey": "^0.1.5",
     "dotenv": "^6.0.0",
     "git-branch-is": "^2.0.0",

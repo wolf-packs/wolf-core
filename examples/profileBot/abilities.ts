@@ -1,4 +1,4 @@
-import { Ability, Slot } from '../../src/types'
+import { Ability } from '../../src/types'
 
 export default [
   {
@@ -42,7 +42,7 @@ export default [
           if (isNaN(+value)) {
             return {
               isValid: false,
-              reason: 'It has to be a number'
+              reason: 'It has to be a number.'
             }
           }
           return {
@@ -57,7 +57,7 @@ export default [
       },
       {
         name: 'date',
-        query: () => 'What is your birthday',
+        query: () => 'What is your birthday?',
         onFill: () => {
           return 'ok'
         }
