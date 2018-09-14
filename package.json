@@ -1,6 +1,6 @@
 {
   "name": "botbuilder-wolf",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "",
   "main": "dist/index",
   "typings": "dist/index",
@@ -40,8 +40,8 @@
   ],
   "homepage": "https://github.com/great-lakes/botbuilder-wolf",
   "repository": {
-    "type" : "git",
-    "url" : "git://github.com/great-lakes/botbuilder-wolf.git"
+    "type": "git",
+    "url": "git://github.com/great-lakes/botbuilder-wolf.git"
   },
   "bugs": {
     "url": "https://github.com/great-lakes/botbuilder-wolf/issues"
