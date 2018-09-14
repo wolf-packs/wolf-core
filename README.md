@@ -190,6 +190,14 @@ Host name: localhost, Port: 8100  // port edefined in step 2
 _Note: See alarmBot example with Redux Dev Tools enabled._
 
 ___
+## Testing
+
+Testing a bot has never been easier with
+[Wolf-Rive](https://github.com/great-lakes/botbuilder-wolf-rive) testing package. Any Wolf enabled v4 bot has the ability to utilize this testing package which allows users to write end-to-end testing of input and output conversation flows.
+
+All example bots have their own `/tests` which utilize `botbuilder-wolf-rive` package. Please refer to [examples](https://github.com/great-lakes/botbuilder-wolf/tree/master/examples) and [Wolf-Rive](https://github.com/great-lakes/botbuilder-wolf-rive) for full testing details.
+
+___
 ## Resources
 
 See [Wolf Core Concepts](https://github.com/great-lakes/botbuilder-wolf/wiki/Core-Concepts) for more information about middleware usage.

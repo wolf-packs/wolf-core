@@ -1,0 +1,41 @@
+> topic default_ability
++ blah blah
+- what is your name?
+
+> topic greet_happy_case
++ hello
+- what is your name?
+
++ Remington
+- Oh! Hello!! Remington
+- let's learn more about you
+- How old are you?
+
++ 25
+- thank you
+- What is your birthday?
+
++ 1/1
+- ok
+- thank you for giving me your info
+
+> topic greet_age_validator
++ hello
+- what is your name?
+
++ Remington
+- Oh! Hello!! Remington
+- let's learn more about you
+- How old are you?
+
++ abc
+- It has to be a number.
+- try again
+
++ 123a
+- It has to be a number.
+- try again
+
++ 25
+- thank you
+- What is your birthday?

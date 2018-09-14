@@ -80,13 +80,13 @@ export default [
 
       // Check if alarm name exists
       if (!stateAlarms.some((alarm: Alarm) => alarm.alarmName === alarmName)) {
-        return `There is no alarm with name ${alarmName}`
+        return `There is no alarm with name ${alarmName}.`
       }
 
       // Remove alarm
       const alarms = stateAlarms.filter((alarm: Alarm) => alarm.alarmName !== alarmName)
       convoState.alarms = alarms
-      return `The ${alarmName} has been removed`
+      return `The ${alarmName} has been removed.`
     }
   },
   {
