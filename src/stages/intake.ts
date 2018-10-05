@@ -22,10 +22,11 @@ export default function intake(
   logState(getState())
   dispatch(startIntakeStage())
   // MessageData derived from user nlpResult
-  const messageData: MessageData = {
+  const messageData: MessageData<typeof nlpResult.meta> = {
     rawText: nlpResult.message,
     intent: nlpResult.intent,
-    entities: nlpResult.entities
+    entities: nlpResult.entities,
+    meta: nlpResult.meta
   }
 
   // Write defaultAbility to state

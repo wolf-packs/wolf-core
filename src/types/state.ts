@@ -41,10 +41,11 @@ export interface SlotId {
   abilityName: string
 }
 
-export interface MessageData {
+export interface MessageData<T = any> {
   rawText: string,
   intent: string | null,
-  entities: Entity[]
+  entities: Entity[],
+  meta: T
 }
 
 export interface OutputMessageItem {
@@ -85,10 +86,11 @@ export interface ValidateResult {
   reason: string | null
 }
 
-export interface NlpResult {
+export interface NlpResult<T = any> {
   message: string,
   intent: string | null,
-  entities: NlpEntity[]
+  entities: NlpEntity[],
+  meta?: T
 }
 
 export interface NlpEntity {
