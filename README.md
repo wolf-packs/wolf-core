@@ -1,13 +1,10 @@
-# Wolf Core
+# Wolf Core [![npm version](https://badge.fury.io/js/wolf-core.svg)](https://badge.fury.io/js/botbuilder-wolf) [![Build Status](https://travis-ci.org/wolf-packs/wolf-core.svg?branch=master)](https://travis-ci.org/wolf-packs/wolf-core)
 
-Wolf allows you, the developer, to define the bot conversation with ease. There is one configuration point, which is is hot-loadable, enabling you to change the bot behavior while the node process is still running. 
+Wolf allows you, the developer, to define the bot conversation with ease. There is one configuration point, which is hot-loadable, enabling you to change the bot behavior while the node process is still running. 
 
 Wolf facilitates information gathering, either by asking a question or accepting a piece of information parsed by NLP.  The library is also an abstraction layer that ensures stability, which means if the Botbuilder SDKv4 interface changes, the bot behavior can stay the same.
 
 _Please see [Roadmap](https://github.com/wolf-packs/wolf-core/wiki/Roadmap) for more details and planned features. If you do not see a feature, please feel free to open an issue._
-
-[![npm version](https://badge.fury.io/js/wolf-core.svg)](https://badge.fury.io/js/botbuilder-wolf)
-[![Build Status](https://travis-ci.org/wolf-packs/wolf-core.svg?branch=master)](https://travis-ci.org/wolf-packs/wolf-core)
 
 **Wolf Core will be framework agnostic in v3, making it easy to integrate with backend services like express, bot framework, dialogflow, etc.**  
 For now, wolf v2 is coupled with Microsoft Bot Builder v4.
