@@ -1,4 +1,4 @@
-# Wolf Core [![npm version](https://badge.fury.io/js/wolf-core.svg)](https://badge.fury.io/js/botbuilder-wolf) [![Build Status](https://travis-ci.org/wolf-packs/wolf-core.svg?branch=master)](https://travis-ci.org/wolf-packs/wolf-core)
+# Wolf Core [![npm version](https://badge.fury.io/js/wolf-core.svg)](https://badge.fury.io/js/wolf-core) [![Build Status](https://travis-ci.org/wolf-packs/wolf-core.svg?branch=master)](https://travis-ci.org/wolf-packs/wolf-core)
 
 Wolf allows you, the developer, to define the bot conversation with ease. There is one configuration point, which is hot-loadable, enabling you to change the bot behavior while the node process is still running. 
 
@@ -207,7 +207,7 @@ ___
 Testing a bot has never been easier with
 [Wolf-Rive](https://github.com/wolf-packs/wolf-rive) testing package. Any Wolf enabled v4 bot has the ability to utilize this testing package which allows users to write end-to-end testing of input and output conversation flows.
 
-All example bots have their own `/tests` which utilize `wolf-rive` package. Please refer to [examples](https://github.com/wolf-packs/wolf-core/tree/master/examples) and [Wolf-Rive](https://github.com/great-lakes/botbuilder-wolf-rive) for full testing details.
+All example bots have their own `/tests` which utilize `wolf-rive` package. Please refer to [examples](https://github.com/wolf-packs/wolf-core/tree/master/examples) and [Wolf-Rive](https://github.com/wolf-packs/wolf-rive) for full testing details.
 
 ___
 ## Resources
