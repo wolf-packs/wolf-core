@@ -1,7 +1,7 @@
 /* global describe, test, expect */
 import { parseRive, runWolfTests, createWolfRunner } from 'botbuilder-wolf-rive'
 import abilities from '../abilities'
-import { NlpResult } from 'botbuilder-wolf';
+import { NlpResult } from '../../../src/types';
 
 function nlpWolf(input: string): NlpResult {
   const messageData: NlpResult = {
