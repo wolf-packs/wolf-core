@@ -1,4 +1,4 @@
-import { makeWolfStoreCreator, run } from './runner'
+import { makeWolfStoreCreator, run } from './wolf'
 import {
   Ability,
   Slot,

@@ -1,12 +1,12 @@
-import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc, AnyAction } from 'redux'
-import rootReducer from './reducers'
-import { NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable, WolfStore } from './types'
-import intake from './stages/intake'
-import fillSlot from './stages/fillSlot'
-import evaluate from './stages/evaluate'
-import execute from './stages/execute'
-import outtake from './stages/outtake'
-import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone, addSlotToOnFillStack } from './actions'
+import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
+import rootReducer from '../reducers'
+import { NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable, WolfStore } from '../types'
+import intake from '../stages/intake'
+import fillSlot from '../stages/fillSlot'
+import evaluate from '../stages/evaluate'
+import execute from '../stages/execute'
+import outtake from '../stages/outtake'
+import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone, addSlotToOnFillStack } from '../actions'
 
 /**
  * Returns the default Wolf State that should be initialized onto the conversation state
