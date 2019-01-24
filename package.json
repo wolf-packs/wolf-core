@@ -1,5 +1,5 @@
 {
-  "name": "botbuilder-wolf",
+  "name": "wolf-core",
   "version": "2.4.3",
   "description": "",
   "main": "dist/index",
@@ -38,13 +38,13 @@
     "botbuilder",
     "Microsoft Bot Framework"
   ],
-  "homepage": "https://github.com/great-lakes/botbuilder-wolf",
+  "homepage": "https://github.com/wolf-packs/wolf-core",
   "repository": {
     "type": "git",
-    "url": "git://github.com/great-lakes/botbuilder-wolf.git"
+    "url": "git://github.com/wolf-packs/wolf-core.git"
   },
   "bugs": {
-    "url": "https://github.com/great-lakes/botbuilder-wolf/issues"
+    "url": "https://github.com/wolf-packs/wolf-core/issues"
   },
   "author": "",
   "license": "MIT",
