@@ -1,9 +1,13 @@
+import { Store, AnyAction } from 'redux';
+
 /**
  * Conversation state managed by Botbuilder
  */
 export interface ConvoState {
   [key: string]: any
 }
+
+export type WolfStore = Store<WolfState, AnyAction>;
 
 /**
  * Wolf's state object that facilitates management of state sytem.
@@ -36,7 +40,7 @@ export enum PromptSlotReason {
   confirmation
 }
 
-export interface SlotId { 
+export interface SlotId {
   slotName: string,
   abilityName: string
 }
