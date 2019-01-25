@@ -1,4 +1,4 @@
-import wolfMiddleware, { getMessages, getStore, createWolfStore } from './middlewares/wolfMiddleware'
+import { makeWolfStoreCreator, run } from './wolf'
 import {
   Ability,
   Slot,
@@ -27,10 +27,8 @@ const stages = {
 }
 
 export {
-  wolfMiddleware,
-  getMessages,
-  getStore,
-  createWolfStore,
+  run,
+  makeWolfStoreCreator,
   stages,
   Ability,
   Slot,
