@@ -63,7 +63,7 @@ export const makeWolfStoreCreator = (
  *  lastName: string
  * }
  * 
- * export wolf from 'wolf-core'
+ * export * as wolf from 'wolf-core'
  * const results = wolf.run<userConvoState>(convoState, userMessageData, getAbilitiesFunc, defaultAbility)
  * 
  * @param conversationState Conversation persistent state per conversation session
