@@ -53,7 +53,18 @@ export const makeWolfStoreCreator = (
   }
 
 /**
- * The main Wolf function that should be run at the beginning of every conversation turn.
+ * The main Wolf function that will execute all wolf stages and yield the recommended next move
+ * in the conversation flow. Wolf run is stateless but requires the following parameters..
+ * 
+ * @example 
+ * // user conversation state interface
+ * interface userConvoState {
+ *  firstName: string,
+ *  lastName: string
+ * }
+ * 
+ * export wolf from 'wolf-core'
+ * const results = wolf.run<userConvoState>(convoState, userMessageData, getAbilitiesFunc, defaultAbility)
  * 
  * @param conversationState Conversation persistent state per conversation session
  * @param userMessageData Natural Language Processing result
