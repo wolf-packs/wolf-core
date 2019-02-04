@@ -12,7 +12,7 @@ export type WolfStore = Store<WolfState, AnyAction>;
 /**
  * Wolf's state object that facilitates management of state sytem.
  * 
- * _User should not touch this object._
+ * _Developer should not touch this object._
  */
 export interface WolfState {
   messageData: MessageData,
@@ -26,6 +26,14 @@ export interface WolfState {
   abilitiesCompleteOnCurrentTurn: string[],
   defaultAbility: string | null,
   runOnFillStack: OnFillStackItem[]
+}
+
+/**
+ * Storage interface for adapters to utilize to assist in persisting Wolf State
+ * 
+ * _Developer should utilize this interface when persisting the Wolf State after each wolf call._
+ */
+export interface WolfStorage extends WolfState {
 }
 
 export interface PromptSlot extends SlotId {
