@@ -9,7 +9,7 @@ import { Promiseable } from './generic'
  * 
  * _Developer should utilize this interface when implementing the persistence layer._
  */
-export interface WolfStateStorage extends StorageLayer<WolfState, void> {
+export interface WolfStateStorage extends StorageLayer<WolfState> {
   read: () => Promiseable<WolfState>,
   save: (wolfState: WolfState) => Promiseable<void>,
 }
@@ -20,7 +20,7 @@ export interface WolfStateStorage extends StorageLayer<WolfState, void> {
  * 
  * _This interface should be implemented by the developer and passed into Wolf._
  */
-export interface StorageLayer<T, G = void> {
+export interface StorageLayer<T> {
   read: () => Promiseable<T>,
-  save: (value: T) => Promiseable<G>
+  save: (value: T) => Promiseable<void>
 }

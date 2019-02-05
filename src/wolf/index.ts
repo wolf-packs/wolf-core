@@ -1,6 +1,6 @@
 import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
 import rootReducer from '../reducers'
-import { NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable, WolfStore } from '../types'
+import { NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable, WolfStore, WolfStateStorage, StorageLayer } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
 import evaluate from '../stages/evaluate'
@@ -76,8 +76,8 @@ export const makeWolfStoreCreator = (
  * OuttakeResult containing an array of output messages
  */
 export const run = async <T extends object>(
-  conversationState: T,
-  wolfState: WolfState | null,
+  wolfStorage: WolfStateStorage,
+  convoStorage: StorageLayer<T>,
   userMessageData: () => Promiseable<NlpResult>,
   getAbilitiesFunc: () => Promiseable<Ability[]>,
   defaultAbility: string,
