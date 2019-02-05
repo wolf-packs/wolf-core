@@ -72,7 +72,8 @@ export const makeWolfStoreCreator = (
  * @param defaultAbility Ability that will be used as the fallback if no ability is determined from the userMessageData
  * @param storeCreator Optional redux store creator, can be used with redux dev tools
  * @param getSlotDataFunc Optional getter function to retrieve slot data
- * @returns OuttakeResult containing an array of output messages
+ * @returns WolfState getter function, conversationState getter function and
+ * OuttakeResult containing an array of output messages
  */
 export const run = async <T extends object>(
   conversationState: T,

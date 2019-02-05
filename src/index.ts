@@ -9,7 +9,9 @@ import {
   SlotConfirmationFunctions,
   OutputMessageType,
   OutputMessageItem,
-  IncomingSlotData
+  IncomingSlotData,
+  WolfStateStorage,
+  StorageLayer
 } from './types'
 
 import intake from './stages/intake'
@@ -28,6 +30,8 @@ const stages = {
 
 export {
   run,
+  WolfStateStorage,
+  StorageLayer,
   makeWolfStoreCreator,
   stages,
   Ability,
