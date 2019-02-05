@@ -1,4 +1,5 @@
 import { Store, AnyAction } from 'redux';
+import { Promiseable } from './generic';
 
 /**
  * Conversation state managed by Botbuilder
@@ -26,14 +27,6 @@ export interface WolfState {
   abilitiesCompleteOnCurrentTurn: string[],
   defaultAbility: string | null,
   runOnFillStack: OnFillStackItem[]
-}
-
-/**
- * Storage interface for adapters to utilize to assist in persisting Wolf State
- * 
- * _Developer should utilize this interface when persisting the Wolf State after each wolf call._
- */
-export interface WolfStorage extends WolfState {
 }
 
 export interface PromptSlot extends SlotId {
