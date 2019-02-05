@@ -1,40 +1,59 @@
 // /* global test */
-// import { createWolfStore } from '../index'
-// import { mockWolfRunner, getInitialWolfState } from './testHelpers'
-// import { WolfState, NlpResult, Ability } from '../types'
-// import greetAbility from './testAbilities/greetAbility'
+import * as wolf from '..'
+import { getInitialWolfState, createStorage } from './testHelpers'
+import { Ability, WolfStateStorage } from '../types'
+import greetAbility from './testAbilities/greetAbility'
 
-// const abilities: Ability[] = [
-//   greetAbility
-// ]
+const abilities: Ability[] = [
+  greetAbility
+]
 
-// describe('Greet', () => { // Feature (ability)
-//   test('Basic Greet Flow', async () => {
-//     const startingWolfState: WolfState = getInitialWolfState()
-//     const convoState = {}
+const wolfStorage: WolfStateStorage = createStorage(getInitialWolfState())
+const convoStorage = createStorage({})
 
-//     const {outtakeResult: result1, wolfState: state1} = await mockWolfRunner(
-//       convoState,
-//       startingWolfState,
-//       {message: 'hi', entities: [], intent: 'greet'},
-//       abilities,
-//       'greet',
-//       createWolfStore()
-//     )
+describe('Greet', () => { // Feature (ability)
+  test('Basic Greet Flow', async () => {
 
-//     expect(result1.messageStringArray).toEqual(['What is your name?'])
-//     expect(convoState).toEqual({})
+  const outputResult = await wolf.run(
+    wolfStorage,
+    convoStorage,
+    () => ({message: 'hi', entities: [], intent: 'greet'}),
+    () => abilities,
+    'greet'
+  )
 
-//     const {outtakeResult: result2, wolfState: state2} = await mockWolfRunner(
-//       convoState,
-//       state1,
-//       {message: 'Hao', entities: [], intent: null},
-//       abilities,
-//       'greet',
-//       createWolfStore()
-//     )
-//     expect(result2.messageStringArray).toEqual(['Hello Hao!'])
-//     expect(convoState).toEqual({name: 'Hao'})
+    expect(outputResult.messageStringArray).toEqual(['What is your name?'])
+    expect(convoStorage.read()).toEqual({})
 
-//   })
-// })
+    const outputResult2 = await wolf.run(
+      wolfStorage,
+      convoStorage,
+      () => ({message: 'Hao', entities: [], intent: null}),
+      () => abilities,
+      'greet'
+    )
+
+    // expect(outputResult2.messageStringArray).toEqual(['Hello Hao!'])
+    // expect(convoStorage.read()).toEqual({name: 'Hao'})
+
+    const outputResult3 = await wolf.run(
+      wolfStorage,
+      convoStorage,
+      () => ({message: '3', entities: [], intent: null}),
+      () => abilities,
+      'greet'
+    )
+
+    const outputResult4 = await wolf.run(
+      wolfStorage,
+      convoStorage,
+      () => ({message: '30', entities: [], intent: null}),
+      () => abilities,
+      'greet'
+    )
+
+    expect(outputResult4.messageStringArray).toEqual(['Hello Hao who is 30!'])
+    expect(convoStorage.read()).toEqual({name: 'Hao'})
+
+  })
+})
