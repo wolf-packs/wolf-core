@@ -1,10 +1,16 @@
-import { Store, Action, Dispatch } from 'redux'
-import { WolfState, Ability, Slot, ConvoState,
-  OutputMessageType, SlotId, SlotData, GetSlotDataFunctions, GetStateFunctions } from '../types'
-import { getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
-    getSlotBySlotId, getSlotDataByAbilityName } from '../selectors'
-import { addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,
-  resetSlotStatusByAbilityName } from '../actions'
+import { Store, Action } from 'redux'
+import {
+  WolfState, Ability, Slot, OutputMessageType, SlotId,
+  SlotData, GetSlotDataFunctions, GetStateFunctions
+} from '../types'
+import {
+  getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
+  getSlotBySlotId, getSlotDataByAbilityName
+} from '../selectors'
+import {
+  addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,
+  resetSlotStatusByAbilityName
+} from '../actions'
 import { findInSlotIdItemBySlotId } from '../helpers'
 const logState = require('debug')('wolf:s4:enterState')
 const log = require('debug')('wolf:s4')
@@ -35,16 +41,17 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  * @param convoState conversationState
  * @param abilities user defined abilities and slots
  */
-export default function execute(
+export default function execute<T>(
   store: Store<WolfState>,
-  convoState: ConvoState,
-  abilities: Ability[]
+  convoState: T,
+  abilities: Ability<T>[]
 ): ExecuteResult | void {
   const { dispatch, getState } = store
   logState(getState())
   const addMessage = (msg: OnCompletePromiseResult<string>) => dispatch(
     addMessageAction(
-      { message: msg.result,
+      {
+        message: msg.result,
         abilityName: msg.abilityName,
         type: OutputMessageType.abilityCompleteMessage
       }
@@ -57,21 +64,21 @@ export default function execute(
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
     const valueOrPromiseArr = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult)
-    const allPromises: Promise<(OnCompletePromiseResult<string|void>)>[] = valueOrPromiseArr.map((_) => {
+    const allPromises: Promise<(OnCompletePromiseResult<string | void>)>[] = valueOrPromiseArr.map((_) => {
       const { result: valueOrPromise, abilityName } = _
       if (typeof valueOrPromise === 'string') {
-        return Promise.resolve({result: valueOrPromise, abilityName})
+        return Promise.resolve({ result: valueOrPromise, abilityName })
       }
-      
+
       if (!valueOrPromise) {
         // void
-        return Promise.resolve({result: undefined, abilityName})
+        return Promise.resolve({ result: undefined, abilityName })
       }
-      
+
       // promise
       return valueOrPromise.then((result) => ({ result, abilityName }))
     })
-    
+
     abilityCompleteResult.forEach((abilityName: string) => {
       // set ability status to complete
       dispatch(setAbilityStatus(abilityName, true))
@@ -79,8 +86,8 @@ export default function execute(
       // reset all slot status to pending (isDone = false)
       dispatch(resetSlotStatusByAbilityName(abilityName))
     })
-    
-    onCompleteReturnResult = { 
+
+    onCompleteReturnResult = {
       runOnComplete: () => Promise.all(allPromises)
         .then(result => result.filter((_) => _.result)) as Promise<OnCompletePromiseResult<string>[]>,
       addMessage
@@ -110,7 +117,7 @@ export default function execute(
     }
     // SLOT NOT VALID.. continue
   }
-  
+
   if (onCompleteReturnResult) {
     return onCompleteReturnResult
   }
@@ -123,13 +130,13 @@ export default function execute(
 /**
  * Execute ability.onComplete()
  */
-function runAbilityOnComplete(
+function runAbilityOnComplete<T>(
   getState: () => WolfState,
-  convoState: ConvoState,
-  abilities: Ability[],
+  convoState: T,
+  abilities: Ability<T>[],
   abilitiesToComplete: string[]
 ): {
-  result: Promise<string|void> | string | void, 
+  result: Promise<string | void> | string | void,
   abilityName: string
 }[] {
 
@@ -148,7 +155,7 @@ function runAbilityOnComplete(
     const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
     const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
 
-    const getStateFuncs: GetStateFunctions = {
+    const getStateFuncs: GetStateFunctions<T> = {
       getAbilityList: () => abilities
     }
 
@@ -164,19 +171,19 @@ function runAbilityOnComplete(
  * 
  * create an object that has the correct getters for slot information
  */
-function makeGetSlotDataFunctions({getState}: Store<WolfState>, abilityName: string): GetSlotDataFunctions {
+function makeGetSlotDataFunctions({ getState }: Store<WolfState>, abilityName: string): GetSlotDataFunctions {
   const wolfState = getState()
-  const {slotStatus, slotData} = wolfState
+  const { slotStatus, slotData } = wolfState
   return {
-    getSlotStatus: <SlotStatus>(slotName: string) => findInSlotIdItemBySlotId(slotStatus, {abilityName, slotName}),
-    getSlotValue: <SlotData>(slotName: string) => findInSlotIdItemBySlotId(slotData, {abilityName, slotName})
+    getSlotStatus: <SlotStatus>(slotName: string) => findInSlotIdItemBySlotId(slotStatus, { abilityName, slotName }),
+    getSlotValue: <SlotData>(slotName: string) => findInSlotIdItemBySlotId(slotData, { abilityName, slotName })
   }
 }
 
 /**
  * Execute slot.query()
  */
-function runSlotQuery(convoState: ConvoState, store: Store<WolfState>, slot: Slot, abilityName: string): Action[] {
+function runSlotQuery<T>(convoState: T, store: Store<WolfState>, slot: Slot<T>, abilityName: string): Action[] {
   const getSlotDataFunctions = makeGetSlotDataFunctions(store, abilityName)
   const queryString = slot.query(convoState, getSlotDataFunctions)
 

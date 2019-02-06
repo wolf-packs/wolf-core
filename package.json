@@ -35,8 +35,9 @@
     ]
   },
   "keywords": [
-    "botbuilder",
-    "Microsoft Bot Framework"
+    "conversation",
+    "conversational",
+    "dialog"
   ],
   "homepage": "https://github.com/wolf-packs/wolf-core",
   "repository": {
@@ -54,9 +55,6 @@
     "@types/jest": "^22.2.3",
     "@types/uuid": "^3.4.4",
     "body-parser": "^1.18.3",
-    "botbuilder": "^4.0.0-preview1.2",
-    "botbuilder-node": "^4.0.0-m1.10",
-    "botbuilder-services": "^4.0.0-m1.10",
     "botbuilder-wolf-rive": "^1.1.2",
     "bravey": "^0.1.5",
     "dotenv": "^6.0.0",
@@ -69,7 +67,6 @@
     "uuid": "^3.3.2"
   },
   "dependencies": {
-    "botbuilder-redux": "^2.1.0",
     "debug": "^3.1.0",
     "immutable": "^3.8.2",
     "lodash.difference": "^4.5.0",

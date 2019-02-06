@@ -73,7 +73,7 @@ export const run = async <T extends object>(
   wolfStorage: WolfStateStorage,
   convoStorage: StorageLayer<T>,
   userMessageData: () => Promiseable<NlpResult>,
-  getAbilitiesFunc: () => Promiseable<Ability[]>,
+  getAbilitiesFunc: () => Promiseable<Ability<T>[]>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
@@ -124,7 +124,7 @@ export const run = async <T extends object>(
 
   // Save wolf state by invoking user defined save function
   const result = outtake(wolfStore)
-  
+
   await wolfStorage.save(wolfStore.getState())
 
   return result
