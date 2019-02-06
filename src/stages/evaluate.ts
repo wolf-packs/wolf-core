@@ -315,7 +315,7 @@ function getMissingSlotsOnSlotStatus<T>(
   return abilitySlots
     .map((_: Slot<T>) => _.name)
     .filter((_: string) => namesOfSlotStatusOnAbility.indexOf(_) === -1)
-    .map((_: any) => ({
+    .map((_: string) => ({
       abilityName: focusedAbility,
       slotName: _
     }))
