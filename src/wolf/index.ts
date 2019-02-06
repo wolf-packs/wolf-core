@@ -124,7 +124,7 @@ export const run = async <T extends object>(
 
   // Save wolf state by invoking user defined save function
   const result = outtake(wolfStore)
-  
+
   await wolfStorage.save(wolfStore.getState())
 
   return result

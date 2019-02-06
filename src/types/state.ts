@@ -1,14 +1,6 @@
-import { Store, AnyAction } from 'redux';
-import { Promiseable } from './generic';
+import { Store, AnyAction } from 'redux'
 
-/**
- * Conversation state managed by Botbuilder
- */
-export interface ConvoState {
-  [key: string]: any
-}
-
-export type WolfStore = Store<WolfState, AnyAction>;
+export type WolfStore = Store<WolfState, AnyAction>
 
 /**
  * Wolf's state object that facilitates management of state sytem.
