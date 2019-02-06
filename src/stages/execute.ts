@@ -44,7 +44,7 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
 export default function execute<T>(
   store: Store<WolfState>,
   convoState: T,
-  abilities: Ability[]
+  abilities: Ability<T>[]
 ): ExecuteResult | void {
   const { dispatch, getState } = store
   logState(getState())
@@ -133,7 +133,7 @@ export default function execute<T>(
 function runAbilityOnComplete<T>(
   getState: () => WolfState,
   convoState: T,
-  abilities: Ability[],
+  abilities: Ability<T>[],
   abilitiesToComplete: string[]
 ): {
   result: Promise<string | void> | string | void,
@@ -155,7 +155,7 @@ function runAbilityOnComplete<T>(
     const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
     const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
 
-    const getStateFuncs: GetStateFunctions = {
+    const getStateFuncs: GetStateFunctions<T> = {
       getAbilityList: () => abilities
     }
 
@@ -183,7 +183,7 @@ function makeGetSlotDataFunctions({ getState }: Store<WolfState>, abilityName: s
 /**
  * Execute slot.query()
  */
-function runSlotQuery<T>(convoState: T, store: Store<WolfState>, slot: Slot, abilityName: string): Action[] {
+function runSlotQuery<T>(convoState: T, store: Store<WolfState>, slot: Slot<T>, abilityName: string): Action[] {
   const getSlotDataFunctions = makeGetSlotDataFunctions(store, abilityName)
   const queryString = slot.query(convoState, getSlotDataFunctions)
 

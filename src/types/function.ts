@@ -22,6 +22,6 @@ export interface SlotConfirmationFunctions {
   deny: () => void
 }
 
-export interface GetStateFunctions {
-  getAbilityList: () => Ability[]
+export interface GetStateFunctions<T> {
+  getAbilityList: () => Ability<T>[]
 }

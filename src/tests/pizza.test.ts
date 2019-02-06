@@ -3,32 +3,37 @@ import * as wolf from '..'
 import { getInitialWolfState, createStorage } from './testHelpers'
 import { Ability, WolfStateStorage } from '../types'
 import greetAbility from './testAbilities/greetAbility'
+import { UserConvoState } from './testAbilities/greetAbility'
 
-const abilities: Ability[] = [
+const abilities: Ability<UserConvoState>[] = [
   greetAbility
 ]
 
+const defualtStore: UserConvoState = {
+  name: null
+}
+
 const wolfStorage: WolfStateStorage = createStorage(getInitialWolfState())
-const convoStorage = createStorage({})
+const convoStorage = createStorage(defualtStore)
 
 describe('Greet', () => { // Feature (ability)
   test('Basic Greet Flow', async () => {
 
-  const outputResult = await wolf.run(
-    wolfStorage,
-    convoStorage,
-    () => ({message: 'hi', entities: [], intent: 'greet'}),
-    () => abilities,
-    'greet'
-  )
+    const outputResult = await wolf.run(
+      wolfStorage,
+      convoStorage,
+      () => ({ message: 'hi', entities: [], intent: 'greet' }),
+      () => abilities,
+      'greet'
+    )
 
     expect(outputResult.messageStringArray).toEqual(['What is your name?'])
-    expect(convoStorage.read()).toEqual({})
+    expect(convoStorage.read()).toEqual({ 'name': null })
 
     const outputResult2 = await wolf.run(
       wolfStorage,
       convoStorage,
-      () => ({message: 'Hao', entities: [], intent: null}),
+      () => ({ message: 'Hao', entities: [], intent: null }),
       () => abilities,
       'greet'
     )
@@ -39,7 +44,7 @@ describe('Greet', () => { // Feature (ability)
     const outputResult3 = await wolf.run(
       wolfStorage,
       convoStorage,
-      () => ({message: '3', entities: [], intent: null}),
+      () => ({ message: '3', entities: [], intent: null }),
       () => abilities,
       'greet'
     )
@@ -47,13 +52,13 @@ describe('Greet', () => { // Feature (ability)
     const outputResult4 = await wolf.run(
       wolfStorage,
       convoStorage,
-      () => ({message: '30', entities: [], intent: null}),
+      () => ({ message: '30', entities: [], intent: null }),
       () => abilities,
       'greet'
     )
 
     expect(outputResult4.messageStringArray).toEqual(['Hello Hao who is 30!'])
-    expect(convoStorage.read()).toEqual({name: 'Hao'})
+    expect(convoStorage.read()).toEqual({ name: 'Hao' })
 
   })
 })
