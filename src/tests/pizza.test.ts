@@ -9,12 +9,12 @@ const abilities: Ability<UserConvoState>[] = [
   greetAbility
 ]
 
-const defualtStore: UserConvoState = {
+const defaultStore: UserConvoState = {
   name: null
 }
 
 const wolfStorage: WolfStateStorage = createStorage(getInitialWolfState())
-const convoStorage = createStorage(defualtStore)
+const convoStorage = createStorage(defaultStore)
 
 describe('Greet', () => { // Feature (ability)
   test('Basic Greet Flow', async () => {
