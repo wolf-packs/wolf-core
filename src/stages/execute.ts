@@ -58,7 +58,7 @@ export default function execute<T>(
     )
   )
 
-  let onCompleteReturnResult = null
+  let onCompleteReturnResult: ExecuteResult | undefined
 
   // Check if S4 should run an ability onComplete
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
