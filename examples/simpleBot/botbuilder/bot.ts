@@ -43,6 +43,6 @@ server.post('/api/messages', (req, res) => {
     )
 
     // Respond first message from Wolf
-    context.sendActivity(wolfResult.messageStringArray[0])
+    await context.sendActivity(wolfResult.messageStringArray[0])
   });
 });
