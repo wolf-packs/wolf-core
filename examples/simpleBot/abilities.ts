@@ -1,13 +1,17 @@
-import { Ability, Slot } from '../../src/types'
+import { Ability } from '../../src/types'
 
-export default [
+export interface UserState {
+  name: string | null
+}
+
+export const abilities = [
   {
     name: 'greet',
     slots: [
       {
         name: 'name',
         query: () => 'what is your name?',
-        validate: () =>  ({
+        validate: () => ({
           isValid: true,
           reason: null
         }),
@@ -49,7 +53,7 @@ export default [
             reason: 'I can only look up chicago or seattle'
           }
         },
-        onFill: (submittedValue, convoState, {setSlotValue, setSlotEnabled}, {requireConfirmation}) => {
+        onFill: (submittedValue, convoState, { setSlotValue, setSlotEnabled }, { requireConfirmation }) => {
           // looks for if confirmCity's value on the state, 
           // if set, return setValue
           // if not set, next slot query to confirmCity
@@ -62,7 +66,8 @@ export default [
       },
       {
         name: 'confirmCity',
-        query: (convoState, {getSlotValue}) => `are you sure you want to set the city to ${getSlotValue('city').value}`,
+        query: (convoState, { getSlotValue }) =>
+          `are you sure you want to set the city to ${getSlotValue('city')!.value}`,
         validate: (value) => {
           if (value.toLowerCase() === 'yes' || value.toLowerCase() === 'no') {
             return {
@@ -75,11 +80,11 @@ export default [
             reason: 'You have to say yes or no'
           }
         },
-        onFill: (submittedValue, convoState, {setSlotValue, setSlotEnabled}, {accept, deny}) => {
+        onFill: (submittedValue, convoState, { setSlotValue, setSlotEnabled }, { accept, deny }) => {
           if (submittedValue === 'yes') {
             accept()
           } else {
-            deny() 
+            deny()
           }
         },
         retry: () => ''
@@ -91,4 +96,4 @@ export default [
       }
     ]
   }
-] as Ability[]
+] as Ability<UserState>[]
