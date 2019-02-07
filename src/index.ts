@@ -1,5 +1,5 @@
 // Wolf runner
-export { makeWolfStoreCreator, run } from './wolf'
+export { makeWolfStoreCreator, run, getDefaultWolfState } from './wolf'
 
 // Types
 export { OuttakeResult } from './stages/outtake'
