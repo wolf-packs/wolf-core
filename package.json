@@ -1,6 +1,6 @@
 {
   "name": "wolf-core",
-  "version": "2.5.2",
+  "version": "3.0.0-alpha.1",
   "description": "",
   "main": "dist/index",
   "typings": "dist/index",
@@ -14,6 +14,7 @@
     "release:minor": "npm version minor",
     "release:major": "npm version major",
     "postversion": "git push && git push --tags",
+    "release:alpha": "npm publish --tag alpha",
     "test": "jest"
   },
   "jest": {
