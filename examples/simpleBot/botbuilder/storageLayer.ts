@@ -2,7 +2,7 @@ import { ConversationState, TurnContext } from 'botbuilder'
 import * as wolf from '../../../src'
 
 // TODO: JSDocs
-export const createInMemoryStorageLayer = <T>(
+export const createBotbuilderStorageLayer = <T>(
   conversationState: ConversationState,
   statePropertyName: string = 'CONVERSATION_STATE'
 ) => {

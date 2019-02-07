@@ -6,7 +6,7 @@ import * as wolf from '../../../src' // Use line above to import after running `
 import { UserState, abilities } from '../abilities'
 
 // import Wolf botbuilder storage layer
-import { createInMemoryStorageLayer } from './inMemoryStorageLayer'
+import { createBotbuilderStorageLayer } from './storageLayer'
 
 // Bring in Botbuilder dependency
 import * as restify from 'restify'
@@ -27,8 +27,8 @@ const adapter = new BotFrameworkAdapter({
 // Settup storage layer
 const memoryStorage = new MemoryStorage();
 const conversationState = new ConversationState(memoryStorage)
-const conversationStorageLayer = createInMemoryStorageLayer<UserState>(conversationState)
-const wolfStorageLayer = createInMemoryStorageLayer<wolf.WolfState>(conversationState, 'WOLF_STATE')
+const conversationStorageLayer = createBotbuilderStorageLayer<UserState>(conversationState)
+const wolfStorageLayer = createBotbuilderStorageLayer<wolf.WolfState>(conversationState, 'WOLF_STATE')
 
 // Listen for incoming requests
 server.post('/api/messages', (req, res) => {

@@ -59,7 +59,7 @@ export const makeWolfStoreCreator = (
  * The main Wolf function that will execute all wolf stages and yield the recommended next move
  * in the conversation flow. Wolf run is stateless but requires the following parameters..
  * 
- * @param wolfStorage Wolf state storage layer. Wolf will handle saving wolf state by invoking the save()
+ * @param wolfStorage Wolf state storage layer. Wolf will handle saving wolf state
  * @param convoStorage User conversation state storage layer. Read/save will be made available
  * to user functions in slot and abilities
  * @param userMessageData Natural Language Processing result
