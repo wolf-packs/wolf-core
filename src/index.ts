@@ -7,6 +7,7 @@ export {
   Ability,
   Slot,
   NlpResult,
+  NlpEntity,
   SetSlotDataFunctions,
   GetSlotDataFunctions,
   GetStateFunctions,
