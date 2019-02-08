@@ -58,7 +58,7 @@ export default function execute<T>(
     )
   )
 
-  let onCompleteReturnResult = null
+  let onCompleteReturnResult: ExecuteResult | undefined
 
   // Check if S4 should run an ability onComplete
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
@@ -154,9 +154,11 @@ function runAbilityOnComplete<T>(
 
     const abilitySlotData = getSlotDataByAbilityName(getState(), ability.name)
     const submittedData = makeSubmittedDataFromSlotData(abilitySlotData)
+    const wolfState = getState()
 
     const getStateFuncs: GetStateFunctions<T> = {
-      getAbilityList: () => abilities
+      getAbilityList: () => abilities,
+      getMessageData: () => wolfState.messageData
     }
 
     return {

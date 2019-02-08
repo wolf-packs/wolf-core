@@ -15,9 +15,13 @@ import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone, addSl
  * Returns the default Wolf State that should be initialized onto the conversation state
  * at the beginning of every conversation. This is meant for Wolf usage only.
  */
-const getDefaultWolfState = () => {
+export const getDefaultWolfState = () => {
   return {
-    messageData: null,
+    messageData: {
+      rawText: '',
+      intent: null,
+      entities: []
+    },
     slotStatus: [],
     slotData: [],
     abilityStatus: [],
@@ -59,7 +63,7 @@ export const makeWolfStoreCreator = (
  * The main Wolf function that will execute all wolf stages and yield the recommended next move
  * in the conversation flow. Wolf run is stateless but requires the following parameters..
  * 
- * @param wolfStorage Wolf state storage layer. Wolf will handle saving wolf state by invoking the save()
+ * @param wolfStorage Wolf state storage layer. Wolf will handle saving wolf state
  * @param convoStorage User conversation state storage layer. Read/save will be made available
  * to user functions in slot and abilities
  * @param userMessageData Natural Language Processing result

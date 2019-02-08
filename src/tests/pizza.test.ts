@@ -1,11 +1,10 @@
 // /* global test */
 import * as wolf from '..'
 import { getInitialWolfState, createStorage } from './testHelpers'
-import { Ability, WolfStateStorage } from '../types'
 import greetAbility from './testAbilities/greetAbility'
 import { UserConvoState } from './testAbilities/greetAbility'
 
-const abilities: Ability<UserConvoState>[] = [
+const abilities: wolf.Ability<UserConvoState>[] = [
   greetAbility
 ]
 
@@ -13,7 +12,7 @@ const defaultStore: UserConvoState = {
   name: null
 }
 
-const wolfStorage: WolfStateStorage = createStorage(getInitialWolfState())
+const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
 describe('Greet', () => { // Feature (ability)
