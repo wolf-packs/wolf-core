@@ -1,4 +1,4 @@
-import { Ability } from '../../src/types'
+import { Ability } from '../../../src/types'
 
 export interface UserState {
   name: string | null
