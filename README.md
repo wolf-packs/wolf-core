@@ -1,13 +1,20 @@
-# Botbuilder Wolf
+# Wolf Core [![npm version](https://badge.fury.io/js/wolf-core.svg)](https://badge.fury.io/js/wolf-core) [![Build Status](https://travis-ci.org/wolf-packs/wolf-core.svg?branch=master)](https://travis-ci.org/wolf-packs/wolf-core)
 
-Wolf was created to integrate seamlessly with [Microsoft Bot Framework v4](https://github.com/Microsoft/botbuilder-js).
+Wolf allows you, the developer, to define the bot conversation with ease. There is one configuration point, which is hot-loadable, enabling you to change the bot behavior while the node process is still running. 
 
-Wolf aims to allows the user to dynamically change the behavior of the bot with one configuration point. The configuration point is hot-loadable, allowing the owner of the bot to change the bot behavior while it is still running. Botbuilder Wolf facilitates information gathering, either by asking a question or accepting a piece of information parsed by NLP.  The library is also an abstraction layer that ensures stability, which means if the Botbuilder SDKv4 interface changes, the configuration can stay the same.
+Wolf facilitates information gathering, either by asking a question or accepting a piece of information parsed by NLP.  The library is also an abstraction layer that ensures stability, which means if the Botbuilder SDKv4 interface changes, the bot behavior can stay the same.
 
-_Please see [Roadmap](https://github.com/great-lakes/botbuilder-wolf/wiki/Roadmap) for more details and planned features. If you do not see a feature, please feel free to open an issue._
+_Please see [Roadmap](https://github.com/wolf-packs/wolf-core/wiki/Roadmap) for more details and planned features. If you do not see a feature, please feel free to open an issue._
 
-[![npm version](https://badge.fury.io/js/botbuilder-wolf.svg)](https://badge.fury.io/js/botbuilder-wolf)
-[![Build Status](https://travis-ci.org/great-lakes/botbuilder-wolf.svg?branch=master)](https://travis-ci.org/great-lakes/botbuilder-wolf)
+**Wolf Core will be framework agnostic in v3, making it easy to integrate with backend services like express, bot framework, dialogflow, etc.**  
+For now, wolf v2 is coupled with Microsoft Bot Builder v4.
+
+___
+
+## Guiding Principles:
+* **Functional:** Wolf stages are pure functions.  Side-effects are allowed but is defined and managed by you, the user.
+* **Stateless:** Wolf stages are stateless meaning that the data is passed in on every function invocation, making hot-swappable possible, and testing extremely easy.
+* **Declaritive:** You specify **what** you want (abilities and slots), and **what** to do after you have the information. Wolf will figure out **how** to get the information and complete the ability for you.
 
 ___
 
@@ -16,7 +23,7 @@ Developing intelligent chatbots often lead to complex dialog trees which results
 
 Wolf aims to provide a highly flexible and convenient framework for enabling state driven dynamic prompt flow. Simply define all the `slots` to be filled (information required from the user, prompts to issue, and actions to take after the information is fulfilled) and Wolf will handle the rest to ensure all information is collected. `Slot` can be defined as dependencies on other `slots` if desired. A collection of `slots` are grouped by `abilities` which also can have dependencies on another to help drive dynamic conversation flow.
 
-All functions from `botbuilder-wolf` are pure functions.
+All functions from `wolf-core` are pure functions.
 
 <img src="./static/demo-gif.gif" width="800">
 
@@ -109,18 +116,18 @@ ___
 ## Install
 Open a pre-existing Microsft Bot Framework v4 project directory and run:
 ```
-npm install botbuilder-wolf
+npm install wolf-core
 ```
 
 ## How to Use
-1. Install `botbuilder-wolf`.
+1. Install `wolf-core`.
 2. Import Wolf into a pre-existing Microsft Bot Framework v4 bot.
 ```js
-import { wolfMiddleware, getMessages, createWolfStore, IncomingSlotData } from 'botbuilder-wolf'
+import { wolfMiddleware, getMessages, createWolfStore, IncomingSlotData } from 'wolf-core'
 ```
 
 3. Create an abilities definition 
-(see example [alarmBot abilities](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/alarmBot/abilities.ts))
+(see example [alarmBot abilities](https://github.com/wolf-packs/wolf-core/blob/master/examples/alarmBot/abilities.ts))
 4. Import the abilities definition
 ```js
 import abilities from './abilities'
@@ -198,20 +205,20 @@ ___
 ## Testing
 
 Testing a bot has never been easier with
-[Wolf-Rive](https://github.com/great-lakes/botbuilder-wolf-rive) testing package. Any Wolf enabled v4 bot has the ability to utilize this testing package which allows users to write end-to-end testing of input and output conversation flows.
+[Wolf-Rive](https://github.com/wolf-packs/wolf-rive) testing package. Any Wolf enabled v4 bot has the ability to utilize this testing package which allows users to write end-to-end testing of input and output conversation flows.
 
-All example bots have their own `/tests` which utilize `botbuilder-wolf-rive` package. Please refer to [examples](https://github.com/great-lakes/botbuilder-wolf/tree/master/examples) and [Wolf-Rive](https://github.com/great-lakes/botbuilder-wolf-rive) for full testing details.
+All example bots have their own `/tests` which utilize `wolf-rive` package. Please refer to [examples](https://github.com/wolf-packs/wolf-core/tree/master/examples) and [Wolf-Rive](https://github.com/wolf-packs/wolf-rive) for full testing details.
 
 ___
 ## Resources
 
-See [Wolf Core Concepts](https://github.com/great-lakes/botbuilder-wolf/wiki/Core-Concepts) for more information about middleware usage.
+See [Wolf Core Concepts](https://github.com/wolf-packs/wolf-core/wiki/Core-Concepts) for more information about middleware usage.
 
-See [examples](https://github.com/great-lakes/botbuilder-wolf/tree/master/examples) for full implementation.
-* [simpleBot](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/simpleBot/bot.ts) - Basic example.
-* [alarmBot](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/alarmBot/bot.ts) - Redux DevTools and hot-loading.
-* [profileBot](https://github.com/great-lakes/botbuilder-wolf/blob/master/examples/profileBot/bot.ts) - More complex example. SlotData push model, setting up api endpoint to accept slotdata by conversationId.
+See [examples](https://github.com/wolf-packs/wolf-core/tree/master/examples) for full implementation.
+* [simpleBot](https://github.com/wolf-packs/wolf-core/blob/master/examples/simpleBot/bot.ts) - Basic example.
+* [alarmBot](https://github.com/wolf-packs/wolf-core/blob/master/examples/alarmBot/bot.ts) - Redux DevTools and hot-loading.
+* [profileBot](https://github.com/wolf-packs/wolf-core/blob/master/examples/profileBot/bot.ts) - More complex example. SlotData push model, setting up api endpoint to accept slotdata by conversationId.
 
 ___
 ## Contribution
-Please refer to [Wolf Wiki](https://github.com/great-lakes/botbuilder-wolf/wiki) for roadmap and contribution information.
+Please refer to [Wolf Wiki](https://github.com/wolf-packs/wolf-core/wiki) for roadmap and contribution information.

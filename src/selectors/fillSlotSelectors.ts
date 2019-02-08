@@ -6,23 +6,23 @@ import { findIndexOfSlotIdsBySlotId } from '../helpers'
 
 export const getPromptedSlotId = (state: WolfState): SlotId => state.promptedSlotStack[0]
 
-export const getSlotBySlotId = (abilities: Ability[], slotInfo: SlotId): Slot | undefined => {
-  const ability = abilities.find((ability: Ability) => ability.name === slotInfo.abilityName)
-  if (! ability) {
+export const getSlotBySlotId = <T>(abilities: Ability<T>[], slotInfo: SlotId): Slot<T> | undefined => {
+  const ability = abilities.find((ability: Ability<T>) => ability.name === slotInfo.abilityName)
+  if (!ability) {
     return
   }
-  const foundSlot = ability.slots.find((slot: Slot) => slot.name === slotInfo.slotName)
+  const foundSlot = ability.slots.find((slot: Slot<T>) => slot.name === slotInfo.slotName)
   return foundSlot
 }
 
-export const isPromptStatus = (state: WolfState) => { 
+export const isPromptStatus = (state: WolfState) => {
   return state.promptedSlotStack[0] ? state.promptedSlotStack[0].prompted : false
 }
 
 export const isFocusedAbilitySet = (state: WolfState) => state.focusedAbility
 
 export const getSlotTurnCount = (state: WolfState, slotId: SlotId): number => {
-  const promptSlot = state.promptedSlotStack.find((promptSlot: PromptSlot) => 
+  const promptSlot = state.promptedSlotStack.find((promptSlot: PromptSlot) =>
     promptSlot.slotName === slotId.slotName && promptSlot.abilityName === slotId.abilityName
   )
   if (promptSlot) {
@@ -31,7 +31,7 @@ export const getSlotTurnCount = (state: WolfState, slotId: SlotId): number => {
   return 0
 }
 
-export const getTargetAbility = (abilities: Ability[], targetAbility: string): Ability | undefined => {
+export const getTargetAbility = <T>(abilities: Ability<T>[], targetAbility: string): Ability<T> | undefined => {
   return abilities.find((ability) => ability.name === targetAbility)
 }
 
@@ -39,7 +39,7 @@ export const getRequestingSlotIdFromCurrentSlotId = (state: WolfState, slotId: S
   const slotIndex = findIndexOfSlotIdsBySlotId(state.slotStatus, slotId)
   const slot: SlotStatus = state.slotStatus[slotIndex]
   if (!slot.requestingSlot) {
-    throw new Error (`You did not request any slot to use this slot to confirm`)
+    throw new Error(`You did not request any slot to use this slot to confirm`)
   }
   return {
     abilityName: slot.abilityName,

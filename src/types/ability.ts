@@ -1,4 +1,4 @@
-import { ConvoState, MessageData, ValidateResult, WolfState } from './state'
+import { MessageData, ValidateResult, WolfState } from './state'
 import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions, SlotConfirmationFunctions } from './function'
 
 /**
@@ -7,12 +7,12 @@ import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions, SlotConf
  * 
  * See `example/` directory for ability examples for how to use.
  */
-export interface Ability {
+export interface Ability<T> {
   name: string,
-  slots: Slot[],
-  nextAbility?: (convoState: ConvoState, wolfState: WolfState) => NextAbilityResult,
-  onComplete: (convoState: ConvoState, submittedData: any, getStateFunctions: GetStateFunctions) => 
-    Promise<string|void> | string | void
+  slots: Slot<T>[],
+  nextAbility?: (convoState: T, wolfState: WolfState) => NextAbilityResult,
+  onComplete: (convoState: T, submittedData: any, getStateFunctions: GetStateFunctions<T>) =>
+    Promise<string | void> | string | void
 }
 
 /**
@@ -26,16 +26,16 @@ export interface NextAbilityResult {
 /**
  * Wolf primitive representing data points that should be collected.
  */
-export interface Slot {
+export interface Slot<T> {
   name: string,
   defaultIsEnabled?: boolean,
   order?: number,
-  query: (convoState: ConvoState, getSlotDataFunctions: GetSlotDataFunctions) => string,
+  query: (convoState: T, getSlotDataFunctions: GetSlotDataFunctions) => string,
   validate: (submittedValue: any, messageData: MessageData) => ValidateResult,
-  retry: (convoState: ConvoState, submittedData: any, turnCount: number) => string,
+  retry: (convoState: T, submittedData: any, turnCount: number) => string,
   onFill: (
     submittedValue: any,
-    convoState: ConvoState,
+    convoState: T,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
   ) => string | void

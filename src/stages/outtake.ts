@@ -1,5 +1,4 @@
 import { Store } from 'redux'
-import { Activity } from 'botbuilder'
 import { WolfState, OutputMessageItem, OutputMessageType } from '../types'
 import { getOutputMessageQueue } from '../selectors'
 import { clearMessageQueue } from '../actions'
@@ -8,7 +7,6 @@ const log = require('debug')('wolf:s5')
 export interface OuttakeResult {
   messageStringArray: string[],
   messageItemArray: OutputMessageItem[]
-  messageActivityArray: Partial<Activity>[]
 }
 
 /**
@@ -47,12 +45,7 @@ export default function outtake(store: Store<WolfState>): OuttakeResult {
   // clear messageQueue for next turn
   dispatch(clearMessageQueue())
 
-  const messageActivityArray: Partial<Activity>[] = messageStringArray.map((msg) => ({
-    type: 'message',
-    text: msg
-  }))
-
-  return { messageStringArray, messageItemArray, messageActivityArray } 
+  return { messageStringArray, messageItemArray }
 }
 
 /**
