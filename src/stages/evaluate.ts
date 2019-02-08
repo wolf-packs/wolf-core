@@ -1,9 +1,13 @@
 import { Store } from 'redux'
-import { WolfState, Ability, SlotId, Slot, PromptSlotReason, ConvoState,
-  NextAbilityResult, OutputMessageItem, OutputMessageType } from '../types'
-import { getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
+import {
+  WolfState, Ability, SlotId, Slot, PromptSlotReason,
+  NextAbilityResult, OutputMessageItem, OutputMessageType
+} from '../types'
+import {
+  getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
-  getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots } from '../selectors'
+  getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots
+} from '../selectors'
 import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
 const logState = require('debug')('wolf:s3:enterState')
 const log = require('debug')('wolf:s3')
@@ -18,7 +22,7 @@ const log = require('debug')('wolf:s3')
  * @param store redux
  * @param abilities user defined abilities and slots
  */
-export default function evaluate(store: Store<WolfState>, abilities: Ability[], convoState: ConvoState): void {
+export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<T>[], convoState: T): void {
   const { dispatch, getState } = store
 
   const state = getState()
@@ -59,7 +63,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
           log('nextAbility message is a string, add to output message queue')
           dispatch(addMessage({ message, type: OutputMessageType.nextAbilityMessage }))
         }
-        
+
         // ADD SLOT TO PROMPTED STACK
         log('add slot %s to the promptedStack', nextSlot.slotName)
         dispatch(addSlotToPromptedStack(nextSlot, PromptSlotReason.query))
@@ -69,7 +73,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
     }
 
     // clear focused ability for now if next ability does not exist
-    log('set focused ability to null since no nextAbilityName exists')    
+    log('set focused ability to null since no nextAbilityName exists')
     dispatch(setFocusedAbility(null))
 
     log('exit stage')
@@ -136,7 +140,7 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
       }
 
       // clear focused ability for now if next ability is completed (replace with above logic)
-      log('set focused ability to null since no nextAbilityName exists')   
+      log('set focused ability to null since no nextAbilityName exists')
       dispatch(setFocusedAbility(null))
 
       log('exit stage')
@@ -207,11 +211,11 @@ export default function evaluate(store: Store<WolfState>, abilities: Ability[], 
 /**
  * Find the next enabled and pending slot in the `focusedAbility` to be prompted
  */
-function findNextSlotToPrompt(getState: () => WolfState, abilities: Ability[]): SlotId | null {
-  log('in findNextSlotToPrompt()..')  
+function findNextSlotToPrompt<T>(getState: () => WolfState, abilities: Ability<T>[]): SlotId | null {
+  log('in findNextSlotToPrompt()..')
   const focusedAbility = getFocusedAbility(getState())
   log('focuedAbility to check:', focusedAbility)
-    
+
   if (!focusedAbility) {
     log('focused ability is empty.. return null')
     log('exiting findNextSlotToPrompt()')
@@ -245,7 +249,7 @@ function findNextSlotToPrompt(getState: () => WolfState, abilities: Ability[]): 
 /**
  * Check if there are any abilities with all enabled slots filled.
  */
-function getAbilitiesCompleted(getState: () => WolfState, abilities: Ability[]): string[] {
+function getAbilitiesCompleted<T>(getState: () => WolfState, abilities: Ability<T>[]): string[] {
   const filledSlotsResult = getfilledSlotsOnCurrentTurn(getState())
 
   if (filledSlotsResult.length === 0) {
@@ -253,7 +257,7 @@ function getAbilitiesCompleted(getState: () => WolfState, abilities: Ability[]):
   }
 
   const abilityList = filledSlotsResult.map((_) => _.abilityName)
-  const completedAbilityList = abilityList.filter((_) => 
+  const completedAbilityList = abilityList.filter((_) =>
     isAbilityCompletedByFilledSlotsOnCurrentTurn(getState, abilities, _))
   return completedAbilityList
 }
@@ -262,14 +266,14 @@ function getAbilitiesCompleted(getState: () => WolfState, abilities: Ability[]):
  * Given an abilityName, check if the ability is completed based on pending slots.
  * Check if all enabled slots are filled.
  */
-function isAbilityCompletedByFilledSlotsOnCurrentTurn (
+function isAbilityCompletedByFilledSlotsOnCurrentTurn<T>(
   getState: () => WolfState,
-  abilities: Ability[],
+  abilities: Ability<T>[],
   abilityName: string
 ): boolean {
   const state = getState()
   const slotStatus = getSlotStatus(state)
-  
+
   const ability = abilities.find(_ => _.name === abilityName)
   if (!ability) {
     return false
@@ -294,9 +298,9 @@ function isAbilityCompletedByFilledSlotsOnCurrentTurn (
   return true
 }
 
-function getMissingSlotsOnSlotStatus(
+function getMissingSlotsOnSlotStatus<T>(
   getState: () => WolfState,
-  abilities: Ability[],
+  abilities: Ability<T>[],
   focusedAbility: string
 ): SlotId[] {
   const ability = getTargetAbility(abilities, focusedAbility)
@@ -309,9 +313,9 @@ function getMissingSlotsOnSlotStatus(
     .map(_ => _.slotName)
   const abilitySlots = ability.slots
   return abilitySlots
-    .map(_ => _.name)
-    .filter(_ => namesOfSlotStatusOnAbility.indexOf(_) === -1)
-    .map(_ => ({
+    .map((_: Slot<T>) => _.name)
+    .filter((_: string) => namesOfSlotStatusOnAbility.indexOf(_) === -1)
+    .map((_: string) => ({
       abilityName: focusedAbility,
       slotName: _
     }))
@@ -320,7 +324,7 @@ function getMissingSlotsOnSlotStatus(
 /**
  * Find all unfilled slots in the target ability that are enabled. 
  */
-function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focusedAbility: string): Slot[] {
+function getUnfilledSlots<T>(getState: () => WolfState, abilities: Ability<T>[], focusedAbility: string): Slot<T>[] {
   const ability = getTargetAbility(abilities, focusedAbility)
   if (!ability) {
     // ability is undefined - exit
@@ -336,14 +340,14 @@ function getUnfilledSlots(getState: () => WolfState, abilities: Ability[], focus
   const allUnfilledSlotIds = missingSlotsOnSlotStatus.concat(unfilledEnabledSlotIdArray)
 
   return allUnfilledSlotIds
-    .map(({slotName}) => abilitySlots.find(_ => _.name === slotName))
-    .filter(_ => _) as Slot[]
+    .map(({ slotName }) => abilitySlots.find((_: Slot<T>) => _.name === slotName))
+    .filter(_ => _) as Slot<T>[]
 }
 
-function getNextAbility (
-  abilities: Ability[],
+function getNextAbility<T>(
+  abilities: Ability<T>[],
   abilityName: string,
-  convoState: ConvoState,
+  convoState: T,
   state: WolfState
 ): NextAbilityResult | null {
   const completedAbility = getTargetAbility(abilities, abilityName)
@@ -355,7 +359,7 @@ function getNextAbility (
   return null
 }
 
-function isAbilityCompleted (abilityName: string, getState: () => WolfState): boolean {
+function isAbilityCompleted(abilityName: string, getState: () => WolfState): boolean {
   const abilityStatus = getAbilityStatus(getState())
 
   return abilityStatus.some((ability) => ability.abilityName === abilityName && ability.isCompleted)

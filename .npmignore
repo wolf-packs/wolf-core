@@ -3,3 +3,6 @@ build
 .vscode
 .vs
 *.bot
+examples
+static
+.github

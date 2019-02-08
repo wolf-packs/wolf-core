@@ -1,4 +1,4 @@
-import { SlotStatus, SlotData } from './state';
+import { SlotStatus, SlotData, MessageData } from './state';
 import { Ability } from './ability';
 
 /**
@@ -22,6 +22,7 @@ export interface SlotConfirmationFunctions {
   deny: () => void
 }
 
-export interface GetStateFunctions {
-  getAbilityList: () => Ability[]
+export interface GetStateFunctions<T> {
+  getAbilityList: () => Ability<T>[],
+  getMessageData: () => MessageData
 }

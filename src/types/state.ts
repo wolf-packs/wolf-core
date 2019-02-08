@@ -1,18 +1,11 @@
-import { Store, AnyAction } from 'redux';
+import { Store, AnyAction } from 'redux'
 
-/**
- * Conversation state managed by Botbuilder
- */
-export interface ConvoState {
-  [key: string]: any
-}
-
-export type WolfStore = Store<WolfState, AnyAction>;
+export type WolfStore = Store<WolfState, AnyAction>
 
 /**
  * Wolf's state object that facilitates management of state sytem.
  * 
- * _User should not touch this object._
+ * _Developer should not touch this object._
  */
 export interface WolfState {
   messageData: MessageData,

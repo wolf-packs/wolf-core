@@ -1,38 +1,13 @@
-import { makeWolfStoreCreator, run } from './wolf'
-import {
-  Ability,
-  Slot,
-  NlpResult,
-  SetSlotDataFunctions,
-  GetSlotDataFunctions,
-  GetStateFunctions,
-  SlotConfirmationFunctions,
-  OutputMessageType,
-  OutputMessageItem,
-  IncomingSlotData
-} from './types'
+// Wolf runner
+export { makeWolfStoreCreator, run, getDefaultWolfState } from './wolf'
 
-import intake from './stages/intake'
-import fillSlot from './stages/fillSlot'
-import evaluate from './stages/evaluate'
-import execute from './stages/execute'
-import outtake, { OuttakeResult } from './stages/outtake'
-
-const stages = {
-  intake,
-  fillSlot,
-  evaluate,
-  execute,
-  outtake
-}
-
+// Types
+export { OuttakeResult } from './stages/outtake'
 export {
-  run,
-  makeWolfStoreCreator,
-  stages,
   Ability,
   Slot,
   NlpResult,
+  NlpEntity,
   SetSlotDataFunctions,
   GetSlotDataFunctions,
   GetStateFunctions,
@@ -40,5 +15,23 @@ export {
   OutputMessageType,
   OutputMessageItem,
   IncomingSlotData,
-  OuttakeResult
+  WolfStateStorage,
+  StorageLayer,
+  StorageLayerFactory,
+  WolfState
+} from './types'
+
+// Stages
+import intake from './stages/intake'
+import fillSlot from './stages/fillSlot'
+import evaluate from './stages/evaluate'
+import execute from './stages/execute'
+import outtake from './stages/outtake'
+
+export const stages = {
+  intake,
+  fillSlot,
+  evaluate,
+  execute,
+  outtake
 }
