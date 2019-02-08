@@ -17,6 +17,7 @@ export {
   IncomingSlotData,
   WolfStateStorage,
   StorageLayer,
+  StorageLayerFactory,
   WolfState
 } from './types'
 

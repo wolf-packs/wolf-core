@@ -2,6 +2,11 @@ import { WolfState } from './state'
 import { Promiseable } from './generic'
 
 /**
+ * Factory type for the StorageLayer object 
+ */
+export type StorageLayerFactory = <K, T>(key: K, initial?: T) => StorageLayer<T>
+
+/**
  * Storage interface to persist the wolf state. Since Wolf is stateless, the wolf state needs 
  * to be persisted by the developer and so it can be utilized on the next turn. Wolf will handle
  * reading and saving the wolf state within the runner but the developer is required to provide
