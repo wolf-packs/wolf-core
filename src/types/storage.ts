@@ -4,7 +4,9 @@ import { Promiseable } from './generic'
 /**
  * Factory type for the StorageLayer object 
  */
-export type StorageLayerFactory = <K, T>(key: K, initial?: T) => StorageLayer<T>
+export interface StorageLayerFactory<K, T> {
+  (key: K, initial?: T): StorageLayer<T>
+}
 
 /**
  * Storage interface to persist the wolf state. Since Wolf is stateless, the wolf state needs 
