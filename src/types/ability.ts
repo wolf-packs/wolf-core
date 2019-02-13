@@ -2,8 +2,7 @@ import { MessageData, ValidateResult, WolfState } from './state'
 import { SetSlotDataFunctions, GetSlotDataFunctions, GetStateFunctions, SlotConfirmationFunctions } from './function'
 
 /**
- * Defines conversation abilities, used to control overall flow
- * that Wolf references.
+ * Defines conversation abilities, used to control overall ability slots and completion task
  * 
  * See `example/` directory for ability examples for how to use.
  */
@@ -16,11 +15,11 @@ export interface Ability<T> {
 }
 
 /**
- * result of the nextAbility function
+ * Object interface for the output of the `nextAbility` function
  */
 export interface NextAbilityResult {
   abilityName: string,
-  message: string | null
+  message?: string | null
 }
 
 /**

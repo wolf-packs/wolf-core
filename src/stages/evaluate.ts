@@ -40,7 +40,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
     const nextAbilityResult = getNextAbility(abilities, abilityCompleteResult[0], convoState, getState())
     log('check if first ability to complete has a nextAbilityName')
     if (nextAbilityResult && nextAbilityResult.abilityName) {
-      const { abilityName: nextAbilityName, message } = nextAbilityResult
+      const { abilityName: nextAbilityName, message = null } = nextAbilityResult
       log('next ability to set: %s', nextAbilityName)
       log('check to see if %s is completed', nextAbilityName)
       if (!isAbilityCompleted(nextAbilityName, getState)) {
@@ -107,7 +107,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
       const nextAbilityResult = getNextAbility(abilities, abilityList[0], convoState, getState())
       log('check if first ability to complete has a nextAbilityName')
       if (nextAbilityResult && nextAbilityResult.abilityName) {
-        const { abilityName: nextAbilityName, message } = nextAbilityResult
+        const { abilityName: nextAbilityName, message = null } = nextAbilityResult
         log('next ability to set: %s', nextAbilityName)
         log('check to see if %s is completed', nextAbilityName)
         if (!isAbilityCompleted(nextAbilityName, getState)) {
@@ -160,7 +160,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
     // slot in the stack
     // regardless of promptSlot.prompted, exit S3
     // if prompted = false.. S4 should prompt slot
-    // if prompted = true.. S4 shoudld do nothing
+    // if prompted = true.. S4 should do nothing
     log('exit stage')
     return
   }
@@ -214,7 +214,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
 function findNextSlotToPrompt<T>(getState: () => WolfState, abilities: Ability<T>[]): SlotId | null {
   log('in findNextSlotToPrompt()..')
   const focusedAbility = getFocusedAbility(getState())
-  log('focuedAbility to check:', focusedAbility)
+  log('focusedAbility to check:', focusedAbility)
 
   if (!focusedAbility) {
     log('focused ability is empty.. return null')
