@@ -1,4 +1,4 @@
-import { WolfState, StorageLayer } from '../types'
+import { WolfState, StorageLayer } from '../../types'
 
 export const createStorage = <T>(initial: T): StorageLayer<T> => {
   let data = initial
