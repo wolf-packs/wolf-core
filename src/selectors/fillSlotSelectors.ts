@@ -1,4 +1,3 @@
-// import { createSelector } from 'reselect'
 import { WolfState, PromptSlot, SlotId, Ability, Slot, SlotStatus, MessageData, OnFillStackItem } from '../types'
 import { findIndexOfSlotIdsBySlotId } from '../helpers'
 
