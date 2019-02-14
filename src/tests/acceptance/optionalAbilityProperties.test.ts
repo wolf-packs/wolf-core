@@ -1,17 +1,58 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
-import optionalAbility from './testAbilities/optionalAbilityPropertiesAbilities'
-import { UserConvoState } from './testAbilities/optionalAbilityPropertiesAbilities'
+import { Ability } from '../../types'
 
-const abilities: wolf.Ability<UserConvoState>[] = optionalAbility
+interface UserConvoState {
+  car: string | null,
+  addons: string[],
+  financing: boolean
+}
 
 const defaultStore: UserConvoState = {
   car: null,
-  addons: []
+  addons: [],
+  financing: false
 }
 
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
+
+const abilities: wolf.Ability<UserConvoState>[] = [{
+  name: 'buyCar',
+  slots: [{
+    name: 'car',
+    query: () => 'what kind of car would you like?'
+  }],
+  nextAbility: () => ({abilityName: 'buyAddOn'}),
+  onComplete: (convoState, submittedData) => {
+    convoState.car = submittedData.car
+  }
+}, {
+  name: 'buyAddOn',
+  slots: [{
+    name: 'addOn',
+    query: () => 'What add on would you like?'
+  }],
+  nextAbility: () => ({abilityName: 'needFinancing', message: 'Ok! lets go to the next step.'}),
+  onComplete: (convoState, submittedData) => {
+    if (submittedData.addOn !== 'nothing') {
+      convoState.addons.push(submittedData.addOn)
+    }
+  }
+}, {
+  name: 'needFinancing',
+  slots: [{
+    name: 'confirmFinancing',
+    query: () => 'Would you need financing?'
+  }],
+  onComplete: (convoState, submittedData) => {
+    if (submittedData.confirmFinancing === 'yes') {
+      convoState.financing = true
+      return
+    }
+    convoState.financing = false
+  }
+}] as Ability<UserConvoState>[]
 
 const optionalAbilityPropertyTestCase: TestCase<UserConvoState> = {
   description: 'Optional Ability Properties',
@@ -28,7 +69,7 @@ const optionalAbilityPropertyTestCase: TestCase<UserConvoState> = {
       },
       expected: {
         message: ['What add on would you like?'],
-        state: { car: 'tesla', addons: [] }
+        state: { car: 'tesla', addons: [], financing: false }
       }
     },
     {
@@ -38,8 +79,19 @@ const optionalAbilityPropertyTestCase: TestCase<UserConvoState> = {
         intent: null
       },
       expected: {
+        message: ['Ok! lets go to the next step.', 'Would you need financing?'],
+        state: { car: 'tesla', addons: ['all wheel drive'], financing: false }
+      }
+    },
+    {
+      input: {
+        message: 'yes',
+        entities: [],
+        intent: null
+      },
+      expected: {
         message: [],
-        state: { car: 'tesla', addons: ['all wheel drive']}
+        state: { car: 'tesla', addons: ['all wheel drive'], financing: true }
       }
     }
   ]
