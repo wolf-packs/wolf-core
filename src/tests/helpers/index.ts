@@ -1,6 +1,5 @@
 import * as wolf from '../..'
-import { WolfState, StorageLayer } from '../../types'
-import { Ability } from '../../../dist';
+import { WolfState, StorageLayer, Ability } from '../../types'
 
 export interface ConversationTurn<T> {
   input: wolf.NlpResult,
