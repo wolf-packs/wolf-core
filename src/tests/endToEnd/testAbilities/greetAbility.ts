@@ -1,4 +1,4 @@
-import { Ability } from '../../types'
+import { Ability } from '../../../types'
 
 export interface UserConvoState {
   name: string | null
@@ -10,14 +10,11 @@ export default {
     {
       name: 'name',
       query: () => 'What is your name?',
-      retry: () => 'try again',
-      validate: () => ({ isValid: true, reason: null }),
-      onFill: () => { return }
     },
     {
       name: 'age',
       query: () => 'What is your age?',
-      retry: () => 'try again',
+      retry: () => 'You must be older than 5.',
       validate: (submittedValue: any) => {
         const num = parseInt(submittedValue, 10);
         if (num < 6) {

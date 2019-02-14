@@ -1,6 +1,6 @@
 // /* global test */
-import * as wolf from '..'
-import { getInitialWolfState, createStorage } from './testHelpers'
+import * as wolf from '../..'
+import { getInitialWolfState, createStorage } from '../helpers'
 import greetAbility from './testAbilities/greetAbility'
 import { UserConvoState } from './testAbilities/greetAbility'
 
@@ -37,8 +37,8 @@ describe('Greet', () => { // Feature (ability)
       'greet'
     )
 
-    // expect(outputResult2.messageStringArray).toEqual(['Hello Hao!'])
-    // expect(convoStorage.read()).toEqual({name: 'Hao'})
+    expect(outputResult2.messageStringArray).toEqual(['What is your age?'])
+    expect(convoStorage.read()).toEqual({ 'name': null })
 
     const outputResult3 = await wolf.run(
       wolfStorage,
@@ -47,6 +47,9 @@ describe('Greet', () => { // Feature (ability)
       () => abilities,
       'greet'
     )
+
+    expect(outputResult3.messageStringArray).toEqual(['too young', 'You must be older than 5.'])
+    expect(convoStorage.read()).toEqual({ 'name': null })
 
     const outputResult4 = await wolf.run(
       wolfStorage,
@@ -58,6 +61,5 @@ describe('Greet', () => { // Feature (ability)
 
     expect(outputResult4.messageStringArray).toEqual(['Hello Hao who is 30!'])
     expect(convoStorage.read()).toEqual({ name: 'Hao' })
-
   })
 })
