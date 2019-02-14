@@ -72,15 +72,9 @@
   },
   "dependencies": {
     "debug": "^3.1.0",
-    "immutable": "^3.8.2",
     "lodash.difference": "^4.5.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
-    "redux": "^4.0.0",
-    "reselect": "^3.0.1"
-  },
-  "peerDependencies": {
-    "remote-redux-devtools": "^0.5.13",
-    "remotedev-server": "^0.2.5"
+    "redux": "^4.0.0"
   }
 }
