@@ -2,7 +2,7 @@ import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc
 import rootReducer from '../reducers'
 import {
   NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable,
-  WolfStore, WolfStateStorage, StorageLayer
+  WolfStore, WolfStateStorage, StorageLayer, AnyObject
 } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
@@ -73,7 +73,7 @@ export const makeWolfStoreCreator = (
  * @param getSlotDataFunc Optional getter function to retrieve slot data
  * @returns Wolf's result containing an array of output messages
  */
-export const run = async <T extends object>(
+export const run = async <T extends AnyObject>(
   wolfStorage: WolfStateStorage,
   convoStorage: StorageLayer<T>,
   userMessageData: () => Promiseable<NlpResult>,
@@ -91,7 +91,7 @@ export const run = async <T extends object>(
   ])
 
   // If user provides storeCreator param, invoke the redux store creator with the persisted wolfState (if available)
-  // By defualt, redux store creator is invoked with the available wolfState
+  // By default, redux store creator is invoked with the available wolfState
   // In either case, if wolfState is null, the storeCreator will instantiate a new defualt Wolf State
   const wolfStore: WolfStore = storeCreator ? storeCreator(wolfState) : makeWolfStoreCreator()(wolfState)
 

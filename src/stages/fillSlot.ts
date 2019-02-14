@@ -493,7 +493,12 @@ function runRetry<T>(
   if (slot) {
     log('slot exists run slot.retry()')
     const turnCount = getSlotTurnCount(getState(), { slotName, abilityName })
-    const retryMessage = slot.retry(convoState, submittedData, turnCount)
+
+    // Check if slot has a retry function defined
+    let retryMessage = '' // Default to empty string
+    if (slot.retry) {
+      retryMessage = slot.retry(convoState, submittedData, turnCount)
+    }
     const message: OutputMessageItem = {
       message: retryMessage,
       type: OutputMessageType.retryMessage,
@@ -574,6 +579,7 @@ function checkValidatorAndFill<T>(
  */
 function runSlotValidator<T>(slot: Slot<T>, submittedData: any, messageData: MessageData): ValidateResult {
   if (!slot.validate) {
+    // Default to true validation if no validation function is defined
     return {
       isValid: true,
       reason: null
