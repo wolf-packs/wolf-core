@@ -1,7 +1,7 @@
 import { Store, Action } from 'redux'
 import {
   WolfState, Ability, Slot, OutputMessageType, SlotId,
-  SlotData, GetSlotDataFunctions, GetStateFunctions
+  SlotData, GetSlotDataFunctions, GetStateFunctions, StorageLayer
 } from '../types'
 import {
   getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
@@ -38,13 +38,13 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  * Responsible for executing an ability onComplete, slot query or bypass.
  * 
  * @param store redux
- * @param convoState conversationState
+ * @param convoStorageLayer conversationState Storage Layer
  * @param abilities user defined abilities and slots
  */
 export default function execute<T>(
   store: Store<WolfState>,
-  convoState: T,
-  abilities: Ability<T>[]
+  convoStorageLayer: StorageLayer<T>,
+  abilities: Ability<T, StorageLayer<T>>[]
 ): ExecuteResult | void {
   const { dispatch, getState } = store
   logState(getState())
@@ -63,7 +63,7 @@ export default function execute<T>(
   // Check if S4 should run an ability onComplete
   const abilityCompleteResult = getAbilitiesCompleteOnCurrentTurn(getState())
   if (abilityCompleteResult.length > 0) {
-    const valueOrPromiseArr = runAbilityOnComplete(getState, convoState, abilities, abilityCompleteResult)
+    const valueOrPromiseArr = runAbilityOnComplete(getState, convoStorageLayer, abilities, abilityCompleteResult)
     const allPromises: Promise<(OnCompletePromiseResult<string | void>)>[] = valueOrPromiseArr.map((_) => {
       const { result: valueOrPromise, abilityName } = _
       if (typeof valueOrPromise === 'string') {
@@ -107,7 +107,7 @@ export default function execute<T>(
     // slot has not been prompted yet.. prompt here
     const slotToPrompt = getSlotBySlotId(abilities, { slotName: slot.slotName, abilityName: slot.abilityName })
     if (slotToPrompt) {
-      const runSlotQueryResult = runSlotQuery(convoState, store, slotToPrompt, slot.abilityName)
+      const runSlotQueryResult = runSlotQuery(convoStorageLayer, store, slotToPrompt, slot.abilityName)
       runSlotQueryResult.forEach(dispatch)
 
       if (onCompleteReturnResult) {
@@ -132,8 +132,8 @@ export default function execute<T>(
  */
 function runAbilityOnComplete<T>(
   getState: () => WolfState,
-  convoState: T,
-  abilities: Ability<T>[],
+  convoStorageLayer: StorageLayer<T>,
+  abilities: Ability<T, StorageLayer<T>>[],
   abilitiesToComplete: string[]
 ): {
   result: Promise<string | void> | string | void,
@@ -162,7 +162,7 @@ function runAbilityOnComplete<T>(
     }
 
     return {
-      result: ability.onComplete(convoState, submittedData, getStateFuncs),
+      result: ability.onComplete(convoStorageLayer, submittedData, getStateFuncs),
       abilityName: ability.name
     }
   })
@@ -185,9 +185,9 @@ function makeGetSlotDataFunctions({ getState }: Store<WolfState>, abilityName: s
 /**
  * Execute slot.query()
  */
-function runSlotQuery<T>(convoState: T, store: Store<WolfState>, slot: Slot<T>, abilityName: string): Action[] {
+function runSlotQuery<T>(convoStorageLayer: StorageLayer<T>, store: Store<WolfState>, slot: Slot<StorageLayer<T>>, abilityName: string): Action[] {
   const getSlotDataFunctions = makeGetSlotDataFunctions(store, abilityName)
-  const queryString = slot.query(convoState, getSlotDataFunctions)
+  const queryString = slot.query(convoStorageLayer, getSlotDataFunctions)
 
   // add query to output message queue
   const message = {

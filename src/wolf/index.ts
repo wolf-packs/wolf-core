@@ -77,15 +77,14 @@ export const run = async <T extends AnyObject>(
   wolfStorage: WolfStateStorage,
   convoStorage: StorageLayer<T>,
   userMessageData: () => Promiseable<NlpResult>,
-  getAbilitiesFunc: () => Promiseable<Ability<T>[]>,
+  getAbilitiesFunc: () => Promiseable<Ability<T, StorageLayer<T>>[]>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
 ) => {
   // invoke user async functions
-  const [wolfState, convoState, nlpResult, abilities] = await Promise.all([
+  const [wolfState, nlpResult, abilities] = await Promise.all([
     wolfStorage.read(),
-    convoStorage.read(),
     userMessageData(),
     getAbilitiesFunc()
   ])
@@ -116,9 +115,9 @@ export const run = async <T extends AnyObject>(
       }
     }) : []
   intake(wolfStore, nlpResult, incomingSlotData, defaultAbility)
-  fillSlot(wolfStore, convoState, abilities)
-  evaluate(wolfStore, abilities, convoState)
-  const executeResult = execute(wolfStore, convoState, abilities)
+  fillSlot(wolfStore, convoStorage, abilities)
+  evaluate(wolfStore, abilities, convoStorage)
+  const executeResult = execute(wolfStore, convoStorage, abilities)
 
   if (executeResult) {
     const { runOnComplete, addMessage } = executeResult

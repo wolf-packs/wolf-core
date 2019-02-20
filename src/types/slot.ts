@@ -1,5 +1,6 @@
 import { GetSlotDataFunctions, SetSlotDataFunctions, SlotConfirmationFunctions } from './function';
 import { MessageData, ValidateResult } from './state';
+import { StorageLayer, AllAsyncStorageLayer } from './storage';
 
 /**
  * Wolf primitive representing data points that should be collected. Any piece of information
@@ -8,16 +9,16 @@ import { MessageData, ValidateResult } from './state';
  * 
  * See `example/` directory for ability examples for how to use.
  */
-export interface Slot<T> {
+export interface Slot<G> {
   name: string,
   defaultIsEnabled?: boolean,
   order?: number,
-  query: (convoState: T, getSlotDataFunctions: GetSlotDataFunctions) => string,
+  query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => string,
   validate?: (submittedValue: any, messageData: MessageData) => ValidateResult,
-  retry?: (convoState: T, submittedData: any, turnCount: number) => string,
+  retry?: (convoStorageLayer: G, submittedData: any, turnCount: number) => string,
   onFill?: (
     submittedValue: any,
-    convoState: T,
+    convoStorageLayer: G,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
   ) => string | void

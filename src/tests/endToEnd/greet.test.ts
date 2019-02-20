@@ -1,10 +1,11 @@
 // /* global test */
 import * as wolf from '../..'
-import { getInitialWolfState, createStorage } from '../helpers'
+import { getInitialWolfState, createStorage, StorageLayerType } from '../helpers'
 import greetAbility from './testAbilities/greetAbility'
 import { UserConvoState } from './testAbilities/greetAbility'
+import { AllSyncStorageLayer } from '../../types';
 
-const abilities: wolf.Ability<UserConvoState>[] = [
+const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [
   greetAbility
 ]
 

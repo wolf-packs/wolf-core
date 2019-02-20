@@ -1,7 +1,7 @@
 import { Store } from 'redux'
 import {
   WolfState, Ability, SlotId, Slot, PromptSlotReason,
-  NextAbilityResult, OutputMessageItem, OutputMessageType
+  NextAbilityResult, OutputMessageItem, OutputMessageType, StorageLayer
 } from '../types'
 import {
   getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
@@ -21,8 +21,9 @@ const log = require('debug')('wolf:s3')
  * 
  * @param store redux
  * @param abilities user defined abilities and slots
+ * @param convoStorageLayer convoState storage layer
  */
-export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<T>[], convoState: T): void {
+export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<T>[], convoStorageLayer: StorageLayer<T>): void {
   const { dispatch, getState } = store
 
   const state = getState()
@@ -37,7 +38,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
     // Check if the next ability has been completed already
     // if no.. set the new focused ability to nextAbility and prompt a slot
     // REDO this later..
-    const nextAbilityResult = getNextAbility(abilities, abilityCompleteResult[0], convoState, getState())
+    const nextAbilityResult = getNextAbility(abilities, abilityCompleteResult[0], convoStorageLayer, getState())
     log('check if first ability to complete has a nextAbilityName')
     if (nextAbilityResult && nextAbilityResult.abilityName) {
       const { abilityName: nextAbilityName, message = null } = nextAbilityResult
@@ -104,7 +105,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
       // Check if the next ability has been completed already
       // if no.. set the new focused ability to nextAbility and prompt a slot
       // REDO this later..
-      const nextAbilityResult = getNextAbility(abilities, abilityList[0], convoState, getState())
+      const nextAbilityResult = getNextAbility(abilities, abilityList[0], convoStorageLayer, getState())
       log('check if first ability to complete has a nextAbilityName')
       if (nextAbilityResult && nextAbilityResult.abilityName) {
         const { abilityName: nextAbilityName, message = null } = nextAbilityResult
@@ -211,7 +212,7 @@ export default function evaluate<T>(store: Store<WolfState>, abilities: Ability<
 /**
  * Find the next enabled and pending slot in the `focusedAbility` to be prompted
  */
-function findNextSlotToPrompt<T>(getState: () => WolfState, abilities: Ability<T>[]): SlotId | null {
+function findNextSlotToPrompt<T>(getState: () => WolfState, abilities: Ability<T, StorageLayer<T>>[]): SlotId | null {
   log('in findNextSlotToPrompt()..')
   const focusedAbility = getFocusedAbility(getState())
   log('focusedAbility to check:', focusedAbility)
@@ -249,7 +250,7 @@ function findNextSlotToPrompt<T>(getState: () => WolfState, abilities: Ability<T
 /**
  * Check if there are any abilities with all enabled slots filled.
  */
-function getAbilitiesCompleted<T>(getState: () => WolfState, abilities: Ability<T>[]): string[] {
+function getAbilitiesCompleted<T>(getState: () => WolfState, abilities: Ability<T, StorageLayer<T>>[]): string[] {
   const filledSlotsResult = getfilledSlotsOnCurrentTurn(getState())
 
   if (filledSlotsResult.length === 0) {
@@ -268,7 +269,7 @@ function getAbilitiesCompleted<T>(getState: () => WolfState, abilities: Ability<
  */
 function isAbilityCompletedByFilledSlotsOnCurrentTurn<T>(
   getState: () => WolfState,
-  abilities: Ability<T>[],
+  abilities: Ability<T, StorageLayer<T>>[],
   abilityName: string
 ): boolean {
   const state = getState()
@@ -300,7 +301,7 @@ function isAbilityCompletedByFilledSlotsOnCurrentTurn<T>(
 
 function getMissingSlotsOnSlotStatus<T>(
   getState: () => WolfState,
-  abilities: Ability<T>[],
+  abilities: Ability<T, StorageLayer<T>>[],
   focusedAbility: string
 ): SlotId[] {
   const ability = getTargetAbility(abilities, focusedAbility)
@@ -313,7 +314,7 @@ function getMissingSlotsOnSlotStatus<T>(
     .map(_ => _.slotName)
   const abilitySlots = ability.slots
   return abilitySlots
-    .map((_: Slot<T>) => _.name)
+    .map((_: Slot<StorageLayer<T>>) => _.name)
     .filter((_: string) => namesOfSlotStatusOnAbility.indexOf(_) === -1)
     .map((_: string) => ({
       abilityName: focusedAbility,
@@ -324,7 +325,7 @@ function getMissingSlotsOnSlotStatus<T>(
 /**
  * Find all unfilled slots in the target ability that are enabled. 
  */
-function getUnfilledSlots<T>(getState: () => WolfState, abilities: Ability<T>[], focusedAbility: string): Slot<T>[] {
+function getUnfilledSlots<T>(getState: () => WolfState, abilities: Ability<T, StorageLayer<T>>[], focusedAbility: string): Slot<T>[] {
   const ability = getTargetAbility(abilities, focusedAbility)
   if (!ability) {
     // ability is undefined - exit
@@ -340,20 +341,20 @@ function getUnfilledSlots<T>(getState: () => WolfState, abilities: Ability<T>[],
   const allUnfilledSlotIds = missingSlotsOnSlotStatus.concat(unfilledEnabledSlotIdArray)
 
   return allUnfilledSlotIds
-    .map(({ slotName }) => abilitySlots.find((_: Slot<T>) => _.name === slotName))
+    .map(({ slotName }) => abilitySlots.find((_: Slot<StorageLayer<T>>) => _.name === slotName))
     .filter(_ => _) as Slot<T>[]
 }
 
 function getNextAbility<T>(
-  abilities: Ability<T>[],
+  abilities: Ability<T, StorageLayer<T>>[],
   abilityName: string,
-  convoState: T,
+  convoStorageLayer: StorageLayer<T>,
   state: WolfState
 ): NextAbilityResult | null {
   const completedAbility = getTargetAbility(abilities, abilityName)
 
   if (completedAbility && completedAbility.nextAbility) {
-    const nextAbilityResult = completedAbility.nextAbility(convoState, state)
+    const nextAbilityResult = completedAbility.nextAbility(convoStorageLayer, state)
     return nextAbilityResult
   }
   return null

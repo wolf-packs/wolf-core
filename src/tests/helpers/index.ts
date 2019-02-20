@@ -1,5 +1,5 @@
 import * as wolf from '../..'
-import { WolfState, StorageLayer, Ability } from '../../types'
+import { WolfState, AllSyncStorageLayer, Ability } from '../../types'
 
 export interface ConversationTurn<T> {
   input: wolf.NlpResult,
@@ -15,7 +15,7 @@ export interface TestCase<T> {
   conversationTurns: ConversationTurn<T>[]
 }
 
-export const createStorage = <T>(initial: T): StorageLayer<T> => {
+export const createStorage = <T>(initial: T): StorageLayerType<T> => {
   let data = initial
   return {
     read: () => data,
@@ -24,6 +24,8 @@ export const createStorage = <T>(initial: T): StorageLayer<T> => {
     }
   }
 }
+
+export type StorageLayerType<T> = AllSyncStorageLayer<T>
 
 export const getInitialWolfState = (): WolfState => {
   return {

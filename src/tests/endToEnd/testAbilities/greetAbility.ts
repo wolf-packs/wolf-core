@@ -1,4 +1,5 @@
 import { Ability } from '../../../types'
+import { StorageLayerType } from '../../helpers';
 
 export interface UserConvoState {
   name: string | null
@@ -25,8 +26,9 @@ export default {
       onFill: () => { return }
     }
   ],
-  onComplete: (convoState, submittedData: any) => {
+  onComplete: (convoStorageLayer, submittedData: any) => {
+    const convoState = convoStorageLayer.read()
     convoState.name = submittedData.name
     return `Hello ${submittedData.name} who is ${submittedData.age}!`
   }
-} as Ability<UserConvoState>
+} as Ability<UserConvoState, StorageLayerType<UserConvoState>>
