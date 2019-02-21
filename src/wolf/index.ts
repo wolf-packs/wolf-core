@@ -2,7 +2,7 @@ import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc
 import rootReducer from '../reducers'
 import {
   NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable,
-  WolfStore, WolfStateStorage, StorageLayer, AnyObject, AllSyncStorageLayer, StorageLayer
+  WolfStore, WolfStateStorage, StorageLayer, AnyObject
 } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
