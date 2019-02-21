@@ -116,9 +116,9 @@ export const run = async <T extends AnyObject>(
       }
     }) : []
   intake(wolfStore, nlpResult, incomingSlotData, defaultAbility)
-  fillSlot(wolfStore, convoState, abilities)
+  await fillSlot(wolfStore, convoState, abilities)
   evaluate(wolfStore, abilities, convoState)
-  const executeResult = execute(wolfStore, convoState, abilities)
+  const executeResult = await execute(wolfStore, convoState, abilities)
 
   if (executeResult) {
     const { runOnComplete, addMessage } = executeResult

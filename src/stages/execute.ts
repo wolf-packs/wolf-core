@@ -41,11 +41,11 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  * @param convoState conversationState
  * @param abilities user defined abilities and slots
  */
-export default function execute<T>(
+export default async function execute<T>(
   store: Store<WolfState>,
   convoState: T,
   abilities: Ability<T>[]
-): ExecuteResult | void {
+): Promise<ExecuteResult | void> {
   const { dispatch, getState } = store
   logState(getState())
   const addMessage = (msg: OnCompletePromiseResult<string>) => dispatch(
@@ -107,7 +107,7 @@ export default function execute<T>(
     // slot has not been prompted yet.. prompt here
     const slotToPrompt = getSlotBySlotId(abilities, { slotName: slot.slotName, abilityName: slot.abilityName })
     if (slotToPrompt) {
-      const runSlotQueryResult = runSlotQuery(convoState, store, slotToPrompt, slot.abilityName)
+      const runSlotQueryResult = await runSlotQuery(convoState, store, slotToPrompt, slot.abilityName)
       runSlotQueryResult.forEach(dispatch)
 
       if (onCompleteReturnResult) {
@@ -185,9 +185,14 @@ function makeGetSlotDataFunctions({ getState }: Store<WolfState>, abilityName: s
 /**
  * Execute slot.query()
  */
-function runSlotQuery<T>(convoState: T, store: Store<WolfState>, slot: Slot<T>, abilityName: string): Action[] {
+async function runSlotQuery<T>(
+  convoState: T,
+  store: Store<WolfState>,
+  slot: Slot<T>,
+  abilityName: string
+): Promise<Action[]> {
   const getSlotDataFunctions = makeGetSlotDataFunctions(store, abilityName)
-  const queryString = slot.query(convoState, getSlotDataFunctions)
+  const queryString = await slot.query(convoState, getSlotDataFunctions)
 
   // add query to output message queue
   const message = {
