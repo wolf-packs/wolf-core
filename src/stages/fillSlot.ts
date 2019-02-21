@@ -21,8 +21,8 @@ import { findSlotInAbilitiesBySlotId } from '../helpers'
 const logState = require('debug')('wolf:s2:enterState')
 const log = require('debug')('wolf:s2')
 
-interface PotentialSlotMatch<T> {
-  slot: Slot<StorageLayer<T>>,
+interface PotentialSlotMatch<G> {
+  slot: Slot<G>,
   abilityName: string,
   entity: string
 }
@@ -51,10 +51,10 @@ const hasSlotBeenFilledThisStage = (filledArray: SlotId[], slotId: SlotId): bool
  * 
  * @returns void
  */
-export default function fillSlot<T>(
+export default function fillSlot<T, G>(
   store: Store<WolfState>,
-  convoStorageLayer: StorageLayer<T>,
-  abilities: Ability<T>[]
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[]
 ): void {
   const { dispatch, getState } = store
   dispatch(startFillSlotStage()) // clear abilitiesCompleteOnCurrentTurn and filledSlotsOnCurrentTurn
@@ -190,7 +190,7 @@ export default function fillSlot<T>(
     if (ability) {
       log('%s ability Found in abilities.ts', ability.name)
       // find slot matches
-      const slotMatchesFocusedAbility: PotentialSlotMatch<T>[] =
+      const slotMatchesFocusedAbility: PotentialSlotMatch<G>[] =
         getPotentialMatches(message.entities, ability)
 
       // process potential slot
@@ -264,7 +264,7 @@ export default function fillSlot<T>(
     // ABILITY EXISTS AND HAS SLOTS TO CHECK..
     if (ability) {
       log('ability match found and there are slots to check for matches')
-      const slotMatchesAllAbility: PotentialSlotMatch<T>[] =
+      const slotMatchesAllAbility: PotentialSlotMatch<G>[] =
         getPotentialMatches(message.entities, ability)
 
       // process potential slot
@@ -333,9 +333,9 @@ export default function fillSlot<T>(
  * Run slot onFill() and return dispatch actions to
  * add message to output queue and store the submittedValue into the pendingData state.
  */
-function fulfillSlot<T>(
-  convoStorageLayer: StorageLayer<T>,
-  abilities: Ability<T>[],
+function fulfillSlot<T, G>(
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[],
   message: string,
   slotName: string,
   abilityName: string,
@@ -433,11 +433,11 @@ function fulfillSlot<T>(
  * Check if slot.retry() is required on either prompted slot or newly identified slot.
  * If required, run slot retry and add retry message to output queue
  */
-function runRetryCheck<T>(
+function runRetryCheck<T, G>(
   dispatch: Dispatch,
   getState: () => WolfState,
-  convoStorageLayer: StorageLayer<T>,
-  abilities: Ability<T>[],
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[],
   matchNotValid: MatchNotValidData | null,
   potentialMatchFoundFlag: boolean,
   slotFillArr: SlotId[]
@@ -502,10 +502,10 @@ function runRetryCheck<T>(
 /**
  * Run slot retry.
  */
-function runRetry<T>(
-  convoStorageLayer: StorageLayer<T>,
+function runRetry<T, G>(
+  convoStorageLayer: G,
   getState: () => WolfState,
-  abilities: Ability<T>[],
+  abilities: Ability<T, G>[],
   slotName: string,
   abilityName: string,
   submittedData: any
@@ -566,10 +566,10 @@ function createValidatorReasonMessage(
  * For all validators that pass, fulfill slot, add message to output queue then exit.
  * For all validators that do not pass, exit.
  */
-function checkValidatorAndFill<T>(
+function checkValidatorAndFill<T, G>(
   store: Store<WolfState>,
-  convoStorageLayer: StorageLayer<T>,
-  abilities: Ability<T>[],
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[],
   match: PotentialSlotMatch<T>): SlotId | null {
   log('in checkValidatorAndFill()..')
   const { dispatch, getState } = store
@@ -625,7 +625,7 @@ function isEntityPresent(value: MessageData) {
  * For each entity, check if the `entity.name` and `ability` given matches with any slot
  * in the `abilities`
  */
-function getPotentialMatches<T>(entities: Entity[], targetAbility: Ability<T>): PotentialSlotMatch<T>[] {
+function getPotentialMatches<T, G>(entities: Entity[], targetAbility: Ability<T, G>): PotentialSlotMatch<G>[] {
   const slotMatches = targetAbility.slots.filter((slot) => entities.find((entity) => entity.name === slot.name))
 
   const matches = slotMatches.map((slot) => {
@@ -637,7 +637,7 @@ function getPotentialMatches<T>(entities: Entity[], targetAbility: Ability<T>): 
         entity: entityMatch.value
       }
     }
-  }).filter(_ => _) as PotentialSlotMatch<T>[]
+  }).filter(_ => _) as PotentialSlotMatch<G>[]
 
   if (matches.length === 0) {
     return []

@@ -73,11 +73,11 @@ export const makeWolfStoreCreator = (
  * @param getSlotDataFunc Optional getter function to retrieve slot data
  * @returns Wolf's result containing an array of output messages
  */
-export const run = async <T extends AnyObject>(
+export const run = async <T extends AnyObject, G>(
   wolfStorage: WolfStateStorage,
-  convoStorage: StorageLayer<T>,
+  convoStorage: G,
   userMessageData: () => Promiseable<NlpResult>,
-  getAbilitiesFunc: () => Promiseable<Ability<T>[]>,
+  getAbilitiesFunc: () => Promiseable<Ability<T, G>[]>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>

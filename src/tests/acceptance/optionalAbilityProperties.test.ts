@@ -1,5 +1,5 @@
 import * as wolf from '../..'
-import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
+import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
 import { Ability } from '../../types'
 
 interface UserConvoState {
@@ -17,14 +17,15 @@ const defaultStore: UserConvoState = {
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
-const abilities: wolf.Ability<UserConvoState>[] = [{
+const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'buyCar',
   slots: [{
     name: 'car',
     query: () => 'what kind of car would you like?'
   }],
   nextAbility: () => ({abilityName: 'buyAddOn'}),
-  onComplete: (convoState, submittedData) => {
+  onComplete: (convoStorageLayer, submittedData) => {
+    const convoState = convoStorageLayer.read()
     convoState.car = submittedData.car
   }
 }, {
@@ -34,7 +35,8 @@ const abilities: wolf.Ability<UserConvoState>[] = [{
     query: () => 'What add on would you like?'
   }],
   nextAbility: () => ({abilityName: 'needFinancing', message: 'Ok! lets go to the next step.'}),
-  onComplete: (convoState, submittedData) => {
+  onComplete: (convoStorageLayer, submittedData) => {
+    const convoState = convoStorageLayer.read()
     if (submittedData.addOn !== 'nothing') {
       convoState.addons.push(submittedData.addOn)
     }
@@ -45,16 +47,17 @@ const abilities: wolf.Ability<UserConvoState>[] = [{
     name: 'confirmFinancing',
     query: () => 'Would you need financing?'
   }],
-  onComplete: (convoState, submittedData) => {
+  onComplete: (convoStorageLayer, submittedData) => {
+    const convoState = convoStorageLayer.read()
     if (submittedData.confirmFinancing === 'yes') {
       convoState.financing = true
       return
     }
     convoState.financing = false
   }
-}] as Ability<UserConvoState>[]
+}] as Ability<UserConvoState, StorageLayerType<UserConvoState>>[]
 
-const optionalAbilityPropertyTestCase: TestCase<UserConvoState> = {
+const optionalAbilityPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Ability Properties',
   abilities: abilities,
   defaultAbility: 'buyCar',

@@ -8,11 +8,11 @@ import { StorageLayer } from './storage';
  * 
  * See `example/` directory for ability examples for how to use.
  */
-export interface Ability<T, G = StorageLayer<T>> {
+export interface Ability<T, G> {
   name: string,
   slots: Slot<G>[],
   nextAbility?: (convoStorageLayer: G, wolfState: WolfState) => NextAbilityResult,
-  onComplete: (convoStorageLayer: G, submittedData: any, getStateFunctions: GetStateFunctions<T>) =>
+  onComplete: (convoStorageLayer: G, submittedData: any, getStateFunctions: GetStateFunctions<T, G>) =>
     Promise<string | void> | string | void
 }
 

@@ -1,5 +1,5 @@
 import * as wolf from '../..'
-import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
+import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
 import { Ability } from '../../types'
 
 const defaultStore: UserConvoState = {
@@ -14,7 +14,7 @@ interface UserConvoState {
   magicWordStrict2: string | null
 }
 
-const abilities: wolf.Ability<UserConvoState>[] = [{
+const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'magicWord',
   slots: [
     {
@@ -46,7 +46,8 @@ const abilities: wolf.Ability<UserConvoState>[] = [{
       }
     }
   ],
-  onComplete: (convoState, submittedData: any) => {
+  onComplete: (convoStorageLayer, submittedData: any) => {
+    const convoState = convoStorageLayer.read()
     convoState.animalName = submittedData.animalName
     convoState.magicWordStrict = submittedData.magicWordStrict
     convoState.magicWordStrict2 = submittedData.magicWordStrict2
@@ -55,12 +56,12 @@ const abilities: wolf.Ability<UserConvoState>[] = [{
 '${submittedData.magicWordStrict}', \
 '${submittedData.magicWordStrict2}'!`
   }
-}] as Ability<UserConvoState>[]
+}] as Ability<UserConvoState, StorageLayerType<UserConvoState>>[]
 
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
-const optionalSlotPropertyTestCase: TestCase<UserConvoState> = {
+const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Slot Properties',
   abilities: abilities,
   defaultAbility: 'magicWord',
