@@ -1,7 +1,7 @@
 import { Store } from 'redux'
 import {
   WolfState, Ability, SlotId, Slot, PromptSlotReason,
-  NextAbilityResult, OutputMessageItem, OutputMessageType
+  NextAbilityResult, OutputMessageType
 } from '../types'
 import {
   getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,

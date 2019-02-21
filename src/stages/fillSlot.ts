@@ -2,7 +2,7 @@ import { Action, Store, Dispatch } from 'redux'
 import {
   Slot, OutputMessageItem, OutputMessageType,
   MessageData, ValidateResult, Ability, WolfState,
-  SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason, Promiseable
+  SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason
 } from '../types'
 import {
   addMessage, fillSlot as fillSlotAction, startFillSlotStage,
@@ -85,7 +85,7 @@ export default async function fillSlot<T>(
   log('first wolf checks to see if there is anything in the runOnFillStack')
   const runOnFillStack = getRunOnFillStack(getState())
   if (runOnFillStack) {
-    for ( const onFillStackItem of runOnFillStack ) {
+    for (const onFillStackItem of runOnFillStack) {
       const { slotName, abilityName, message } = onFillStackItem
       const actions: Action[] = await fulfillSlot(convoState, abilities, message, slotName, abilityName, getState)
       actions.forEach(dispatch)
@@ -584,7 +584,7 @@ async function runSlotValidator<T>(
   slot: Slot<T>,
   submittedData: any,
   messageData: MessageData):
-Promise<ValidateResult> {
+  Promise<ValidateResult> {
   if (!slot.validate) {
     // Default to true validation if no validation function is defined
     return {
