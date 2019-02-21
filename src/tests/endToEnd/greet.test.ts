@@ -33,7 +33,6 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     }
   ],
   onComplete: (convoStorageLayer, submittedData: any) => {
-    const currState = convoStorageLayer.read()
     const newState = {
       name: submittedData.name,
       age: submittedData.age,
