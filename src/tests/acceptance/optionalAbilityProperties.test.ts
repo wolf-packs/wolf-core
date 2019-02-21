@@ -1,6 +1,5 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
-import { Ability } from '../../types'
 
 interface UserConvoState {
   car: string | null,
@@ -20,7 +19,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     name: 'car',
     query: () => 'what kind of car would you like?'
   }],
-  nextAbility: () => ({abilityName: 'buyAddOn'}),
+  nextAbility: () => ({ abilityName: 'buyAddOn' }),
   onComplete: (convoStorageLayer, submittedData) => {
     const convoState = convoStorageLayer.read()
     convoState.car = submittedData.car
@@ -35,9 +34,9 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
         return { isValid: true, reason: null }
       }
       return { isValid: false, reason: 'Can not be \'nothing\'!' }
-    } 
+    }
   }],
-  nextAbility: () => ({abilityName: 'needFinancing', message: 'Ok! lets go to the next step.'}),
+  nextAbility: () => ({ abilityName: 'needFinancing', message: 'Ok! lets go to the next step.' }),
   onComplete: (convoStorageLayer, submittedData) => {
     const convoState = convoStorageLayer.read()
     let addOnsValue = convoState.addOns.map(_ => _)
@@ -82,9 +81,9 @@ const optionalAbilityPropertyTestCase: TestCase<UserConvoState, StorageLayerType
   convoStorage,
   conversationTurns: [
     {
-      input: { 
-        message: 'i want to buy a Tesla', 
-        entities: [{name: 'car', text: 'tesla', value: 'tesla'}], 
+      input: {
+        message: 'i want to buy a Tesla',
+        entities: [{ name: 'car', text: 'tesla', value: 'tesla' }],
         intent: 'buyCar'
       },
       expected: {
