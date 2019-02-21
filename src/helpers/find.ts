@@ -1,11 +1,11 @@
-import { Slot, Ability, SlotId } from '../types'
+import { Slot, Ability, SlotId, StorageLayer } from '../types'
 
 export const findSlotByEntityName =
   <T>(slotName: string, slots: Slot<T>[]) => slots.find((slot) => slot.name === slotName)
 export const findAbilityByName =
   <T>(abilityName: string, abilities: Ability<T>[]) => abilities.find(ability => ability.name === abilityName)
 export const findSlotInAbilitiesBySlotId =
-  <T>(abilities: Ability<T>[], slotId: SlotId): Slot<T> | undefined => {
+  <T>(abilities: Ability<T>[], slotId: SlotId): Slot<StorageLayer<T>> | undefined => {
     const ability = abilities.find(ability => ability.name === slotId.abilityName)
     if (!ability) {
       return

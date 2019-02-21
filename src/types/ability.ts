@@ -1,14 +1,14 @@
 import { WolfState } from './state'
 import { GetStateFunctions } from './function'
 import { Slot } from './slot';
-import { StorageLayer, AllAsyncStorageLayer } from './storage';
+import { StorageLayer } from './storage';
 
 /**
  * Defines conversation abilities, used to control overall ability slots and completion task
  * 
  * See `example/` directory for ability examples for how to use.
  */
-export interface Ability<T, G> {
+export interface Ability<T, G = StorageLayer<T>> {
   name: string,
   slots: Slot<G>[],
   nextAbility?: (convoStorageLayer: G, wolfState: WolfState) => NextAbilityResult,

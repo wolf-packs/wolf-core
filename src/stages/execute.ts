@@ -44,7 +44,7 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
 export default function execute<T>(
   store: Store<WolfState>,
   convoStorageLayer: StorageLayer<T>,
-  abilities: Ability<T, StorageLayer<T>>[]
+  abilities: Ability<T>[]
 ): ExecuteResult | void {
   const { dispatch, getState } = store
   logState(getState())
@@ -133,7 +133,7 @@ export default function execute<T>(
 function runAbilityOnComplete<T>(
   getState: () => WolfState,
   convoStorageLayer: StorageLayer<T>,
-  abilities: Ability<T, StorageLayer<T>>[],
+  abilities: Ability<T>[],
   abilitiesToComplete: string[]
 ): {
   result: Promise<string | void> | string | void,
@@ -185,7 +185,12 @@ function makeGetSlotDataFunctions({ getState }: Store<WolfState>, abilityName: s
 /**
  * Execute slot.query()
  */
-function runSlotQuery<T>(convoStorageLayer: StorageLayer<T>, store: Store<WolfState>, slot: Slot<StorageLayer<T>>, abilityName: string): Action[] {
+function runSlotQuery<T>(
+  convoStorageLayer: StorageLayer<T>,
+  store: Store<WolfState>,
+  slot: Slot<StorageLayer<T>>,
+  abilityName: string
+): Action[] {
   const getSlotDataFunctions = makeGetSlotDataFunctions(store, abilityName)
   const queryString = slot.query(convoStorageLayer, getSlotDataFunctions)
 

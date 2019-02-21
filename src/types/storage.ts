@@ -23,7 +23,11 @@ export type WolfStateStorage = StorageLayer<WolfState>
  * 
  * _This type should be implemented by the developer and passed into Wolf._
  */
-export type StorageLayer<T> = AllAsyncStorageLayer<T> | OnlyReadAsyncStorageLayer<T> | OnlySaveAsyncStorageLayer<T> | AllSyncStorageLayer<T>
+export type StorageLayer<T> =
+  AllAsyncStorageLayer<T> |
+  OnlyReadAsyncStorageLayer<T> |
+  OnlySaveAsyncStorageLayer<T> |
+  AllSyncStorageLayer<T>
 
 export type AllAsyncStorageLayer<T> = {
   read: () => Promise<T>,

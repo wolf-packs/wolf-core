@@ -2,7 +2,7 @@ import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc
 import rootReducer from '../reducers'
 import {
   NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable,
-  WolfStore, WolfStateStorage, StorageLayer, AnyObject
+  WolfStore, WolfStateStorage, StorageLayer, AnyObject, AllSyncStorageLayer, StorageLayer
 } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
@@ -77,7 +77,7 @@ export const run = async <T extends AnyObject>(
   wolfStorage: WolfStateStorage,
   convoStorage: StorageLayer<T>,
   userMessageData: () => Promiseable<NlpResult>,
-  getAbilitiesFunc: () => Promiseable<Ability<T, StorageLayer<T>>[]>,
+  getAbilitiesFunc: () => Promiseable<Ability<T>[]>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
