@@ -578,7 +578,7 @@ async function checkValidatorAndFill<T, G>(
   store: Store<WolfState>,
   convoStorageLayer: G,
   abilities: Ability<T, G>[],
-  match: PotentialSlotMatch<T>): Promise<SlotId | null> {
+  match: PotentialSlotMatch<G>): Promise<SlotId | null> {
   log('in checkValidatorAndFill()..')
   const { dispatch, getState } = store
   const validatorResult = await runSlotValidator(match.slot, match.entity, getMessageData(getState()))
