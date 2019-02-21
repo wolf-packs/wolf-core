@@ -1,10 +1,10 @@
 import { Store } from 'redux'
 import {
   WolfState, Ability, SlotId, Slot, PromptSlotReason,
-  NextAbilityResult, OutputMessageItem, OutputMessageType, StorageLayer
+  NextAbilityResult, OutputMessageType
 } from '../types'
 import {
-  getAbilitiesCompleteOnCurrentTurn, getfilledSlotsOnCurrentTurn,
+  getAbilitiesCompleteOnCurrentTurn, getFilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
   getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots
 } from '../selectors'
@@ -87,7 +87,7 @@ export default function evaluate<T, G>(
 
   // Check if there were any slots filled during this turn
   log('check if there are any slots filled this turn..')
-  const filledSlotsResult = getfilledSlotsOnCurrentTurn(getState())
+  const filledSlotsResult = getFilledSlotsOnCurrentTurn(getState())
   if (filledSlotsResult.length > 0) {
     log('slots have been filled this turn')
     // Check if any abilities have been completed as a result of the filled slot(s)
@@ -255,7 +255,7 @@ function findNextSlotToPrompt<T, G>(getState: () => WolfState, abilities: Abilit
  * Check if there are any abilities with all enabled slots filled.
  */
 function getAbilitiesCompleted<T, G>(getState: () => WolfState, abilities: Ability<T, G>[]): string[] {
-  const filledSlotsResult = getfilledSlotsOnCurrentTurn(getState())
+  const filledSlotsResult = getFilledSlotsOnCurrentTurn(getState())
 
   if (filledSlotsResult.length === 0) {
     return []

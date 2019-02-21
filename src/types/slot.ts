@@ -1,5 +1,6 @@
 import { GetSlotDataFunctions, SetSlotDataFunctions, SlotConfirmationFunctions } from './function';
 import { MessageData, ValidateResult } from './state';
+import { Promiseable } from './generic';
 
 /**
  * Wolf primitive representing data points that should be collected. Any piece of information
@@ -12,15 +13,15 @@ export interface Slot<G> {
   name: string,
   defaultIsEnabled?: boolean,
   order?: number,
-  query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => string,
-  validate?: (submittedValue: any, messageData: MessageData) => ValidateResult,
-  retry?: (convoStorageLayer: G, submittedData: any, turnCount: number) => string,
+  query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
+  validate?: (submittedValue: any, messageData: MessageData) => Promiseable<ValidateResult>,
+  retry?: (convoStorageLayer: G, submittedData: any, turnCount: number) => Promiseable<string>,
   onFill?: (
     submittedValue: any,
     convoStorageLayer: G,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
-  ) => string | void
+  ) => Promiseable<string | void>
 }
 
 export interface ShouldRunCompleteResult {
