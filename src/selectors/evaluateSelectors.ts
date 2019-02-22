@@ -4,7 +4,7 @@ export const getAbilitiesCompleteOnCurrentTurn = (state: WolfState): string[] =>
   return state.abilitiesCompleteOnCurrentTurn
 }
 
-export const getfilledSlotsOnCurrentTurn = (state: WolfState): SlotId[] => {
+export const getFilledSlotsOnCurrentTurn = (state: WolfState): SlotId[] => {
   return state.filledSlotsOnCurrentTurn
 }
 
@@ -30,11 +30,11 @@ export const getSlotData = (state: WolfState): SlotData[] => {
 
 export const getUnfilledEnabledSlots = (state: WolfState, focusedAbility: string): SlotId[] => {
   const slotStatus = state.slotStatus
-  const slotStatusInFocusedAbility = slotStatus.filter(_ => _.abilityName === focusedAbility) 
+  const slotStatusInFocusedAbility = slotStatus.filter(_ => _.abilityName === focusedAbility)
   return slotStatusInFocusedAbility
     .filter(_ => _.isEnabled)
     .filter(_ => !_.isDone)
-    .map(({slotName, abilityName}) => ({
+    .map(({ slotName, abilityName }) => ({
       slotName,
       abilityName
     }))

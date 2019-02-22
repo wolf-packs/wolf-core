@@ -9,16 +9,16 @@ import { Promiseable } from './generic';
  * 
  * See `example/` directory for ability examples for how to use.
  */
-export interface Slot<T> {
+export interface Slot<G> {
   name: string,
   defaultIsEnabled?: boolean,
   order?: number,
-  query: (convoState: T, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
+  query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
   validate?: (submittedValue: any, messageData: MessageData) => Promiseable<ValidateResult>,
-  retry?: (convoState: T, submittedData: any, turnCount: number) => Promiseable<string>,
+  retry?: (convoStorageLayer: G, submittedData: any, turnCount: number) => Promiseable<string>,
   onFill?: (
     submittedValue: any,
-    convoState: T,
+    convoStorageLayer: G,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
   ) => Promiseable<string | void>

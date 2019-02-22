@@ -73,19 +73,18 @@ export const makeWolfStoreCreator = (
  * @param getSlotDataFunc Optional getter function to retrieve slot data
  * @returns Wolf's result containing an array of output messages
  */
-export const run = async <T extends AnyObject>(
+export const run = async <T extends AnyObject, G>(
   wolfStorage: WolfStateStorage,
-  convoStorage: StorageLayer<T>,
+  convoStorage: G,
   userMessageData: () => Promiseable<NlpResult>,
-  getAbilitiesFunc: () => Promiseable<Ability<T>[]>,
+  getAbilitiesFunc: () => Promiseable<Ability<T, G>[]>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
 ) => {
   // invoke user async functions
-  const [wolfState, convoState, nlpResult, abilities] = await Promise.all([
+  const [wolfState, nlpResult, abilities] = await Promise.all([
     wolfStorage.read(),
-    convoStorage.read(),
     userMessageData(),
     getAbilitiesFunc()
   ])
@@ -116,9 +115,9 @@ export const run = async <T extends AnyObject>(
       }
     }) : []
   intake(wolfStore, nlpResult, incomingSlotData, defaultAbility)
-  await fillSlot(wolfStore, convoState, abilities)
-  evaluate(wolfStore, abilities, convoState)
-  const executeResult = await execute(wolfStore, convoState, abilities)
+  await fillSlot(wolfStore, convoStorage, abilities)
+  evaluate(wolfStore, abilities, convoStorage)
+  const executeResult = await execute(wolfStore, convoStorage, abilities)
 
   if (executeResult) {
     const { runOnComplete, addMessage } = executeResult

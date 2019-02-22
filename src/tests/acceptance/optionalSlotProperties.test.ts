@@ -1,12 +1,6 @@
 import * as wolf from '../..'
-import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
+import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
 import { Ability } from '../../types'
-
-const defaultStore: UserConvoState = {
-  animalName: null,
-  magicWordStrict: null,
-  magicWordStrict2: null
-}
 
 interface UserConvoState {
   animalName: string | null,
@@ -14,7 +8,13 @@ interface UserConvoState {
   magicWordStrict2: string | null
 }
 
-const abilities: wolf.Ability<UserConvoState>[] = [{
+const defaultStore: UserConvoState = {
+  animalName: null,
+  magicWordStrict: null,
+  magicWordStrict2: null
+}
+
+const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'magicWord',
   slots: [
     {
@@ -46,21 +46,23 @@ const abilities: wolf.Ability<UserConvoState>[] = [{
       }
     }
   ],
-  onComplete: (convoState, submittedData: any) => {
-    convoState.animalName = submittedData.animalName
-    convoState.magicWordStrict = submittedData.magicWordStrict
-    convoState.magicWordStrict2 = submittedData.magicWordStrict2
-    
+  onComplete: (convoStorageLayer, submittedData: any) => {
+    const newState = {
+      animalName: submittedData.animalName,
+      magicWordStrict: submittedData.magicWordStrict,
+      magicWordStrict2: submittedData.magicWordStrict2
+    }
+    convoStorageLayer.save(newState)
     return `You said: '${submittedData.animalName}', \
 '${submittedData.magicWordStrict}', \
 '${submittedData.magicWordStrict2}'!`
   }
-}] as Ability<UserConvoState>[]
+}] as wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[]
 
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
-const optionalSlotPropertyTestCase: TestCase<UserConvoState> = {
+const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Slot Properties',
   abilities: abilities,
   defaultAbility: 'magicWord',
@@ -71,28 +73,28 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState> = {
       input: { message: 'hello', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please name an animal... if you want.'],
-        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
+        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
       input: { message: 'hippo', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please say \'wolf\'... not negotiable.'],
-        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
+        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
       input: { message: 'hippo', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please follow directions.'],
-        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
+        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
       input: { message: 'wolf', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please say \'wolf\' one more time.'],
-        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
+        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
@@ -102,7 +104,7 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState> = {
           'Please follow directions.',
           'You must say \'wolf\' a second time'
         ],
-        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
+        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
@@ -113,9 +115,9 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState> = {
           'You said: \'hippo\', \'wolf\', \'wolf\'!'
         ],
         state: {
-          'animalName': 'hippo',
-          'magicWordStrict': 'wolf',
-          'magicWordStrict2': 'wolf'
+          animalName: 'hippo',
+          magicWordStrict: 'wolf',
+          magicWordStrict2: 'wolf'
         }
       }
     }

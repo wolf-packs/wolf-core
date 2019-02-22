@@ -2,7 +2,7 @@ import { Action, Store, Dispatch } from 'redux'
 import {
   Slot, OutputMessageItem, OutputMessageType,
   MessageData, ValidateResult, Ability, WolfState,
-  SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason
+  SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason, StorageLayer
 } from '../types'
 import {
   addMessage, fillSlot as fillSlotAction, startFillSlotStage,
@@ -15,14 +15,14 @@ import {
   getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
   getSlotBySlotId, getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
   getMessageData, getFocusedAbility, getDefaultAbility, getRunOnFillStack,
-  getfilledSlotsOnCurrentTurn
+  getFilledSlotsOnCurrentTurn
 } from '../selectors'
 import { findSlotInAbilitiesBySlotId } from '../helpers'
 const logState = require('debug')('wolf:s2:enterState')
 const log = require('debug')('wolf:s2')
 
-interface PotentialSlotMatch<T> {
-  slot: Slot<T>,
+interface PotentialSlotMatch<G> {
+  slot: Slot<G>,
   abilityName: string,
   entity: string
 }
@@ -46,15 +46,15 @@ const hasSlotBeenFilledThisStage = (filledArray: SlotId[], slotId: SlotId): bool
  * potential slots in their the active ability or all slots.
  * 
  * @param store redux
- * @param convoState conversationState
+ * @param convoStorageLayer conversationState storage layer
  * @param abilities list of user defined abilities
  * 
  * @returns void
  */
-export default async function fillSlot<T>(
+export default async function fillSlot<T, G>(
   store: Store<WolfState>,
-  convoState: T,
-  abilities: Ability<T>[]
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[]
 ): Promise<void> {
   const { dispatch, getState } = store
   dispatch(startFillSlotStage()) // clear abilitiesCompleteOnCurrentTurn and filledSlotsOnCurrentTurn
@@ -87,7 +87,14 @@ export default async function fillSlot<T>(
   if (runOnFillStack) {
     for (const onFillStackItem of runOnFillStack) {
       const { slotName, abilityName, message } = onFillStackItem
-      const actions: Action[] = await fulfillSlot(convoState, abilities, message, slotName, abilityName, getState)
+      const actions: Action[] = await fulfillSlot(
+        convoStorageLayer,
+        abilities,
+        message,
+        slotName,
+        abilityName,
+        getState
+      )
       actions.forEach(dispatch)
       dispatch(removeSlotFromOnFillStack({ slotName, abilityName }))
     }
@@ -109,7 +116,13 @@ export default async function fillSlot<T>(
         if (validatorResult.isValid) {
           log('users response was valid according to the prompted slots validator')
           const fulfillSlotResult = await fulfillSlot(
-            convoState, abilities, message.rawText, slotName, abilityName, getState)
+            convoStorageLayer,
+            abilities,
+            message.rawText,
+            slotName,
+            abilityName,
+            getState
+          )
           fulfillSlotResult.forEach(dispatch)
           log('so fulfill the slot by running these actions: %O', fulfillSlotResult)
 
@@ -120,7 +133,7 @@ export default async function fillSlot<T>(
           dispatch(removeSlotFromPromptedStack({ slotName, abilityName }))
           log('exiting stage')
           // Original prompted slot filled.. exit
-          return
+          return Promise.resolve()
         }
         // Payload not valid for current slot..
         // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
@@ -150,7 +163,7 @@ export default async function fillSlot<T>(
       log('the focused ability has no slots, marking it completed, and exit stage')
       // no slots in ability.. should be completed
       dispatch(abilityCompleted(ability.name))
-      return // exit stage
+      return Promise.resolve() // exit stage
     }
     log('focused ability has slots, continuing')
   }
@@ -161,7 +174,7 @@ export default async function fillSlot<T>(
     log('there is no entities from messageData')
     // No entities exist to check for potential slot matches.. exit
     // Check if retry() is necessary before exiting
-    runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+    runRetryCheck(dispatch, getState, convoStorageLayer, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
 
     // check if original prompt failed validation and has not been filled by entities matched
     if (promptedSlotReason) {
@@ -169,7 +182,7 @@ export default async function fillSlot<T>(
     }
 
     log('finished running "runRetryCheck", exit stage')
-    return
+    return Promise.resolve()
   }
 
   log('there is at least one entity from message Data')
@@ -184,19 +197,19 @@ export default async function fillSlot<T>(
     if (ability) {
       log('%s ability Found in abilities.ts', ability.name)
       // find slot matches
-      const slotMatchesFocusedAbility: PotentialSlotMatch<T>[] =
+      const slotMatchesFocusedAbility: PotentialSlotMatch<G>[] =
         getPotentialMatches(message.entities, ability)
 
       // process potential slot
       for (const match of slotMatchesFocusedAbility) {
-        const checkValidFillResult = await checkValidatorAndFill(store, convoState, abilities, match)
+        const checkValidFillResult = await checkValidatorAndFill(store, convoStorageLayer, abilities, match)
         if (checkValidFillResult) {
           log('match valid and filled for %s', checkValidFillResult.slotName)
           // add to slotFillArr
           slotFillArr.push({ slotName: checkValidFillResult.slotName, abilityName: checkValidFillResult.abilityName })
 
           log('exiting stage')
-          return
+          return Promise.resolve()
         }
         log('match is not valid for %s', match.slot.name)
         // validator failed
@@ -212,7 +225,15 @@ export default async function fillSlot<T>(
         // Exit through alternative slot match route..
         // Check if retry() is necessary before exiting
         log('checking to see if retry is necessary in retry')
-        runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+        runRetryCheck(
+          dispatch,
+          getState,
+          convoStorageLayer,
+          abilities,
+          matchNotValid,
+          potentialMatchFoundFlag,
+          slotFillArr
+        )
 
         // check if original prompt failed validation and has not been filled by entities matched
         if (promptedSlotReason) {
@@ -220,7 +241,7 @@ export default async function fillSlot<T>(
         }
 
         log('checked retry, now exiting')
-        return
+        return Promise.resolve()
       }
       // No alternative matches found in focused ability
     }
@@ -244,28 +265,27 @@ export default async function fillSlot<T>(
       }
 
       log('exiting')
-      return // exit stage
+      return Promise.resolve() // exit stage
     }
 
     // ABILITY EXISTS AND HAS SLOTS TO CHECK..
     if (ability) {
       log('ability match found and there are slots to check for matches')
-      const slotMatchesAllAbility: PotentialSlotMatch<T>[] =
+      const slotMatchesAllAbility: PotentialSlotMatch<G>[] =
         getPotentialMatches(message.entities, ability)
 
       // process potential slot
       log('slot matched on the ability: %s', slotMatchesAllAbility.map(_ => _.slot.name).join(', '))
       log('running the validator on them and filling the slot')
-
       for (const match of slotMatchesAllAbility) {
-        const checkValandFillResult = await checkValidatorAndFill(store, convoState, abilities, match)
-        if (checkValandFillResult) {
-          log('match valid and filled for %s', checkValandFillResult.slotName)
+        const checkValAndFillResult = await checkValidatorAndFill(store, convoStorageLayer, abilities, match)
+        if (checkValAndFillResult) {
+          log('match valid and filled for %s', checkValAndFillResult.slotName)
           // add to slotFillArr
-          slotFillArr.push({ slotName: checkValandFillResult.slotName, abilityName: checkValandFillResult.abilityName })
+          slotFillArr.push({ slotName: checkValAndFillResult.slotName, abilityName: checkValAndFillResult.abilityName })
 
           log('exiting stage')
-          return
+          return Promise.resolve()
         }
         log('match is not valid for %s', match.slot.name)
         // validator failed
@@ -280,14 +300,22 @@ export default async function fillSlot<T>(
         log('running Retry Check')
         // Exit through alternative slot match route..
         // Check if retry() is necessary before exiting
-        runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+        runRetryCheck(
+          dispatch,
+          getState,
+          convoStorageLayer,
+          abilities,
+          matchNotValid,
+          potentialMatchFoundFlag,
+          slotFillArr
+        )
 
         // check if original prompt failed validation and has not been filled by entities matched
         if (promptedSlotReason) {
           tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
         }
         log('exiting stage')
-        return
+        return Promise.resolve()
       }
       // No alternative matches found in all abilities
     }
@@ -299,23 +327,23 @@ export default async function fillSlot<T>(
   // Exit through alternative slot match route..
   // Check if retry() is necessary before exiting
   log('check to see if any not valid slots needs to run retry')
-  runRetryCheck(dispatch, getState, convoState, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
+  runRetryCheck(dispatch, getState, convoStorageLayer, abilities, matchNotValid, potentialMatchFoundFlag, slotFillArr)
 
   // check if original prompt failed validation and has not been filled by entities matched
   if (promptedSlotReason) {
     tryPromptedSlotValidatorMessage(dispatch, getState, promptedSlotReason)
   }
   log('exit stage')
-  return
+  return Promise.resolve()
 }
 
 /**
  * Run slot onFill() and return dispatch actions to
  * add message to output queue and store the submittedValue into the pendingData state.
  */
-async function fulfillSlot<T>(
-  convoState: T,
-  abilities: Ability<T>[],
+async function fulfillSlot<T, G>(
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[],
   message: string,
   slotName: string,
   abilityName: string,
@@ -341,7 +369,7 @@ async function fulfillSlot<T>(
           if (!targetSlot) {
             throw new Error('There is no slot with that name')
           }
-          const setActions = await fulfillSlot(convoState, abilities, value, slotName, abilityName, getState)
+          const setActions = await fulfillSlot(convoStorageLayer, abilities, value, slotName, abilityName, getState)
           actions.push(...setActions)
         }
       },
@@ -355,7 +383,7 @@ async function fulfillSlot<T>(
         if (!targetSlot) {
           throw new Error('There is no slot with that name')
         }
-        const setActions = await fulfillSlot(convoState, abilities, value, slotName, abilityName, getState)
+        const setActions = await fulfillSlot(convoStorageLayer, abilities, value, slotName, abilityName, getState)
         actions.push(...setActions)
       }
     }
@@ -379,7 +407,7 @@ async function fulfillSlot<T>(
     actions.push(fillSlotAction(slotName, abilityName, message))
     if (slot.onFill) {
       log('slot.onFill exists.. run slot.onFill()')
-      const fillString = await slot.onFill(message, convoState, setSlotFuncs, confirmFuncs)
+      const fillString = await slot.onFill(message, convoStorageLayer, setSlotFuncs, confirmFuncs)
       actions.push(removeSlotFromOnFillStack({ slotName, abilityName }))
 
       if (fillString) {
@@ -406,18 +434,18 @@ async function fulfillSlot<T>(
     }
   }
   log('exiting fulfillSlot()..')
-  return actions
+  return Promise.resolve(actions)
 }
 
 /**
  * Check if slot.retry() is required on either prompted slot or newly identified slot.
  * If required, run slot retry and add retry message to output queue
  */
-async function runRetryCheck<T>(
+async function runRetryCheck<T, G>(
   dispatch: Dispatch,
   getState: () => WolfState,
-  convoState: T,
-  abilities: Ability<T>[],
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[],
   matchNotValid: MatchNotValidData | null,
   potentialMatchFoundFlag: boolean,
   slotFillArr: SlotId[]
@@ -445,7 +473,7 @@ async function runRetryCheck<T>(
 
     // should prompt retry on matched 
     dispatch(incrementTurnCountBySlotId({ slotName, abilityName }))
-    const retryResult = await runRetry(convoState, getState, abilities, slotName, abilityName, value)
+    const retryResult = await runRetry(convoStorageLayer, getState, abilities, slotName, abilityName, value)
     retryResult.forEach(dispatch)
 
     log('adding %s slot to stack', slotName)
@@ -465,7 +493,7 @@ async function runRetryCheck<T>(
     const promptedSlotInfo = getPromptedSlotId(getState())
     log('run retry on %s', promptedSlotInfo.slotName)
     dispatch(incrementTurnCountBySlotId({ slotName, abilityName }))
-    const retryResult = await runRetry(convoState, getState, abilities, promptedSlotInfo.slotName,
+    const retryResult = await runRetry(convoStorageLayer, getState, abilities, promptedSlotInfo.slotName,
       promptedSlotInfo.abilityName, message.rawText)
     retryResult.forEach(dispatch)
 
@@ -482,10 +510,10 @@ async function runRetryCheck<T>(
 /**
  * Run slot retry.
  */
-async function runRetry<T>(
-  convoState: T,
+async function runRetry<T, G>(
+  convoStorageLayer: G,
   getState: () => WolfState,
-  abilities: Ability<T>[],
+  abilities: Ability<T, G>[],
   slotName: string,
   abilityName: string,
   submittedData: any
@@ -500,7 +528,7 @@ async function runRetry<T>(
     // Check if slot has a retry function defined
     let retryMessage = '' // Default to empty string
     if (slot.retry) {
-      retryMessage = await slot.retry(convoState, submittedData, turnCount)
+      retryMessage = await slot.retry(convoStorageLayer, submittedData, turnCount)
     }
     const message: OutputMessageItem = {
       message: retryMessage,
@@ -546,11 +574,11 @@ function createValidatorReasonMessage(
  * For all validators that pass, fulfill slot, add message to output queue then exit.
  * For all validators that do not pass, exit.
  */
-async function checkValidatorAndFill<T>(
+async function checkValidatorAndFill<T, G>(
   store: Store<WolfState>,
-  convoState: T,
-  abilities: Ability<T>[],
-  match: PotentialSlotMatch<T>): Promise<SlotId | null> {
+  convoStorageLayer: G,
+  abilities: Ability<T, G>[],
+  match: PotentialSlotMatch<G>): Promise<SlotId | null> {
   log('in checkValidatorAndFill()..')
   const { dispatch, getState } = store
   const validatorResult = await runSlotValidator(match.slot, match.entity, getMessageData(getState()))
@@ -559,7 +587,7 @@ async function checkValidatorAndFill<T>(
   if (validatorResult.isValid) {
     log('isValid is true.. fulfillSlot')
     const fulfillSlotResult =
-      await fulfillSlot(convoState, abilities, match.entity, match.slot.name, match.abilityName, getState)
+      await fulfillSlot(convoStorageLayer, abilities, match.entity, match.slot.name, match.abilityName, getState)
     fulfillSlotResult.forEach(dispatch)
 
     // slot filled.. exit true
@@ -609,7 +637,7 @@ function isEntityPresent(value: MessageData) {
  * For each entity, check if the `entity.name` and `ability` given matches with any slot
  * in the `abilities`
  */
-function getPotentialMatches<T>(entities: Entity[], targetAbility: Ability<T>): PotentialSlotMatch<T>[] {
+function getPotentialMatches<T, G>(entities: Entity[], targetAbility: Ability<T, G>): PotentialSlotMatch<G>[] {
   const slotMatches = targetAbility.slots.filter((slot) => entities.find((entity) => entity.name === slot.name))
 
   const matches = slotMatches.map((slot) => {
@@ -621,7 +649,7 @@ function getPotentialMatches<T>(entities: Entity[], targetAbility: Ability<T>): 
         entity: entityMatch.value
       }
     }
-  }).filter(_ => _) as PotentialSlotMatch<T>[]
+  }).filter(_ => _) as PotentialSlotMatch<G>[]
 
   if (matches.length === 0) {
     return []
@@ -642,7 +670,7 @@ function tryPromptedSlotValidatorMessage(
     return
   }
   const { slotName, abilityName } = promptedSlotId
-  const slotsFilledArr = getfilledSlotsOnCurrentTurn(getState())
+  const slotsFilledArr = getFilledSlotsOnCurrentTurn(getState())
   const isOriginalSlotFilled = slotsFilledArr.some(_ => _.slotName === slotName && _.abilityName === abilityName)
 
   if (isOriginalSlotFilled) {

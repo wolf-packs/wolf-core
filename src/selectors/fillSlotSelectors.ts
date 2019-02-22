@@ -1,16 +1,19 @@
-import { WolfState, PromptSlot, SlotId, Ability, Slot, SlotStatus, MessageData, OnFillStackItem } from '../types'
+import {
+  WolfState, PromptSlot, SlotId, Ability, Slot, SlotStatus,
+  MessageData, OnFillStackItem, StorageLayer
+} from '../types'
 import { findIndexOfSlotIdsBySlotId } from '../helpers'
 
 // export const getSlotAbilityName = (state: WolfState): string => state. 
 
 export const getPromptedSlotId = (state: WolfState): SlotId => state.promptedSlotStack[0]
 
-export const getSlotBySlotId = <T>(abilities: Ability<T>[], slotInfo: SlotId): Slot<T> | undefined => {
-  const ability = abilities.find((ability: Ability<T>) => ability.name === slotInfo.abilityName)
+export const getSlotBySlotId = <T, G>(abilities: Ability<T, G>[], slotInfo: SlotId): Slot<G> | undefined => {
+  const ability = abilities.find((ability: Ability<T, G>) => ability.name === slotInfo.abilityName)
   if (!ability) {
     return
   }
-  const foundSlot = ability.slots.find((slot: Slot<T>) => slot.name === slotInfo.slotName)
+  const foundSlot = ability.slots.find((slot: Slot<G>) => slot.name === slotInfo.slotName)
   return foundSlot
 }
 
@@ -30,7 +33,7 @@ export const getSlotTurnCount = (state: WolfState, slotId: SlotId): number => {
   return 0
 }
 
-export const getTargetAbility = <T>(abilities: Ability<T>[], targetAbility: string): Ability<T> | undefined => {
+export const getTargetAbility = <T, G>(abilities: Ability<T, G>[], targetAbility: string): Ability<T, G> | undefined => {
   return abilities.find((ability) => ability.name === targetAbility)
 }
 
