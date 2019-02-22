@@ -28,7 +28,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       query: () => new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve('Please say \'wolf\'... not negotiable.')
-        }, 3000)
+        }, 300)
       }),
       validate: (submittedValue: any) => {
         if (submittedValue !== 'wolf') {
