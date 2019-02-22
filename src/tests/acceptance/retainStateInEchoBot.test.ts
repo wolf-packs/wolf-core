@@ -1,10 +1,10 @@
 import * as wolf from '../..'
-import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
+import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
 import { Ability } from '../../types'
 
 interface UserConvoState {
     name: string | null,
-    phrase: string | null // added "phrase" to learn more about wolf-state
+    phrase: string | null // added "phrase" to learn more about wolf maintaining state
 }
 
 const defaultStore: UserConvoState = {
@@ -15,7 +15,7 @@ const defaultStore: UserConvoState = {
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
-const abilities: wolf.Ability<UserConvoState>[] = [
+const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [
     {
         name: 'greet',
         slots: [{
@@ -25,34 +25,36 @@ const abilities: wolf.Ability<UserConvoState>[] = [
             retry: () => '',
             onFill: () => { return; },
         }],
-        // nextAbility: () => ({abilityName: 'echo', message: 'Ok! lets go to the next step.'}),
-        onComplete: (convoState, submittedData) => {
-            convoState.name = submittedData.firstName;
+        onComplete: (convoStorageLayer, submittedData) => {
+            const convoState = convoStorageLayer.read()
+            const newState = {
+                name: submittedData.firstName,
+                phrase: convoState.phrase
+            }
+            convoStorageLayer.save(newState);
             return `hi ${submittedData.firstName}!`;
         },
     },
     {
         name: 'echo',
-        // slots: [{
-        //     name: 'phrase',
-        //     query: () => 'what did you say?',
-        //     validate: () => ({ isValid: true, reason: null }),
-        //     retry: () => '',
-        //     onFill: () => { return; },
-        // }],
         slots: [],
-        onComplete: (convoState, submittedData, { getMessageData }) => {
+        onComplete: (convoStorageLayer, submittedData, { getMessageData }) => {
             const messageData = getMessageData();
-            convoState.phrase = messageData.rawText;
-            if (convoState.name) {
-                return `${convoState.name} said "${convoState.phrase}"`;
+            const convoState = convoStorageLayer.read()
+            const newState = {
+                name: convoState.name,
+                phrase: messageData.rawText
             }
-            return `You said "${convoState.phrase}"`;
+            convoStorageLayer.save(newState)
+            if (newState.name) {
+                return `${newState.name} said "${newState.phrase}"`;
+            }
+            return `You said "${newState.phrase}"`;
         },
     },
-] as Ability<UserConvoState>[];
+] as wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[];
 
-const retainStateTestCase: TestCase<UserConvoState> = {
+const retainStateTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
     description: 'Retain State in EchoBot',
     abilities: abilities,
     defaultAbility: 'echo',
@@ -62,7 +64,7 @@ const retainStateTestCase: TestCase<UserConvoState> = {
         {
             input: {
                 message: 'hello to the world as a phrase',
-                entities: [], // [{ name: 'phrase', text: 'hello to the world as a phrase', value: 'hello to the world as a phrase' }],
+                entities: [], 
                 intent: null
             },
             expected: {
@@ -84,11 +86,11 @@ const retainStateTestCase: TestCase<UserConvoState> = {
         {
             input: {
                 message: 'dave',
-                entities: [], // [{ name: 'firstName', text: 'dave', value: 'dave' }],
-                intent: null, // 'greet'
+                entities: [], 
+                intent: null, 
             },
             expected: {
-                message: ['hi dave!'], //, 'Ok! lets go to the next step.', 'what did you say?'],
+                message: ['hi dave!'], 
                 state: { name: 'dave', phrase: 'hello to the world as a phrase' }
             }
         },
