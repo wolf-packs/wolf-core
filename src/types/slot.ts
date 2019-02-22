@@ -15,10 +15,10 @@ export interface Slot<G> {
   order?: number,
   query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
   validate?: (submittedValue: any, messageData: MessageData) => Promiseable<ValidateResult>,
-  retry?: (convoStorageLayer: G, submittedData: any, turnCount: number) => Promiseable<string>,
+  retry?: (convoStorageLayer: G, submittedValue: any, turnCount: number) => Promiseable<string>,
   onFill?: (
-    submittedValue: any,
     convoStorageLayer: G,
+    submittedValue: any,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
   ) => Promiseable<string | void>
