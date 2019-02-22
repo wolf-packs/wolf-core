@@ -21,9 +21,6 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
         slots: [{
             name: 'firstName', // renamed from 'name' for clarity in testing entities 
             query: () => 'what is your name?',
-            validate: () => ({ isValid: true, reason: null }),
-            retry: () => '',
-            onFill: () => { return; },
         }],
         onComplete: (convoStorageLayer, submittedData) => {
             const convoState = convoStorageLayer.read()
