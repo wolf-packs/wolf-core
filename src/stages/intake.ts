@@ -1,6 +1,6 @@
 import { MessageData, NlpResult, IncomingSlotData } from '../types'
-import { setMessageData, setDefaultAbility, fillSlot, startIntakeStage }  from '../actions'
-import { Store, Dispatch, Action } from 'redux'
+import { setMessageData, setDefaultAbility, startIntakeStage } from '../actions'
+import { Store } from 'redux'
 const logState = require('debug')('wolf:s1:enterState')
 const log = require('debug')('wolf:s1')
 
@@ -14,7 +14,7 @@ const log = require('debug')('wolf:s1')
  * @returns void
  */
 export default function intake(
-  {dispatch, getState}: Store,
+  { dispatch, getState }: Store,
   nlpResult: NlpResult,
   incomingSlotData: IncomingSlotData[],
   defaultAbility: string | null = null

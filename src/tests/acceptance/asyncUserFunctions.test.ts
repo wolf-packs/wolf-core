@@ -1,6 +1,12 @@
 import * as wolf from '../..'
-import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
-import { Ability } from '../../types'
+import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
+import { StorageLayer, AllSyncStorageLayer } from '../../types'
+
+const defaultStore: UserConvoState = {
+  animalName: null,
+  magicWordStrict: null,
+  magicWordStrict2: null
+}
 
 interface UserConvoState {
   animalName: string | null,
@@ -8,11 +14,7 @@ interface UserConvoState {
   magicWordStrict2: string | null
 }
 
-const defaultStore: UserConvoState = {
-  animalName: null,
-  magicWordStrict: null,
-  magicWordStrict2: null
-}
+type StorageLayerType<T> = AllSyncStorageLayer<T>
 
 const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'magicWord',
@@ -23,7 +25,11 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     },
     {
       name: 'magicWordStrict',
-      query: () => 'Please say \'wolf\'... not negotiable.',
+      query: () => new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve('Please say \'wolf\'... not negotiable.')
+        }, 3000)
+      }),
       validate: (submittedValue: any) => {
         if (submittedValue !== 'wolf') {
           return { isValid: false, reason: 'Please follow directions.' }
@@ -34,15 +40,23 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     {
       name: 'magicWordStrict2',
       query: () => 'Please say \'wolf\' one more time.',
-      retry: () => 'You must say \'wolf\' a second time',
-      validate: (submittedValue: any) => {
+      retry: async () => 'You must say \'wolf\' a second time',
+      validate: async (submittedValue: any) => {
         if (submittedValue !== 'wolf') {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 300)
+          })
           return { isValid: false, reason: 'Please follow directions.' }
         }
         return { isValid: true, reason: null }
       },
-      onFill: () => {
-        return 'Thank you for saying wolf wolf!'
+      onFill: async () => {
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 100)
+        })
+        return 'Submitted to async API! Thank you for saying wolf wolf!'
       }
     }
   ],
@@ -53,11 +67,12 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       magicWordStrict2: submittedData.magicWordStrict2
     }
     convoStorageLayer.save(newState)
+
     return `You said: '${submittedData.animalName}', \
 '${submittedData.magicWordStrict}', \
 '${submittedData.magicWordStrict2}'!`
   }
-}] as wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[]
+}] as wolf.Ability<UserConvoState, StorageLayer<UserConvoState>>[]
 
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
@@ -73,28 +88,28 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<Us
       input: { message: 'hello', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please name an animal... if you want.'],
-        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
+        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
       }
     },
     {
       input: { message: 'hippo', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please say \'wolf\'... not negotiable.'],
-        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
+        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
       }
     },
     {
       input: { message: 'hippo', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please follow directions.'],
-        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
+        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
       }
     },
     {
       input: { message: 'wolf', entities: [], intent: 'magicWord' },
       expected: {
         message: ['Please say \'wolf\' one more time.'],
-        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
+        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
       }
     },
     {
@@ -104,26 +119,26 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<Us
           'Please follow directions.',
           'You must say \'wolf\' a second time'
         ],
-        state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
+        state: { 'animalName': null, 'magicWordStrict': null, 'magicWordStrict2': null }
       }
     },
     {
       input: { message: 'wolf', entities: [], intent: 'magicWord' },
       expected: {
         message: [
-          'Thank you for saying wolf wolf!',
+          'Submitted to async API! Thank you for saying wolf wolf!',
           'You said: \'hippo\', \'wolf\', \'wolf\'!'
         ],
         state: {
-          animalName: 'hippo',
-          magicWordStrict: 'wolf',
-          magicWordStrict2: 'wolf'
+          'animalName': 'hippo',
+          'magicWordStrict': 'wolf',
+          'magicWordStrict2': 'wolf'
         }
       }
     }
   ]
 }
 
-describe('Optional Slot Properties', () => {
+describe('Async User Functions', () => {
   runTest(test, optionalSlotPropertyTestCase)
 })

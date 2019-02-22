@@ -1,21 +1,21 @@
 import * as wolf from '../..'
-import { WolfState, StorageLayer, Ability } from '../../types'
+import { WolfState, AllSyncStorageLayer, Ability } from '../../types'
 
 export interface ConversationTurn<T> {
   input: wolf.NlpResult,
   expected: { message: string[], state: T }
 }
 
-export interface TestCase<T> {
+export interface TestCase<T, G> {
   description: string,
-  abilities: Ability<T>[],
+  abilities: Ability<T, G>[],
   wolfStorage: wolf.WolfStateStorage,
-  convoStorage: wolf.StorageLayer<T>,
+  convoStorage: G,
   defaultAbility: string,
   conversationTurns: ConversationTurn<T>[]
 }
 
-export const createStorage = <T>(initial: T): StorageLayer<T> => {
+export const createStorage = <T>(initial: T): StorageLayerType<T> => {
   let data = initial
   return {
     read: () => data,
@@ -24,6 +24,8 @@ export const createStorage = <T>(initial: T): StorageLayer<T> => {
     }
   }
 }
+
+export type StorageLayerType<T> = AllSyncStorageLayer<T>
 
 export const getInitialWolfState = (): WolfState => {
   return {
@@ -41,7 +43,7 @@ export const getInitialWolfState = (): WolfState => {
   }
 }
 
-export function runTest<T>(jestTestFn: jest.It, testCase: TestCase<T>) {
+export function runTest<T>(jestTestFn: jest.It, testCase: TestCase<T, wolf.StorageLayer<T>>) {
   jestTestFn(testCase.description, async () => {
     for (const turn of testCase.conversationTurns) {
       const outputResult = await wolf.run(

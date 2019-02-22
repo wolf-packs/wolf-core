@@ -17,6 +17,10 @@ export {
   IncomingSlotData,
   WolfStateStorage,
   StorageLayer,
+  AllAsyncStorageLayer,
+  OnlyReadAsyncStorageLayer,
+  OnlySaveAsyncStorageLayer,
+  AllSyncStorageLayer,
   StorageLayerFactory,
   WolfState
 } from './types'
