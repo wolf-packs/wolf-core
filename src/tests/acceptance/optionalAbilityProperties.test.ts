@@ -29,8 +29,8 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   slots: [{
     name: 'addOn',
     query: () => 'What add on would you like?',
-    validate: (submittedData) => {
-      if (submittedData.addOn !== 'nothing') {
+    validate: (submittedValue) => {
+      if (submittedValue !== 'nothing') {
         return { isValid: true, reason: null }
       }
       return { isValid: false, reason: 'Can not be \'nothing\'!' }

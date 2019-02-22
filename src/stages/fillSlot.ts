@@ -407,7 +407,7 @@ async function fulfillSlot<T, G>(
     actions.push(fillSlotAction(slotName, abilityName, message))
     if (slot.onFill) {
       log('slot.onFill exists.. run slot.onFill()')
-      const fillString = await slot.onFill(message, convoStorageLayer, setSlotFuncs, confirmFuncs)
+      const fillString = await slot.onFill(convoStorageLayer, message, setSlotFuncs, confirmFuncs)
       actions.push(removeSlotFromOnFillStack({ slotName, abilityName }))
 
       if (fillString) {
@@ -516,7 +516,7 @@ async function runRetry<T, G>(
   abilities: Ability<T, G>[],
   slotName: string,
   abilityName: string,
-  submittedData: any
+  submittedValue: any
 ): Promise<Action[]> {
   log('in runRetry()..')
   const slot = getSlotBySlotId(abilities, { slotName, abilityName })
@@ -528,7 +528,7 @@ async function runRetry<T, G>(
     // Check if slot has a retry function defined
     let retryMessage = '' // Default to empty string
     if (slot.retry) {
-      retryMessage = await slot.retry(convoStorageLayer, submittedData, turnCount)
+      retryMessage = await slot.retry(convoStorageLayer, submittedValue, turnCount)
     }
     const message: OutputMessageItem = {
       message: retryMessage,
@@ -610,7 +610,7 @@ async function checkValidatorAndFill<T, G>(
  */
 async function runSlotValidator<T>(
   slot: Slot<T>,
-  submittedData: any,
+  submittedValue: any,
   messageData: MessageData):
   Promise<ValidateResult> {
   if (!slot.validate) {
@@ -620,7 +620,7 @@ async function runSlotValidator<T>(
       reason: null
     }
   }
-  return await slot.validate(submittedData, messageData)
+  return await slot.validate(submittedValue, messageData)
 }
 
 /**
