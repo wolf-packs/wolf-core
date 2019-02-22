@@ -19,7 +19,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     {
         name: 'greet',
         slots: [{
-            name: 'firstName',
+            name: 'firstName', // renamed from 'name' for clarity in testing entities 
             query: () => 'what is your name?',
             validate: () => ({ isValid: true, reason: null }),
             retry: () => '',
@@ -96,13 +96,24 @@ const retainStateTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoSt
         },
         {
             input: {
+                message: 'hi',
+                entities: [{ name: 'firstName', text: 'bob', value: 'bob' }],
+                intent: 'greet'
+            },
+            expected: {
+                message: ['hi bob!'],
+                state: { name: 'bob', phrase: 'hello to the world as a phrase' }
+            }
+        },
+        {
+            input: {
                 message: 'hello there',
                 entities: [],
                 intent: null
             },
             expected: {
-                message: ['dave said "hello there"'],
-                state: { name: 'dave', phrase: 'hello there' }
+                message: ['bob said "hello there"'],
+                state: { name: 'bob', phrase: 'hello there' }
             }
         }
     ]
