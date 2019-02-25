@@ -22,7 +22,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
             name: 'firstName', // renamed from 'name' for clarity in testing entities 
             query: () => 'what is your name?',
         }],
-        onComplete: (convoStorageLayer, submittedData) => {
+        onComplete: (submittedData, convoStorageLayer) => {
             const convoState = convoStorageLayer.read()
             const newState = {
                 name: submittedData.firstName,
@@ -35,7 +35,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     {
         name: 'echo',
         slots: [],
-        onComplete: (convoStorageLayer, submittedData, { getMessageData }) => {
+        onComplete: (submittedData, convoStorageLayer, { getMessageData }) => {
             const messageData = getMessageData();
             const convoState = convoStorageLayer.read()
             const newState = {

@@ -32,7 +32,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       }
     }
   ],
-  onComplete: (convoStorageLayer, submittedData: any) => {
+  onComplete: (submittedData: any, convoStorageLayer) => {
     const newState = {
       name: submittedData.name,
       age: submittedData.age,

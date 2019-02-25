@@ -20,9 +20,14 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     query: () => 'what kind of car would you like?'
   }],
   nextAbility: () => ({ abilityName: 'buyAddOn' }),
-  onComplete: (convoStorageLayer, submittedData) => {
+  onComplete: (submittedData, convoStorageLayer) => {
     const convoState = convoStorageLayer.read()
-    convoState.car = submittedData.car
+    const newState = {
+      car: submittedData.car,
+      addOns: convoState.addOns.map(_ => _),
+      financing: convoState.financing
+    }
+    convoStorageLayer.save(newState)
   }
 }, {
   name: 'buyAddOn',
@@ -37,7 +42,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     }
   }],
   nextAbility: () => ({ abilityName: 'needFinancing', message: 'Ok! lets go to the next step.' }),
-  onComplete: (convoStorageLayer, submittedData) => {
+  onComplete: (submittedData, convoStorageLayer) => {
     const convoState = convoStorageLayer.read()
     let addOnsValue = convoState.addOns.map(_ => _)
     addOnsValue.push(submittedData.addOn)
@@ -54,7 +59,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     name: 'confirmFinancing',
     query: () => 'Would you need financing?'
   }],
-  onComplete: (convoStorageLayer, submittedData) => {
+  onComplete: (submittedData, convoStorageLayer) => {
     const convoState = convoStorageLayer.read()
     let financingValue = false
     if (submittedData.confirmFinancing === 'yes') {
