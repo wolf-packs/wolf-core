@@ -14,11 +14,11 @@ export interface Slot<G> {
   defaultIsEnabled?: boolean,
   order?: number,
   query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
-  validate?: (submittedValue: any, messageData: MessageData) => Promiseable<ValidateResult>,
-  retry?: (convoStorageLayer: G, submittedValue: any, turnCount: number) => Promiseable<string>,
+  validate?: (submittedValue: any, convoStorageLayer: G, messageData: MessageData) => Promiseable<ValidateResult>,
+  retry?: (submittedValue: any, convoStorageLayer: G, turnCount: number) => Promiseable<string>,
   onFill?: (
-    convoStorageLayer: G,
     submittedValue: any,
+    convoStorageLayer: G,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
   ) => Promiseable<string | void>

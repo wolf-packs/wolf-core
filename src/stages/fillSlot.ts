@@ -111,7 +111,7 @@ export default async function fillSlot<T, G>(
     if (promptedSlot) {
       if (message.rawText) {
         log('user said: %s', message.rawText)
-        validatorResult = await runSlotValidator(promptedSlot, message.rawText, message)
+        validatorResult = await runSlotValidator(convoStorageLayer, promptedSlot, message.rawText, message)
 
         if (validatorResult.isValid) {
           log('users response was valid according to the prompted slots validator')
@@ -407,7 +407,7 @@ async function fulfillSlot<T, G>(
     actions.push(fillSlotAction(slotName, abilityName, message))
     if (slot.onFill) {
       log('slot.onFill exists.. run slot.onFill()')
-      const fillString = await slot.onFill(convoStorageLayer, message, setSlotFuncs, confirmFuncs)
+      const fillString = await slot.onFill(message, convoStorageLayer, setSlotFuncs, confirmFuncs)
       actions.push(removeSlotFromOnFillStack({ slotName, abilityName }))
 
       if (fillString) {
@@ -528,7 +528,7 @@ async function runRetry<T, G>(
     // Check if slot has a retry function defined
     let retryMessage = '' // Default to empty string
     if (slot.retry) {
-      retryMessage = await slot.retry(convoStorageLayer, submittedValue, turnCount)
+      retryMessage = await slot.retry(submittedValue, convoStorageLayer, turnCount)
     }
     const message: OutputMessageItem = {
       message: retryMessage,
@@ -581,7 +581,7 @@ async function checkValidatorAndFill<T, G>(
   match: PotentialSlotMatch<G>): Promise<SlotId | null> {
   log('in checkValidatorAndFill()..')
   const { dispatch, getState } = store
-  const validatorResult = await runSlotValidator(match.slot, match.entity, getMessageData(getState()))
+  const validatorResult = await runSlotValidator(convoStorageLayer, match.slot, match.entity, getMessageData(getState()))
 
   log('validatorResult.isValid: %s', validatorResult.isValid)
   if (validatorResult.isValid) {
@@ -608,8 +608,9 @@ async function checkValidatorAndFill<T, G>(
 /**
  * Run slot validator.
  */
-async function runSlotValidator<T>(
-  slot: Slot<T>,
+async function runSlotValidator<G>(
+  convoStorageLayer: G,  
+  slot: Slot<G>,
   submittedValue: any,
   messageData: MessageData):
   Promise<ValidateResult> {
@@ -620,7 +621,7 @@ async function runSlotValidator<T>(
       reason: null
     }
   }
-  return await slot.validate(submittedValue, messageData)
+  return await slot.validate(submittedValue, convoStorageLayer, messageData)
 }
 
 /**
