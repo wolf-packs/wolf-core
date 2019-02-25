@@ -1,6 +1,5 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
-import { Ability } from '../../types'
 
 interface UserConvoState {
   animalName: string | null,
