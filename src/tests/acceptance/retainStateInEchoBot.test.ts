@@ -21,21 +21,21 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       name: 'firstName', // renamed from 'name' for clarity in testing entities 
       query: () => 'what is your name?',
     }],
-    onComplete: (convoStorageLayer, submittedData) => {
+    onComplete: (submittedData, convoStorageLayer) => {
       const convoState = convoStorageLayer.read()
       const newState = {
         name: submittedData.firstName,
         phrase: convoState.phrase
       }
-      convoStorageLayer.save(newState);
-      return `hi ${submittedData.firstName}!`;
+      convoStorageLayer.save(newState)
+      return `hi ${submittedData.firstName}!`
     },
   },
   {
     name: 'echo',
     slots: [],
-    onComplete: (convoStorageLayer, submittedData, { getMessageData }) => {
-      const messageData = getMessageData();
+    onComplete: (submittedData, convoStorageLayer, { getMessageData }) => {
+      const messageData = getMessageData()
       const convoState = convoStorageLayer.read()
       const newState = {
         name: convoState.name,
@@ -43,12 +43,12 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       }
       convoStorageLayer.save(newState)
       if (newState.name) {
-        return `${newState.name} said "${newState.phrase}"`;
+        return `${newState.name} said "${newState.phrase}"`
       }
-      return `You said "${newState.phrase}"`;
+      return `You said "${newState.phrase}"`
     },
   },
-] as wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[];
+] as wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[]
 
 const retainStateTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Retain State in EchoBot',

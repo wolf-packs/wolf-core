@@ -23,7 +23,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       name: 'age',
       query: () => 'What is your age?',
       retry: () => 'You must be older than 5.',
-      validate: (submittedValue: any) => {
+      validate: (submittedValue) => {
         const num = parseInt(submittedValue, 10);
         if (num < 6) {
           return { isValid: false, reason: 'too young' }
@@ -32,7 +32,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       }
     }
   ],
-  onComplete: (convoStorageLayer, submittedData: any) => {
+  onComplete: (submittedData, convoStorageLayer) => {
     const newState = {
       name: submittedData.name,
       age: submittedData.age,

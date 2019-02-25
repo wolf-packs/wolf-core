@@ -12,7 +12,7 @@ export interface Ability<T, G> {
   name: string,
   slots: Slot<G>[],
   nextAbility?: (convoStorageLayer: G, wolfState: WolfState) => NextAbilityResult,
-  onComplete: (convoStorageLayer: G, submittedData: any, getStateFunctions: GetStateFunctions<T, G>) =>
+  onComplete: (submittedData: any, convoStorageLayer: G, getStateFunctions: GetStateFunctions<T, G>) =>
     Promise<string | void> | string | void
 }
 

@@ -23,7 +23,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     {
       name: 'magicWordStrict',
       query: () => 'Please say \'wolf\'... not negotiable.',
-      validate: (submittedValue: any) => {
+      validate: (submittedValue) => {
         if (submittedValue !== 'wolf') {
           return { isValid: false, reason: 'Please follow directions.' }
         }
@@ -34,7 +34,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       name: 'magicWordStrict2',
       query: () => 'Please say \'wolf\' one more time.',
       retry: () => 'You must say \'wolf\' a second time',
-      validate: (submittedValue: any) => {
+      validate: (submittedValue) => {
         if (submittedValue !== 'wolf') {
           return { isValid: false, reason: 'Please follow directions.' }
         }
@@ -45,7 +45,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
       }
     }
   ],
-  onComplete: (convoStorageLayer, submittedData: any) => {
+  onComplete: (submittedData, convoStorageLayer) => {
     const newState = {
       animalName: submittedData.animalName,
       magicWordStrict: submittedData.magicWordStrict,

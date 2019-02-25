@@ -162,7 +162,7 @@ function runAbilityOnComplete<T, G>(
     }
 
     return {
-      result: ability.onComplete(convoStorageLayer, submittedData, getStateFuncs),
+      result: ability.onComplete(submittedData, convoStorageLayer, getStateFuncs),
       abilityName: ability.name
     }
   })
