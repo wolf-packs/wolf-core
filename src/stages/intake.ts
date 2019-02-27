@@ -22,31 +22,29 @@ export default function intake(
   logState(getState())
   dispatch(startIntakeStage())
 
-  // MessageData derived from user nlpResults
+  // MessageDataArr derived from user nlpResults
+  // Create the messageData array
+  const messageDataArr: MessageData[] = nlpResults.map(nlpResult => {
+    return {
+      rawText: nlpResult.message,
+      intent: nlpResult.intent,
+      entities: nlpResult.entities
+    }
+  })
 
-  let messageData: MessageData = { // default empty MessageData object
+  // Default empty MessageData object
+  // This default object is utilized if the incoming nlpResults array is empty
+  let messageData: MessageData = {
     rawText: '',
     intent: null,
     entities: []
   }
 
-  // if at least one nlpResult is present, capture first element data
-  if (nlpResults.length > 0) {
-    messageData = {
-      rawText: nlpResults[0].message,
-      intent: nlpResults[0].intent,
-      entities: nlpResults[0].entities
-    }
+  // If at least one nlpResult is present, capture first element data
+  // This is temp code. Future development will require the full messageDataArr to be saved onto WolfState
+  if (messageDataArr.length > 0) {
+    messageData = messageDataArr[0]
   }
-
-  // // MessageDataArr derived from user nlpResults
-  // const messageDataArr: MessageData[] = nlpResults.map(nlpResult => {
-  //   return {
-  //     rawText: nlpResult.message,
-  //     intent: nlpResult.intent,
-  //     entities: nlpResult.entities
-  //   }
-  // })
 
   // Write defaultAbility to state
   dispatch(setDefaultAbility(defaultAbility))
