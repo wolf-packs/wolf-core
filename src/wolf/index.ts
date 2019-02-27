@@ -2,7 +2,7 @@ import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc
 import rootReducer from '../reducers'
 import {
   NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable,
-  WolfStore, WolfStateStorage, StorageLayer, AnyObject
+  WolfStore, WolfStateStorage, StorageLayer, AnyObject, Flow
 } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
@@ -67,7 +67,7 @@ export const makeWolfStoreCreator = (
  * @param convoStorage User conversation state storage layer. Read/save will be made available
  * to user functions in slot and abilities
  * @param userMessageData Natural Language Processing result
- * @param getAbilitiesFunc Abilities defined for the bot
+ * @param getFlowFunc Flow is made up of Abilities and Slots and are used to define the bot conversation flow
  * @param defaultAbility Ability that will be used as the fallback if no ability is determined from the userMessageData
  * @param storeCreator Optional redux store creator, can be used with redux dev tools
  * @param getSlotDataFunc Optional getter function to retrieve slot data
@@ -77,16 +77,16 @@ export const run = async <T extends AnyObject, G>(
   wolfStorage: WolfStateStorage,
   convoStorage: G,
   userMessageData: () => Promiseable<NlpResult>,
-  getAbilitiesFunc: () => Promiseable<Ability<T, G>[]>,
+  getFlowFunc: () => Promiseable<Flow<T, G>>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
 ) => {
   // invoke user async functions
-  const [wolfState, nlpResult, abilities] = await Promise.all([
+  const [wolfState, nlpResult, flow] = await Promise.all([
     wolfStorage.read(),
     userMessageData(),
-    getAbilitiesFunc()
+    getFlowFunc()
   ])
 
   // If user provides storeCreator param, invoke the redux store creator with the persisted wolfState (if available)
@@ -115,9 +115,9 @@ export const run = async <T extends AnyObject, G>(
       }
     }) : []
   intake(wolfStore, nlpResult, incomingSlotData, defaultAbility)
-  await fillSlot(wolfStore, convoStorage, abilities)
-  evaluate(wolfStore, abilities, convoStorage)
-  const executeResult = await execute(wolfStore, convoStorage, abilities)
+  await fillSlot(wolfStore, convoStorage, flow)
+  evaluate(wolfStore, flow, convoStorage)
+  const executeResult = await execute(wolfStore, convoStorage, flow)
 
   if (executeResult) {
     const { runOnComplete, addMessage } = executeResult

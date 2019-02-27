@@ -51,7 +51,7 @@ export function runTest<T, G extends StorageLayer<T>>(jestTestFn: jest.It, testC
         testCase.wolfStorage,
         testCase.convoStorage,
         () => (turn.input),
-        () => testCase.abilities,
+        () => ({ abilities: testCase.abilities, slots: testCase.slots }),
         testCase.defaultAbility
       )
 
