@@ -69,35 +69,35 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<Us
   convoStorage,
   conversationTurns: [
     {
-      input: { message: 'hello', entities: [], intent: 'magicWord' },
+      input: [{ message: 'hello', entities: [], intent: 'magicWord' }],
       expected: {
         message: ['Please name an animal... if you want.'],
         state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
-      input: { message: 'hippo', entities: [], intent: 'magicWord' },
+      input: [{ message: 'hippo', entities: [], intent: 'magicWord' }],
       expected: {
         message: ['Please say \'wolf\'... not negotiable.'],
         state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
-      input: { message: 'hippo', entities: [], intent: 'magicWord' },
+      input: [{ message: 'hippo', entities: [], intent: 'magicWord' }],
       expected: {
         message: ['Please follow directions.'],
         state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
-      input: { message: 'wolf', entities: [], intent: 'magicWord' },
+      input: [{ message: 'wolf', entities: [], intent: 'magicWord' }],
       expected: {
         message: ['Please say \'wolf\' one more time.'],
         state: { animalName: null, magicWordStrict: null, magicWordStrict2: null }
       }
     },
     {
-      input: { message: 'hippo', entities: [], intent: 'magicWord' },
+      input: [{ message: 'hippo', entities: [], intent: 'magicWord' }],
       expected: {
         message: [
           'Please follow directions.',
@@ -107,7 +107,7 @@ const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<Us
       }
     },
     {
-      input: { message: 'wolf', entities: [], intent: 'magicWord' },
+      input: [{ message: 'wolf', entities: [], intent: 'magicWord' }],
       expected: {
         message: [
           'Thank you for saying wolf wolf!',
