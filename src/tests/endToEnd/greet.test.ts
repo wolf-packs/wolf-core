@@ -12,26 +12,33 @@ const defaultStore: UserConvoState = {
   age: null
 }
 
+const slots: wolf.Slot<StorageLayerType<UserConvoState>>[] = [
+  {
+    name: 'name',
+    query: () => 'What is your name?'
+  },
+  {
+    name: 'age',
+    query: () => 'What is your age?',
+    retry: () => 'You must be older than 5.',
+    validate: (submittedValue) => {
+      const num = parseInt(submittedValue, 10);
+      if (num < 6) {
+        return { isValid: false, reason: 'too young' }
+      }
+      return { isValid: true, reason: null }
+    }
+  }
+]
+
 const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'greet',
-  slots: [
-    {
-      name: 'name',
-      query: () => 'What is your name?'
-    },
-    {
-      name: 'age',
-      query: () => 'What is your age?',
-      retry: () => 'You must be older than 5.',
-      validate: (submittedValue) => {
-        const num = parseInt(submittedValue, 10);
-        if (num < 6) {
-          return { isValid: false, reason: 'too young' }
-        }
-        return { isValid: true, reason: null }
-      }
-    }
-  ],
+  traces: [{
+    slotName: 'name'
+  },
+  {
+    slotName: 'age'
+  }],
   onComplete: (submittedData, convoStorageLayer) => {
     const newState = {
       name: submittedData.name,
@@ -47,6 +54,7 @@ const convoStorage = createStorage(defaultStore)
 
 const greetTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Greet',
+  slots: slots,
   abilities: abilities,
   defaultAbility: 'greet',
   wolfStorage,

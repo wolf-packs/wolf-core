@@ -1,5 +1,6 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
+import { StorageLayer } from '../../types';
 
 interface UserConvoState {
   car: string | null,
@@ -13,11 +14,29 @@ const defaultStore: UserConvoState = {
   financing: false
 }
 
+const slots: wolf.Slot<StorageLayerType<UserConvoState>>[] = [{
+  name: 'car',
+  query: () => 'what kind of car would you like?'
+},
+{
+  name: 'addOn',
+  query: () => 'What add on would you like?',
+  validate: (submittedValue) => {
+    if (submittedValue !== 'nothing') {
+      return { isValid: true, reason: null }
+    }
+    return { isValid: false, reason: 'Can not be \'nothing\'!' }
+  }
+},
+{
+  name: 'confirmFinancing',
+  query: () => 'Would you need financing?'
+}]
+
 const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'buyCar',
-  slots: [{
-    name: 'car',
-    query: () => 'what kind of car would you like?'
+  traces: [{
+    slotName: 'car'
   }],
   nextAbility: () => ({ abilityName: 'buyAddOn' }),
   onComplete: (submittedData, convoStorageLayer) => {
@@ -31,15 +50,8 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   }
 }, {
   name: 'buyAddOn',
-  slots: [{
-    name: 'addOn',
-    query: () => 'What add on would you like?',
-    validate: (submittedValue) => {
-      if (submittedValue !== 'nothing') {
-        return { isValid: true, reason: null }
-      }
-      return { isValid: false, reason: 'Can not be \'nothing\'!' }
-    }
+  traces: [{
+    slotName: 'addOn'
   }],
   nextAbility: () => ({ abilityName: 'needFinancing', message: 'Ok! lets go to the next step.' }),
   onComplete: (submittedData, convoStorageLayer) => {
@@ -55,9 +67,8 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   }
 }, {
   name: 'needFinancing',
-  slots: [{
-    name: 'confirmFinancing',
-    query: () => 'Would you need financing?'
+  traces: [{
+    slotName: 'confirmFinancing'
   }],
   onComplete: (submittedData, convoStorageLayer) => {
     const convoState = convoStorageLayer.read()
@@ -81,6 +92,7 @@ const convoStorage = createStorage(defaultStore)
 const optionalAbilityPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Ability Properties',
   abilities: abilities,
+  slots: slots,
   defaultAbility: 'buyCar',
   wolfStorage,
   convoStorage,

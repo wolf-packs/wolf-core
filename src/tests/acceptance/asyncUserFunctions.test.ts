@@ -1,6 +1,6 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
-import { StorageLayer, AllSyncStorageLayer } from '../../types'
+import { StorageLayer, AllSyncStorageLayer, Trace } from '../../types'
 
 const defaultStore: UserConvoState = {
   animalName: null,
@@ -16,50 +16,60 @@ interface UserConvoState {
 
 type StorageLayerType<T> = AllSyncStorageLayer<T>
 
+const slots: wolf.Slot<StorageLayerType<UserConvoState>>[] = [
+  {
+    name: 'animalName',
+    query: () => 'Please name an animal... if you want.',
+  },
+  {
+    name: 'magicWordStrict',
+    query: () => new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('Please say \'wolf\'... not negotiable.')
+      }, 300)
+    }),
+    validate: (submittedValue) => {
+      if (submittedValue !== 'wolf') {
+        return { isValid: false, reason: 'Please follow directions.' }
+      }
+      return { isValid: true, reason: null }
+    },
+  },
+  {
+    name: 'magicWordStrict2',
+    query: () => 'Please say \'wolf\' one more time.',
+    retry: async () => 'You must say \'wolf\' a second time',
+    validate: async (submittedValue) => {
+      if (submittedValue !== 'wolf') {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 300)
+        })
+        return { isValid: false, reason: 'Please follow directions.' }
+      }
+      return { isValid: true, reason: null }
+    },
+    onFill: async () => {
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 100)
+      })
+      return 'Submitted to async API! Thank you for saying wolf wolf!'
+    }
+  }
+]
+
 const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'magicWord',
-  slots: [
-    {
-      name: 'animalName',
-      query: () => 'Please name an animal... if you want.',
-    },
-    {
-      name: 'magicWordStrict',
-      query: () => new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve('Please say \'wolf\'... not negotiable.')
-        }, 300)
-      }),
-      validate: (submittedValue) => {
-        if (submittedValue !== 'wolf') {
-          return { isValid: false, reason: 'Please follow directions.' }
-        }
-        return { isValid: true, reason: null }
-      },
-    },
-    {
-      name: 'magicWordStrict2',
-      query: () => 'Please say \'wolf\' one more time.',
-      retry: async () => 'You must say \'wolf\' a second time',
-      validate: async (submittedValue) => {
-        if (submittedValue !== 'wolf') {
-          await new Promise((resolve) => {
-            setTimeout(resolve, 300)
-          })
-          return { isValid: false, reason: 'Please follow directions.' }
-        }
-        return { isValid: true, reason: null }
-      },
-      onFill: async () => {
-        await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve()
-          }, 100)
-        })
-        return 'Submitted to async API! Thank you for saying wolf wolf!'
-      }
-    }
-  ],
+  traces: [{
+    slotName: 'animalName'
+  },
+  {
+    slotName: 'magicWordStrict'
+  },
+  {
+    slotName: 'magicWordStrict2'
+  }],
   onComplete: (submittedData, convoStorageLayer) => {
     const newState = {
       animalName: submittedData.animalName,
@@ -72,7 +82,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
 '${submittedData.magicWordStrict}', \
 '${submittedData.magicWordStrict2}'!`
   }
-}] as wolf.Ability<UserConvoState, StorageLayer<UserConvoState>>[]
+}]
 
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
@@ -80,6 +90,7 @@ const convoStorage = createStorage(defaultStore)
 const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Slot Properties',
   abilities: abilities,
+  slots: slots,
   defaultAbility: 'magicWord',
   wolfStorage,
   convoStorage,
