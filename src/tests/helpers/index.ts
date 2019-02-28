@@ -2,7 +2,7 @@ import * as wolf from '../..'
 import { WolfState, AllSyncStorageLayer, Ability } from '../../types'
 
 export interface ConversationTurn<T> {
-  input: wolf.NlpResult,
+  input: wolf.NlpResult[],
   expected: { message: string[], state: T }
 }
 

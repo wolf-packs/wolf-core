@@ -7,7 +7,7 @@ const log = require('debug')('wolf:s1')
 /**
  * Intake Stage (S1):
  * 
- * Takes in user generated NlpResult object and creates messageData object, stored to state.
+ * Takes in user generated NlpResult object and creates messageDataArr based on incoming NlpResults, stored to state.
  * 
  * @param nlpResult user generated NLP Object
  * 
@@ -15,17 +15,37 @@ const log = require('debug')('wolf:s1')
  */
 export default function intake(
   { dispatch, getState }: Store,
-  nlpResult: NlpResult,
+  nlpResults: NlpResult[],
   incomingSlotData: IncomingSlotData[],
   defaultAbility: string | null = null
 ): void {
   logState(getState())
   dispatch(startIntakeStage())
-  // MessageData derived from user nlpResult
-  const messageData: MessageData = {
-    rawText: nlpResult.message,
-    intent: nlpResult.intent,
-    entities: nlpResult.entities
+
+  // MessageDataArr derived from user nlpResults
+  // Create the messageData array
+  const messageDataArr: MessageData[] = nlpResults.map(nlpResult => {
+    return {
+      rawText: nlpResult.message,
+      intent: nlpResult.intent,
+      entities: nlpResult.entities
+    }
+  })
+
+  // Default empty MessageData object
+  // This default object is utilized if the incoming nlpResults array is empty
+  let messageData: MessageData = {
+    rawText: '',
+    intent: null,
+    entities: []
+  }
+
+  // If at least one nlpResult is present, capture first element data
+  // This is temp code. Future development will require the full messageDataArr to be saved onto WolfState
+  if (messageDataArr.length > 0) {
+    log(`messageDataArr contains ${messageDataArr.length} elements.`)
+    log('Currently only utilizing the first element for messageData.')
+    messageData = messageDataArr[0]
   }
 
   // Write defaultAbility to state
