@@ -10,7 +10,9 @@ stages:
 
 jobs:
   include:
-    - script: npm test
+    - script:
+      - npm run build 
+      - npm test
     - stage: publish
       node_js: "node"
       script:
