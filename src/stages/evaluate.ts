@@ -1,7 +1,7 @@
 import { Store } from 'redux'
 import {
   WolfState, Ability, SlotId, Slot, PromptSlotReason,
-  NextAbilityResult, OutputMessageType
+  NextAbilityResult, OutputMessageType, Flow
 } from '../types'
 import {
   getAbilitiesCompleteOnCurrentTurn, getFilledSlotsOnCurrentTurn,
@@ -9,6 +9,7 @@ import {
   getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots
 } from '../selectors'
 import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
+import { getAbilitySlots } from '../helpers';
 const logState = require('debug')('wolf:s3:enterState')
 const log = require('debug')('wolf:s3')
 
@@ -20,18 +21,20 @@ const log = require('debug')('wolf:s3')
  * This will inform S4 for the next item to execute.
  * 
  * @param store redux
- * @param abilities user defined abilities and slots
+ * @param flow Flow is made up of Abilities and Slots and are used to define the bot conversation flow
  * @param convoStorageLayer convoState storage layer
  */
 export default function evaluate<T, G>(
   store: Store<WolfState>,
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   convoStorageLayer: G
 ): void {
   const { dispatch, getState } = store
 
   const state = getState()
   logState(state)
+
+  const {abilities, slots} = flow
 
   log('check if any abilities are marked to run onComplete this turn (identified by s2 or s3)..')
   // Check if ability is marked to run onComplete this turn
@@ -54,7 +57,7 @@ export default function evaluate<T, G>(
 
         // FIND NEXT SLOT TO PROMPT IN FOCUSED ABILITY (duplicate of code below).. TODO: refactor
         log('find the next slot in the new focused ability to prompt')
-        const nextSlot = findNextSlotToPrompt(getState, abilities)
+        const nextSlot = findNextSlotToPrompt(getState, flow)
 
         if (!nextSlot) {
           log('no slots to prompt, set focused ability to null')
@@ -92,7 +95,7 @@ export default function evaluate<T, G>(
     log('slots have been filled this turn')
     // Check if any abilities have been completed as a result of the filled slot(s)
     log('check if there are any abilities that have been completed as a result of the filled slots this turn')
-    const abilityListUnfiltered = getAbilitiesCompleted(getState, abilities)
+    const abilityListUnfiltered = getAbilitiesCompleted(getState, flow)
 
     // filtering out
     const abilityList = [... new Set(abilityListUnfiltered)]
@@ -121,7 +124,7 @@ export default function evaluate<T, G>(
 
           // FIND NEXT SLOT TO PROMPT IN FOCUSED ABILITY (duplicate of code below).. TODO: refactor
           log('find the next slot in the new focused ability to prompt')
-          const nextSlot = findNextSlotToPrompt(getState, abilities)
+          const nextSlot = findNextSlotToPrompt(getState, flow)
 
           if (!nextSlot) {
             log('no slots to prompt, set focused ability to null')
@@ -198,7 +201,7 @@ export default function evaluate<T, G>(
   // FIND NEXT SLOT TO PROMPT IN FOCUSED ABILITY
 
   log('find next slot to prompt based on focusedAbility..')
-  const nextSlot = findNextSlotToPrompt(getState, abilities)
+  const nextSlot = findNextSlotToPrompt(getState, flow)
 
   if (!nextSlot) {
     log('nextSlot is empty..')
@@ -216,7 +219,10 @@ export default function evaluate<T, G>(
 /**
  * Find the next enabled and pending slot in the `focusedAbility` to be prompted
  */
-function findNextSlotToPrompt<T, G>(getState: () => WolfState, abilities: Ability<T, G>[]): SlotId | null {
+function findNextSlotToPrompt<T, G>(
+  getState: () => WolfState,
+  flow: Flow<T, G>
+): SlotId | null {
   log('in findNextSlotToPrompt()..')
   const focusedAbility = getFocusedAbility(getState())
   log('focusedAbility to check:', focusedAbility)
@@ -227,7 +233,7 @@ function findNextSlotToPrompt<T, G>(getState: () => WolfState, abilities: Abilit
     return null
   }
 
-  const unfilledSlots = getUnfilledSlots(getState, abilities, focusedAbility)
+  const unfilledSlots = getUnfilledSlots(getState, flow, focusedAbility)
   log('enabled and unfilled slots are %o', unfilledSlots.map(_ => _.name))
   if (unfilledSlots.length === 0) {
     log('no enabled slots found')
@@ -235,18 +241,11 @@ function findNextSlotToPrompt<T, G>(getState: () => WolfState, abilities: Abilit
     return null // no slots need to be filled in current focused ability
   }
 
-  // REMAINING SLOTS NEED TO BE FILLED
-  // sort slots by order value
-  const sortedSlots = unfilledSlots.sort((a, b) => {
-    if (!a.order) { a.order = 100 }
-    if (!b.order) { b.order = 100 }
-    return a.order - b.order
-  })
-  log('sorted Slots are %o', sortedSlots.map(_ => _.name))
-  log('found %s slot.. returning..', sortedSlots[0].name)
+  log('sorted Slots are %o', unfilledSlots.map(_ => _.name))
+  log('found %s slot.. returning..', unfilledSlots[0].name)
   log('exiting findNextSlotToPrompt()')
   return {
-    slotName: sortedSlots[0].name,
+    slotName: unfilledSlots[0].name,
     abilityName: focusedAbility
   }
 }
@@ -254,7 +253,10 @@ function findNextSlotToPrompt<T, G>(getState: () => WolfState, abilities: Abilit
 /**
  * Check if there are any abilities with all enabled slots filled.
  */
-function getAbilitiesCompleted<T, G>(getState: () => WolfState, abilities: Ability<T, G>[]): string[] {
+function getAbilitiesCompleted<T, G>(
+  getState: () => WolfState,
+  flow: Flow<T, G>
+): string[] {
   const filledSlotsResult = getFilledSlotsOnCurrentTurn(getState())
 
   if (filledSlotsResult.length === 0) {
@@ -263,7 +265,7 @@ function getAbilitiesCompleted<T, G>(getState: () => WolfState, abilities: Abili
 
   const abilityList = filledSlotsResult.map((_) => _.abilityName)
   const completedAbilityList = abilityList.filter((_) =>
-    isAbilityCompletedByFilledSlotsOnCurrentTurn(getState, abilities, _))
+    isAbilityCompletedByFilledSlotsOnCurrentTurn(getState, flow, _))
   return completedAbilityList
 }
 
@@ -273,18 +275,18 @@ function getAbilitiesCompleted<T, G>(getState: () => WolfState, abilities: Abili
  */
 function isAbilityCompletedByFilledSlotsOnCurrentTurn<T, G>(
   getState: () => WolfState,
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   abilityName: string
 ): boolean {
   const state = getState()
   const slotStatus = getSlotStatus(state)
-
+  const { abilities, slots } = flow
   const ability = abilities.find(_ => _.name === abilityName)
   if (!ability) {
     return false
   }
   const focusedSlotStatus = slotStatus.filter(_ => _.abilityName === ability.name)
-  const isEveryAbilitySlotInSlotStatus = ability.slots
+  const isEveryAbilitySlotInSlotStatus = getAbilitySlots(slots, ability)
     .every(_ => !!focusedSlotStatus.find(status => status.slotName === _.name))
 
   if (!isEveryAbilitySlotInSlotStatus) {
@@ -305,9 +307,10 @@ function isAbilityCompletedByFilledSlotsOnCurrentTurn<T, G>(
 
 function getMissingSlotsOnSlotStatus<T, G>(
   getState: () => WolfState,
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   focusedAbility: string
 ): SlotId[] {
+  const { abilities, slots } = flow
   const ability = getTargetAbility(abilities, focusedAbility)
   const state = getState()
   if (!ability) {
@@ -316,7 +319,7 @@ function getMissingSlotsOnSlotStatus<T, G>(
   const namesOfSlotStatusOnAbility = getSlotStatus(state)
     .filter(_ => _.abilityName === focusedAbility)
     .map(_ => _.slotName)
-  const abilitySlots = ability.slots
+  const abilitySlots = getAbilitySlots(slots, ability)
   return abilitySlots
     .map((_: Slot<G>) => _.name)
     .filter((_: string) => namesOfSlotStatusOnAbility.indexOf(_) === -1)
@@ -331,18 +334,19 @@ function getMissingSlotsOnSlotStatus<T, G>(
  */
 function getUnfilledSlots<T, G>(
   getState: () => WolfState,
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   focusedAbility: string
 ): Slot<G>[] {
+  const { abilities, slots } = flow
   const ability = getTargetAbility(abilities, focusedAbility)
   if (!ability) {
     // ability is undefined - exit
     return []
   }
 
-  const abilitySlots = ability.slots
+  const abilitySlots = getAbilitySlots(slots, ability)
   const state = getState()
-  const missingSlotsOnSlotStatus: SlotId[] = getMissingSlotsOnSlotStatus(getState, abilities, focusedAbility)
+  const missingSlotsOnSlotStatus: SlotId[] = getMissingSlotsOnSlotStatus(getState, flow, focusedAbility)
   log('Slots that are in ability but not on slotStatus %o', missingSlotsOnSlotStatus.map(_ => _.slotName))
   const unfilledEnabledSlotIdArray: SlotId[] = getUnfilledEnabledSlots(state, focusedAbility)
   log('Slots that in slotStatus but is enabled and not filled %o', unfilledEnabledSlotIdArray.map(_ => _.slotName))

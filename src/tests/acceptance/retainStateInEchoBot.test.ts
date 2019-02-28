@@ -14,12 +14,16 @@ const defaultStore: UserConvoState = {
 const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
+const slots: wolf.Slot<StorageLayerType<UserConvoState>>[] = [{
+  name: 'firstName', // renamed from 'name' for clarity in testing entities 
+  query: () => 'what is your name?',
+}]
+
 const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [
   {
     name: 'greet',
-    slots: [{
-      name: 'firstName', // renamed from 'name' for clarity in testing entities 
-      query: () => 'what is your name?',
+    traces: [{
+      slotName: 'firstName'
     }],
     onComplete: (submittedData, convoStorageLayer) => {
       const convoState = convoStorageLayer.read()
@@ -33,7 +37,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   },
   {
     name: 'echo',
-    slots: [],
+    traces: [],
     onComplete: (submittedData, convoStorageLayer, { getMessageData }) => {
       const messageData = getMessageData()
       const convoState = convoStorageLayer.read()
@@ -52,7 +56,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
 
 const retainStateTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Retain State in EchoBot',
-  abilities: abilities,
+  flow: { abilities, slots },
   defaultAbility: 'echo',
   wolfStorage,
   convoStorage,

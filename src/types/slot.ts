@@ -12,7 +12,6 @@ import { Promiseable } from './generic';
 export interface Slot<G> {
   name: string,
   defaultIsEnabled?: boolean,
-  order?: number,
   query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
   validate?: (submittedValue: any, convoStorageLayer: G, messageData: MessageData) => Promiseable<ValidateResult>,
   retry?: (submittedValue: any, convoStorageLayer: G, turnCount: number) => Promiseable<string>,
@@ -34,4 +33,10 @@ export interface IncomingSlotData {
   slotName: string,
   abilityName: string,
   value: string
+}
+
+export interface SlotRecord<T> {
+  value: T,
+  abilityName: string | null,
+  slotName: string
 }

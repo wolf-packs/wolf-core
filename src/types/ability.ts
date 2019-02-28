@@ -1,7 +1,6 @@
 import { WolfState } from './state'
 import { GetStateFunctions } from './function'
-import { Slot } from './slot';
-import { StorageLayer } from './storage';
+import { Trace } from './trace';
 
 /**
  * Defines conversation abilities, used to control overall ability slots and completion task
@@ -10,7 +9,7 @@ import { StorageLayer } from './storage';
  */
 export interface Ability<T, G> {
   name: string,
-  slots: Slot<G>[],
+  traces: Trace<G>[],
   nextAbility?: (convoStorageLayer: G, wolfState: WolfState) => NextAbilityResult,
   onComplete: (submittedData: any, convoStorageLayer: G, getStateFunctions: GetStateFunctions<T, G>) =>
     Promise<string | void> | string | void

@@ -1,17 +1,17 @@
 import { Store, Action } from 'redux'
 import {
   WolfState, Ability, Slot, OutputMessageType, SlotId,
-  SlotData, GetSlotDataFunctions, GetStateFunctions, StorageLayer
+  SlotData, GetSlotDataFunctions, GetStateFunctions, StorageLayer, Flow
 } from '../types'
 import {
   getAbilitiesCompleteOnCurrentTurn, getPromptedSlotStack,
-  getSlotBySlotId, getSlotDataByAbilityName
+  getSlotDataByAbilityName
 } from '../selectors'
 import {
   addMessage as addMessageAction, setSlotPrompted, setAbilityStatus,
   resetSlotStatusByAbilityName
 } from '../actions'
-import { findInSlotIdItemBySlotId } from '../helpers'
+import { findInSlotIdItemBySlotId, getSlotByName } from '../helpers'
 const logState = require('debug')('wolf:s4:enterState')
 const log = require('debug')('wolf:s4')
 
@@ -39,15 +39,16 @@ const makeSubmittedDataFromSlotData = (slotData: SlotData[]) => {
  * 
  * @param store redux
  * @param convoStorageLayer conversationState Storage Layer
- * @param abilities user defined abilities and slots
+ * @param flow Flow is made up of Abilities and Slots and are used to define the bot conversation flow
  */
 export default async function execute<T, G>(
   store: Store<WolfState>,
   convoStorageLayer: G,
-  abilities: Ability<T, G>[]
+  flow: Flow<T, G>
 ): Promise<ExecuteResult | void> {
   const { dispatch, getState } = store
   logState(getState())
+  const { abilities, slots } = flow
   const addMessage = (msg: OnCompletePromiseResult<string>) => dispatch(
     addMessageAction(
       {
@@ -105,7 +106,7 @@ export default async function execute<T, G>(
     }
 
     // slot has not been prompted yet.. prompt here
-    const slotToPrompt = getSlotBySlotId(abilities, { slotName: slot.slotName, abilityName: slot.abilityName })
+    const slotToPrompt = getSlotByName(slots, slot.slotName)
     if (slotToPrompt) {
       const runSlotQueryResult = await runSlotQuery(convoStorageLayer, store, slotToPrompt, slot.abilityName)
       runSlotQueryResult.forEach(dispatch)

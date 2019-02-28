@@ -1,5 +1,5 @@
 import * as wolf from '../..'
-import { WolfState, AllSyncStorageLayer, Ability } from '../../types'
+import { WolfState, AllSyncStorageLayer, StorageLayer, Flow } from '../../types'
 
 export interface ConversationTurn<T> {
   input: wolf.NlpResult[],
@@ -8,7 +8,7 @@ export interface ConversationTurn<T> {
 
 export interface TestCase<T, G> {
   description: string,
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   wolfStorage: wolf.WolfStateStorage,
   convoStorage: G,
   defaultAbility: string,
@@ -43,14 +43,14 @@ export const getInitialWolfState = (): WolfState => {
   }
 }
 
-export function runTest<T>(jestTestFn: jest.It, testCase: TestCase<T, wolf.StorageLayer<T>>) {
+export function runTest<T, G extends StorageLayer<T>>(jestTestFn: jest.It, testCase: TestCase<T, G>) {
   jestTestFn(testCase.description, async () => {
     for (const turn of testCase.conversationTurns) {
       const outputResult = await wolf.run(
         testCase.wolfStorage,
         testCase.convoStorage,
-        () => (turn.input),
-        () => testCase.abilities,
+        () => turn.input,
+        () => testCase.flow,
         testCase.defaultAbility
       )
 

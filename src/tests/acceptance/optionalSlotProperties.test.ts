@@ -13,38 +13,48 @@ const defaultStore: UserConvoState = {
   magicWordStrict2: null
 }
 
+const slots: wolf.Slot<StorageLayerType<UserConvoState>>[] = [
+  {
+    name: 'animalName',
+    query: () => 'Please name an animal... if you want.',
+  },
+  {
+    name: 'magicWordStrict',
+    query: () => 'Please say \'wolf\'... not negotiable.',
+    validate: (submittedValue) => {
+      if (submittedValue !== 'wolf') {
+        return { isValid: false, reason: 'Please follow directions.' }
+      }
+      return { isValid: true, reason: null }
+    },
+  },
+  {
+    name: 'magicWordStrict2',
+    query: () => 'Please say \'wolf\' one more time.',
+    retry: () => 'You must say \'wolf\' a second time',
+    validate: (submittedValue) => {
+      if (submittedValue !== 'wolf') {
+        return { isValid: false, reason: 'Please follow directions.' }
+      }
+      return { isValid: true, reason: null }
+    },
+    onFill: () => {
+      return 'Thank you for saying wolf wolf!'
+    }
+  }
+]
+
 const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[] = [{
   name: 'magicWord',
-  slots: [
-    {
-      name: 'animalName',
-      query: () => 'Please name an animal... if you want.',
-    },
-    {
-      name: 'magicWordStrict',
-      query: () => 'Please say \'wolf\'... not negotiable.',
-      validate: (submittedValue) => {
-        if (submittedValue !== 'wolf') {
-          return { isValid: false, reason: 'Please follow directions.' }
-        }
-        return { isValid: true, reason: null }
-      },
-    },
-    {
-      name: 'magicWordStrict2',
-      query: () => 'Please say \'wolf\' one more time.',
-      retry: () => 'You must say \'wolf\' a second time',
-      validate: (submittedValue) => {
-        if (submittedValue !== 'wolf') {
-          return { isValid: false, reason: 'Please follow directions.' }
-        }
-        return { isValid: true, reason: null }
-      },
-      onFill: () => {
-        return 'Thank you for saying wolf wolf!'
-      }
-    }
-  ],
+  traces:[{
+    slotName: 'animalName'
+  },
+  {
+    slotName: 'magicWordStrict'
+  },
+  {
+    slotName: 'magicWordStrict2'
+  }] ,
   onComplete: (submittedData, convoStorageLayer) => {
     const newState = {
       animalName: submittedData.animalName,
@@ -63,7 +73,7 @@ const convoStorage = createStorage(defaultStore)
 
 const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Slot Properties',
-  abilities: abilities,
+  flow: { abilities, slots },
   defaultAbility: 'magicWord',
   wolfStorage,
   convoStorage,
