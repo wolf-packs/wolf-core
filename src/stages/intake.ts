@@ -43,6 +43,8 @@ export default function intake(
   // If at least one nlpResult is present, capture first element data
   // This is temp code. Future development will require the full messageDataArr to be saved onto WolfState
   if (messageDataArr.length > 0) {
+    log(`messageDataArr contains ${messageDataArr.length} elements.`)
+    log('Currently only utilizing the first element for messageData.')
     messageData = messageDataArr[0]
   }
 
