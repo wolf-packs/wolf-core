@@ -9,14 +9,14 @@ import { Promiseable } from './generic';
  * 
  * See `example/` directory for ability examples for how to use.
  */
-export interface Slot<G> {
+export interface Slot<G, S = any> {
   name: string,
   defaultIsEnabled?: boolean,
   query: (convoStorageLayer: G, getSlotDataFunctions: GetSlotDataFunctions) => Promiseable<string>,
-  validate?: (submittedValue: any, convoStorageLayer: G, messageData: MessageData) => Promiseable<ValidateResult>,
-  retry?: (submittedValue: any, convoStorageLayer: G, turnCount: number) => Promiseable<string>,
+  validate?: (submittedValue: S, convoStorageLayer: G, messageData: MessageData) => Promiseable<ValidateResult>,
+  retry?: (submittedValue: S, convoStorageLayer: G, turnCount: number) => Promiseable<string>,
   onFill?: (
-    submittedValue: any,
+    submittedValue: S,
     convoStorageLayer: G,
     setOtherSlotFunctions: SetSlotDataFunctions,
     confirmationFunctions: SlotConfirmationFunctions
@@ -35,8 +35,8 @@ export interface IncomingSlotData {
   value: string
 }
 
-export interface SlotRecord<T> {
-  value: T,
+export interface SlotRecord<S = any> {
+  value: S,
   abilityName: string | null,
   slotName: string
 }

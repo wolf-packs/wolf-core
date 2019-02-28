@@ -31,6 +31,7 @@ export const getInitialWolfState = (): WolfState => {
   return {
     messageData: { entities: [], intent: null, rawText: '' },
     slotStatus: [],
+    slotRecords: [],
     slotData: [],
     abilityStatus: [],
     promptedSlotStack: [],

@@ -10,11 +10,13 @@ import filledSlotsOnCurrentTurn from './filledSlotsOnCurrentTurn'
 import defaultAbility from './defaultAbility'
 import abilitiesCompleteOnCurrentTurn from './abilitiesCompleteOnCurrentTurn'
 import runOnFillStack from './runOnFillStack'
+import slotRecords from './slotRecords'
 
 export default combineReducers({
   messageData,
   slotStatus,
   slotData,
+  slotRecords,
   abilityStatus,
   promptedSlotStack,
   focusedAbility,

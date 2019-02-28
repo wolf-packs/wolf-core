@@ -1,15 +1,17 @@
 import { Store } from 'redux'
 import {
   WolfState, Ability, SlotId, Slot, PromptSlotReason,
-  NextAbilityResult, OutputMessageType, Flow
+  NextAbilityResult, OutputMessageType, Flow, Trace, SlotRecord
 } from '../types'
 import {
   getAbilitiesCompleteOnCurrentTurn, getFilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
-  getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots
+  getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots, getSlotRecords
 } from '../selectors'
-import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
+import { fillSlot as fillSlotAction, setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage, setMessageData } from '../actions'
 import { getAbilitySlots } from '../helpers';
+import { getTraceBySlotId } from '../helpers/trace';
+import { fulfillSlot } from './fillSlot';
 const logState = require('debug')('wolf:s3:enterState')
 const log = require('debug')('wolf:s3')
 
@@ -24,11 +26,11 @@ const log = require('debug')('wolf:s3')
  * @param flow Flow is made up of Abilities and Slots and are used to define the bot conversation flow
  * @param convoStorageLayer convoState storage layer
  */
-export default function evaluate<T, G>(
+export default async function evaluate<T, G>(
   store: Store<WolfState>,
   flow: Flow<T, G>,
   convoStorageLayer: G
-): void {
+): Promise<void> {
   const { dispatch, getState } = store
 
   const state = getState()
@@ -139,6 +141,31 @@ export default function evaluate<T, G>(
             dispatch(addMessage({ message, type: OutputMessageType.nextAbilityMessage }))
           }
 
+          // NEXT SLOT EXISTS..
+          // CHECK IF SLOT VALUE CAN BE INFERRED (FROM SLOT HISTORY)
+          const trace = getTraceBySlotId<T,G>(abilities, nextSlot)
+          log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> starting flow`)
+          if (trace.getValue) {
+            log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> getValue is defined`)
+            const getValueResult = await runTraceGetValue(convoStorageLayer, getSlotRecords(getState()), trace)
+            if (getValueResult) {
+              const { slotName, abilityName } = nextSlot
+              // fill the slot with the value returned from the user
+              const actions = await fulfillSlot(convoStorageLayer, flow, getValueResult, slotName, abilityName, getState, false)
+              actions.forEach(dispatch)
+              
+              // IDENTIFIED THE NEXT SLOT OF INTEREST..
+              // INFERRED THE SLOT VALUE FROM CONVERSATION HISTORY
+              // NO NEED TO PROMPT FOR THE SLOT.. ALREADY BEEN FILLED.
+              // Re-run evaluate to find next move
+              log('filled slot with getValue, rerunning evaluate to find the next slot')
+              await evaluate(store, flow, convoStorageLayer)
+              log('exit stage')
+              return
+            }
+          }
+
+          // SLOT VALUE HAS NOT UTILIZED SLOT HISTORY.. REQUIRE PROMPTING TO OBTAIN VALUE
           // ADD SLOT TO PROMPTED STACK
           log('add slot %s to the promptedStack', nextSlot.slotName)
           dispatch(addSlotToPromptedStack(nextSlot, PromptSlotReason.query))
@@ -209,6 +236,30 @@ export default function evaluate<T, G>(
     return // no slots to prompt
   }
 
+  // NEXT SLOT EXISTS..
+  // CHECK IF SLOT VALUE CAN BE INFERRED (FROM SLOT HISTORY)
+  const trace = getTraceBySlotId<T,G>(abilities, nextSlot)
+  if (trace.getValue) {
+    const getValueResult = await runTraceGetValue(convoStorageLayer, getSlotRecords(getState()), trace)
+    log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> result of getValue: %o', getValueResult)
+    if (getValueResult) {
+      const { slotName, abilityName } = nextSlot
+      // fill the slot with the value returned from the user
+      log('running fulfillSlot..')
+      const actions = await fulfillSlot(convoStorageLayer, flow, getValueResult, slotName, abilityName, getState, false)
+      actions.forEach(dispatch)
+      
+      // IDENTIFIED THE NEXT SLOT OF INTEREST..
+      // INFERRED THE SLOT VALUE FROM CONVERSATION HISTORY
+      // NO NEED TO PROMPT FOR THE SLOT.. ALREADY BEEN FILLED.
+      // Re-run evaluate to find next move
+      log('filled slot with getValue, rerunning evaluate to find the next slot')
+      await evaluate(store, flow, convoStorageLayer)
+      return
+    }
+  }
+
+  // SLOT VALUE HAS NOT UTILIZED SLOT HISTORY.. REQUIRE PROMPTING TO OBTAIN VALUE
   // ADD SLOT TO PROMPTED STACK
   log('adding %s slot to promptedStack', nextSlot.slotName)
   dispatch(addSlotToPromptedStack(nextSlot, PromptSlotReason.query))
@@ -349,7 +400,7 @@ function getUnfilledSlots<T, G>(
   const missingSlotsOnSlotStatus: SlotId[] = getMissingSlotsOnSlotStatus(getState, flow, focusedAbility)
   log('Slots that are in ability but not on slotStatus %o', missingSlotsOnSlotStatus.map(_ => _.slotName))
   const unfilledEnabledSlotIdArray: SlotId[] = getUnfilledEnabledSlots(state, focusedAbility)
-  log('Slots that in slotStatus but is enabled and not filled %o', unfilledEnabledSlotIdArray.map(_ => _.slotName))
+  log('Slots that are unfilled and enabled: %o', unfilledEnabledSlotIdArray.map(_ => _.slotName))
   const allUnfilledSlotIds = missingSlotsOnSlotStatus.concat(unfilledEnabledSlotIdArray)
 
   return allUnfilledSlotIds
@@ -376,4 +427,23 @@ function isAbilityCompleted(abilityName: string, getState: () => WolfState): boo
   const abilityStatus = getAbilityStatus(getState())
 
   return abilityStatus.some((ability) => ability.abilityName === abilityName && ability.isCompleted)
+}
+
+/**
+ * Invoke the trace.getValue() passing in the storageLayer object and slot records
+ * 
+ * @param convoStorageLayer object interfacing with userState
+ * @param records slot history records showing all onFill values throughout conversation
+ * @param trace trace object to run getValue function on
+ * @returns getValue() result
+ */
+async function runTraceGetValue<G, S>(
+  convoStorageLayer: G,
+  records: SlotRecord[],
+  trace: Trace<G>
+): Promise<S|null> {
+  if(!trace.getValue) {
+    return null
+  }
+  return await trace.getValue(records, convoStorageLayer)
 }
