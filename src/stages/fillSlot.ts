@@ -18,7 +18,7 @@ import {
   getMessageData, getFocusedAbility, getDefaultAbility, getRunOnFillStack,
   getFilledSlotsOnCurrentTurn
 } from '../selectors'
-import { findSlotInAbilitiesBySlotId, doesAbilityHaveSlots, getSlotByName } from '../helpers'
+import { doesAbilityHaveSlots, getSlotByName } from '../helpers'
 const logState = require('debug')('wolf:s2:enterState')
 const log = require('debug')('wolf:s2')
 
@@ -385,7 +385,7 @@ async function fulfillSlot<T, G>(
       setSlotValue: async (abilityName: string, slotName: string, value: any, runOnFill?: boolean) => {
         actions.push(fillSlotAction(slotName, abilityName, value))
         if (runOnFill) {
-          const targetSlot = findSlotInAbilitiesBySlotId(abilities, { abilityName, slotName })
+          const targetSlot = getSlotByName(slots, slotName)
           if (!targetSlot) {
             throw new Error('There is no slot with that name')
           }
@@ -406,7 +406,7 @@ async function fulfillSlot<T, G>(
       fulfillSlot: async (abilityName: string, slotName: string, value: any) => {
         // Similar implementation 
         actions.push(fillSlotAction(slotName, abilityName, value))
-        const targetSlot = findSlotInAbilitiesBySlotId(abilities, { abilityName, slotName })
+        const targetSlot = getSlotByName(slots, slotName)
         if (!targetSlot) {
           throw new Error('There is no slot with that name')
         }

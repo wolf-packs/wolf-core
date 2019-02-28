@@ -22,3 +22,11 @@ export const doesAbilityHaveSlots = <T, G>(ability: Ability<T, G>): boolean => {
 export const getAbilitySlots = <T, G>(slots: Slot<G>[], ability: Ability<T, G>): Slot<G>[] => {
   return ability.traces.map(trace => getSlotByName(slots, trace.slotName))
 }
+
+/**
+ * Given an ability name, return the corresponding ability object
+ * @param abilityName 
+ * @param abilities 
+ */
+export const getAbilityByName =
+  <T, G>(abilityName: string, abilities: Ability<T, G>[]) => abilities.find(ability => ability.name === abilityName)
