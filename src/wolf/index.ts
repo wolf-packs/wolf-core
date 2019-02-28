@@ -66,7 +66,7 @@ export const makeWolfStoreCreator = (
  * @param wolfStorage Wolf state storage layer. Wolf will handle saving wolf state
  * @param convoStorage User conversation state storage layer. Read/save will be made available
  * to user functions in slot and abilities
- * @param userMessageData Natural Language Processing result
+ * @param userMessageData An array of Natural Language Processing results
  * @param getFlowFunc Flow is made up of Abilities and Slots and are used to define the bot conversation flow
  * @param defaultAbility Ability that will be used as the fallback if no ability is determined from the userMessageData
  * @param storeCreator Optional redux store creator, can be used with redux dev tools
@@ -76,14 +76,14 @@ export const makeWolfStoreCreator = (
 export const run = async <T extends AnyObject, G>(
   wolfStorage: WolfStateStorage,
   convoStorage: G,
-  userMessageData: () => Promiseable<NlpResult>,
+  userMessageData: () => Promiseable<NlpResult[]>,
   getFlowFunc: () => Promiseable<Flow<T, G>>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
   getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
 ) => {
   // invoke user async functions
-  const [wolfState, nlpResult, flow] = await Promise.all([
+  const [wolfState, nlpResultArr, flow] = await Promise.all([
     wolfStorage.read(),
     userMessageData(),
     getFlowFunc()
@@ -91,7 +91,7 @@ export const run = async <T extends AnyObject, G>(
 
   // If user provides storeCreator param, invoke the redux store creator with the persisted wolfState (if available)
   // By default, redux store creator is invoked with the available wolfState
-  // In either case, if wolfState is null, the storeCreator will instantiate a new defualt Wolf State
+  // In either case, if wolfState is null, the storeCreator will instantiate a new default Wolf State
   const wolfStore: WolfStore = storeCreator ? storeCreator(wolfState) : makeWolfStoreCreator()(wolfState)
 
   const incomingSlotData: IncomingSlotData[] = getSlotDataFunc ?
@@ -114,7 +114,7 @@ export const run = async <T extends AnyObject, G>(
         wolfStore.dispatch(addSlotToOnFillStack({ slotName, abilityName }, value))
       }
     }) : []
-  intake(wolfStore, nlpResult, incomingSlotData, defaultAbility)
+  intake(wolfStore, nlpResultArr, incomingSlotData, defaultAbility)
   await fillSlot(wolfStore, convoStorage, flow)
   evaluate(wolfStore, flow, convoStorage)
   const executeResult = await execute(wolfStore, convoStorage, flow)

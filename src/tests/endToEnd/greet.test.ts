@@ -61,28 +61,28 @@ const greetTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> 
   convoStorage,
   conversationTurns: [
     {
-      input: { message: 'hi', entities: [], intent: 'greet' },
+      input: [{ message: 'hi', entities: [], intent: 'greet' }],
       expected: {
         message: ['What is your name?'],
         state: { name: null, age: null }
       }
     },
     {
-      input: { message: 'Hao', entities: [], intent: null },
+      input: [{ message: 'Hao', entities: [], intent: null }],
       expected: {
         message: ['What is your age?'],
         state: { name: null, age: null }
       }
     },
     {
-      input: { message: '3', entities: [], intent: null },
+      input: [{ message: '3', entities: [], intent: null }],
       expected: {
         message: ['too young', 'You must be older than 5.'],
         state: { name: null, age: null }
       }
     },
     {
-      input: { message: '30', entities: [], intent: null },
+      input: [{ message: '30', entities: [], intent: null }],
       expected: {
         message: ['Hello Hao who is 30!'],
         state: { name: 'Hao', age: '30' }

@@ -63,55 +63,55 @@ const retainStateTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoSt
   convoStorage,
   conversationTurns: [
     {
-      input: {
+      input: [{
         message: 'hello to the world as a phrase',
         entities: [],
         intent: null
-      },
+      }],
       expected: {
         message: ['You said "hello to the world as a phrase"'],
         state: { name: null, phrase: 'hello to the world as a phrase' }
       }
     },
     {
-      input: {
+      input: [{
         message: 'hi',
         entities: [],
         intent: 'greet'
-      },
+      }],
       expected: {
         message: ['what is your name?'],
         state: { name: null, phrase: 'hello to the world as a phrase' }
       }
     },
     {
-      input: {
+      input: [{
         message: 'dave',
         entities: [],
         intent: null,
-      },
+      }],
       expected: {
         message: ['hi dave!'],
         state: { name: 'dave', phrase: 'hello to the world as a phrase' }
       }
     },
     {
-      input: {
+      input: [{
         message: 'hi',
         entities: [{ name: 'firstName', text: 'bob', value: 'bob' }],
         intent: 'greet'
-      },
+      }],
       expected: {
         message: ['hi bob!'],
         state: { name: 'bob', phrase: 'hello to the world as a phrase' }
       }
     },
     {
-      input: {
+      input: [{
         message: 'hello there',
         entities: [],
         intent: null
-      },
+      }],
       expected: {
         message: ['bob said "hello there"'],
         state: { name: 'bob', phrase: 'hello there' }

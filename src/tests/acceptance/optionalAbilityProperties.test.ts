@@ -98,33 +98,33 @@ const optionalAbilityPropertyTestCase: TestCase<UserConvoState, StorageLayerType
   convoStorage,
   conversationTurns: [
     {
-      input: {
+      input: [{
         message: 'i want to buy a Tesla',
         entities: [{ name: 'car', text: 'tesla', value: 'tesla' }],
         intent: 'buyCar'
-      },
+      }],
       expected: {
         message: ['What add on would you like?'],
         state: { car: 'tesla', addOns: [], financing: false }
       }
     },
     {
-      input: {
+      input: [{
         message: 'all wheel drive',
         entities: [],
         intent: null
-      },
+      }],
       expected: {
         message: ['Ok! lets go to the next step.', 'Would you need financing?'],
         state: { car: 'tesla', addOns: ['all wheel drive'], financing: false }
       }
     },
     {
-      input: {
+      input: [{
         message: 'yes',
         entities: [],
         intent: null
-      },
+      }],
       expected: {
         message: [],
         state: { car: 'tesla', addOns: ['all wheel drive'], financing: true }
