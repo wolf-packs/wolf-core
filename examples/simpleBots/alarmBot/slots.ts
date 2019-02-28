@@ -1,5 +1,8 @@
 import { randomElement } from '../../../src/helpers'
-import { Slot } from '../../../src/types'
+import { Slot, AllSyncStorageLayer } from '../../../src/types'
+import { UserState } from './abilities'
+
+export type StorageLayerType<T> = AllSyncStorageLayer<T>
 
 export default [
     {
@@ -40,4 +43,4 @@ export default [
       },
       onFill: (value) => `ok! time is set to ${value}.`
     }
-  ] as Slot[]
+  ] as Slot<StorageLayerType<UserState>>[]

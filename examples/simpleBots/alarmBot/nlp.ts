@@ -1,4 +1,4 @@
-// import { NlpEntity, NlpResult } from '../../src/types'
+// import { NlpEntity, NlpResult } from '../../../src/types'
 
 // type recognizer = (input: string) => NlpEntity | null
 

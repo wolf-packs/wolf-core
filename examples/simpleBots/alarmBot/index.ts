@@ -1,5 +1,5 @@
-// import * as wolf from 'wolf-core'
-// import { WolfStorage } from 'wolf-core'
+// import * as wolf from '../../..'
+// // import { WolfStorage } from '../../..'
 // import abilities from './abilities'
 // import nlp from './nlp'
 // import * as express from 'express'
@@ -7,7 +7,7 @@
 // import * as uuid from 'uuid/v1'
 
 // interface PersistedState<T> {
-//   wolfState: WolfStorage,
+//   wolfState: wolf.WolfStateStorage,
 //   conversationState: T
 // }
 

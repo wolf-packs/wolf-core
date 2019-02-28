@@ -1,6 +1,7 @@
 import { randomElement } from '../../../src/helpers'
-import { Ability } from '../../../src/types'
-import { StorageLayerType } from '../../../src';
+import { Ability, AllSyncStorageLayer } from '../../../src/types'
+
+export type StorageLayerType<T> = AllSyncStorageLayer<T>
 
 interface Alarm {
   alarmName: string,
@@ -11,18 +12,23 @@ export interface UserState {
     alarms: Alarm[]
   }
 
-export const abilities = [
+export default [
   {
     name: 'addAlarm',
     traces: [],
-    onComplete: (convoState, submittedData) => {
+    onComplete: (submittedData, convoStorageLayer) => {
       return new Promise((resolve, reject) => {
+        const convoState = convoStorageLayer.read()
         const value = submittedData
-        const alarms = convoState.alarms || []
-        convoState.alarms = [
-          ...alarms,
-          value
-        ]
+        const prevAlarms = convoState.alarms || []
+        const newState = {
+          alarms: [
+            ...prevAlarms,
+            value
+          ]
+        }
+
+        convoStorageLayer.save(newState)
 
         setTimeout(() => {
           resolve(`Your ${value.alarmName} is added!`)
@@ -40,8 +46,9 @@ export const abilities = [
         }
       }
     ],
-    onComplete: (convoState, submittedData) => {
+    onComplete: (submittedData, convoStorageLayer ) => {
       const { alarmName } = submittedData
+      const convoState = convoStorageLayer.read()
       const stateAlarms = convoState.alarms || []
 
       // Check if alarm name exists
@@ -50,15 +57,21 @@ export const abilities = [
       }
 
       // Remove alarm
-      const alarms = stateAlarms.filter((alarm: Alarm) => alarm.alarmName !== alarmName)
-      convoState.alarms = alarms
+      const newAlarms = stateAlarms.filter((alarm: Alarm) => alarm.alarmName !== alarmName)
+      const newState = {
+        alarms: newAlarms
+      }
+      
+      convoStorageLayer.save(newState)
+
       return `The ${alarmName} has been removed.`
     }
   },
   {
     name: 'listAlarms',
     slots: [],
-    onComplete: (convoState) => {
+    onComplete: (submittedData, convoStorageLayer) => {
+      const convoState = convoStorageLayer.read()
       const alarms = convoState.alarms || []
 
       if (alarms.length === 0) {
@@ -70,7 +83,7 @@ export const abilities = [
   {
     name: 'listAbility',
     slots: [],
-    onComplete: (convoState, submittedData, { getAbilityList }) => {
+    onComplete: (submittedData, convoStorageLayer, { getAbilityList }) => {
       const abilityList = getAbilityList()
       const abilities = abilityList.map((ability) => ability.name).join(', ')
       const message = `Here are my abilities: ${abilities}`
