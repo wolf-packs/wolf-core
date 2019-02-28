@@ -54,8 +54,7 @@ const convoStorage = createStorage(defaultStore)
 
 const greetTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Greet',
-  slots: slots,
-  abilities: abilities,
+  flow: { abilities, slots },
   defaultAbility: 'greet',
   wolfStorage,
   convoStorage,

@@ -89,8 +89,7 @@ const convoStorage = createStorage(defaultStore)
 
 const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Slot Properties',
-  abilities: abilities,
-  slots: slots,
+  flow: { abilities, slots },
   defaultAbility: 'magicWord',
   wolfStorage,
   convoStorage,

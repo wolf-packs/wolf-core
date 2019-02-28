@@ -56,8 +56,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
 
 const retainStateTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Retain State in EchoBot',
-  slots: slots,
-  abilities: abilities,
+  flow: { abilities, slots },
   defaultAbility: 'echo',
   wolfStorage,
   convoStorage,

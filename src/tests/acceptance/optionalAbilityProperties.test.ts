@@ -91,8 +91,7 @@ const convoStorage = createStorage(defaultStore)
 
 const optionalAbilityPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   description: 'Optional Ability Properties',
-  abilities: abilities,
-  slots: slots,
+  flow: { abilities, slots },
   defaultAbility: 'buyCar',
   wolfStorage,
   convoStorage,

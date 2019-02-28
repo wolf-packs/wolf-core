@@ -181,8 +181,7 @@ export default async function fillSlot<T, G>(
       dispatch,
       getState,
       convoStorageLayer,
-      slots,
-      abilities,
+      flow,
       matchNotValid,
       potentialMatchFoundFlag,
       slotFillArr
@@ -241,8 +240,7 @@ export default async function fillSlot<T, G>(
           dispatch,
           getState,
           convoStorageLayer,
-          slots,
-          abilities,
+          flow,
           matchNotValid,
           potentialMatchFoundFlag,
           slotFillArr
@@ -317,8 +315,7 @@ export default async function fillSlot<T, G>(
           dispatch,
           getState,
           convoStorageLayer,
-          slots,
-          abilities,
+          flow,
           matchNotValid,
           potentialMatchFoundFlag,
           slotFillArr
@@ -345,8 +342,7 @@ export default async function fillSlot<T, G>(
     dispatch,
     getState,
     convoStorageLayer,
-    slots,
-    abilities,
+    flow,
     matchNotValid,
     potentialMatchFoundFlag,
     slotFillArr
@@ -483,8 +479,7 @@ async function runRetryCheck<T, G>(
   dispatch: Dispatch,
   getState: () => WolfState,
   convoStorageLayer: G,
-  slots: Slot<G>[],
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   matchNotValid: MatchNotValidData | null,
   potentialMatchFoundFlag: boolean,
   slotFillArr: SlotId[]
@@ -512,7 +507,7 @@ async function runRetryCheck<T, G>(
 
     // should prompt retry on matched 
     dispatch(incrementTurnCountBySlotId({ slotName, abilityName }))
-    const retryResult = await runRetry(convoStorageLayer, getState, slots, abilities, slotName, abilityName, value)
+    const retryResult = await runRetry(convoStorageLayer, getState, flow, slotName, abilityName, value)
     retryResult.forEach(dispatch)
 
     log('adding %s slot to stack', slotName)
@@ -532,7 +527,7 @@ async function runRetryCheck<T, G>(
     const promptedSlotInfo = getPromptedSlotId(getState())
     log('run retry on %s', promptedSlotInfo.slotName)
     dispatch(incrementTurnCountBySlotId({ slotName, abilityName }))
-    const retryResult = await runRetry(convoStorageLayer, getState, slots, abilities, promptedSlotInfo.slotName,
+    const retryResult = await runRetry(convoStorageLayer, getState, flow, promptedSlotInfo.slotName,
       promptedSlotInfo.abilityName, message.rawText)
     retryResult.forEach(dispatch)
 
@@ -552,13 +547,13 @@ async function runRetryCheck<T, G>(
 async function runRetry<T, G>(
   convoStorageLayer: G,
   getState: () => WolfState,
-  slots: Slot<G>[],
-  abilities: Ability<T, G>[],
+  flow: Flow<T, G>,
   slotName: string,
   abilityName: string,
   submittedValue: any
 ): Promise<Action[]> {
   log('in runRetry()..')
+  const { slots } = flow
   const slot = getSlotByName(slots, slotName)
   log('getting slot: %s', slot)
   if (slot) {
