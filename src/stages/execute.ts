@@ -48,7 +48,7 @@ export default async function execute<T, G>(
 ): Promise<ExecuteResult | void> {
   const { dispatch, getState } = store
   logState(getState())
-  const {abilities, slots} = flow
+  const { abilities, slots } = flow
   const addMessage = (msg: OnCompletePromiseResult<string>) => dispatch(
     addMessageAction(
       {

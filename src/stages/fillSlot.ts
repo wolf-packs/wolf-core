@@ -3,7 +3,7 @@ import {
   Slot, OutputMessageItem, OutputMessageType,
   MessageData, ValidateResult, Ability, WolfState,
   SlotId, SlotConfirmationFunctions, SetSlotDataFunctions, Entity, PromptSlotReason,
-  StorageLayer, Flow
+  Flow
 } from '../types'
 import {
   addMessage, fillSlot as fillSlotAction, startFillSlotStage,
@@ -83,7 +83,7 @@ export default async function fillSlot<T, G>(
   const message = getMessageData(getState())
   logState(getState())
 
-  const {slots, abilities} = flow
+  const { slots, abilities } = flow
 
   log('first wolf checks to see if there is anything in the runOnFillStack')
   const runOnFillStack = getRunOnFillStack(getState())
@@ -162,7 +162,7 @@ export default async function fillSlot<T, G>(
     log('there is a focused ability, %s', focusedAbility)
     const ability = getTargetAbility(abilities, focusedAbility)
     // ensure ability has slots which are represented in abilities as traces
-    if (ability && doesAbilityHaveSlots<T, G>(ability)) {
+    if (ability && !doesAbilityHaveSlots<T, G>(ability)) {
       log('the focused ability has no slots, marking it completed, and exit stage')
       // no slots in ability.. should be completed
       dispatch(abilityCompleted(ability.name))
@@ -268,7 +268,7 @@ export default async function fillSlot<T, G>(
     const ability = getTargetAbility(abilities, message.intent)
 
     // ensure ability has slots
-    if (ability && doesAbilityHaveSlots<T, G>(ability)) {
+    if (ability && !doesAbilityHaveSlots<T, G>(ability)) {
       log('ability is found, but there is no slots on the ability.')
       dispatch(abilityCompleted(ability.name))
 
@@ -372,7 +372,7 @@ async function fulfillSlot<T, G>(
   abilityName: string,
   getState: () => WolfState
 ): Promise<Action[]> {
-  const {slots, abilities} = flow
+  const { slots, abilities } = flow
   log('in fulfillSlot()..')
   const slot = getSlotByName(slots, slotName)
   const actions: Action[] = []
@@ -661,7 +661,7 @@ async function checkValidatorAndFill<T, G>(
  * Run slot validator.
  */
 async function runSlotValidator<G>(
-  convoStorageLayer: G,  
+  convoStorageLayer: G,
   slot: Slot<G>,
   submittedValue: any,
   messageData: MessageData):
@@ -691,8 +691,7 @@ function isEntityPresent(value: MessageData) {
  * in the `abilities`
  */
 function getPotentialMatches<T, G>
-  (entities: Entity[], targetAbility: Ability<T, G>, slots: Slot<G>[]): PotentialSlotMatch<G>[] 
-  {
+  (entities: Entity[], targetAbility: Ability<T, G>, slots: Slot<G>[]): PotentialSlotMatch<G>[] {
   const traceMatches = targetAbility.traces.filter((trace) => entities.find((entity) => entity.name === trace.slotName))
 
   const matches = traceMatches.map((trace) => {

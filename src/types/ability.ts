@@ -1,7 +1,5 @@
 import { WolfState } from './state'
 import { GetStateFunctions } from './function'
-import { Slot } from './slot';
-import { StorageLayer } from './storage';
 import { Trace } from './trace';
 
 /**

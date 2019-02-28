@@ -2,14 +2,14 @@ import { Ability, Slot } from '../types'
 import { getSlotByName } from './slot'
 
 /**
- * Given an ability, test if there are zero slots associated.
+ * Given an ability, test if there are slots associated (one or more).
  * 
  * @ability Ability which will be tested
- * @returns does the ability have zero quantity of slots associated
+ * @returns does the ability one or more slots associated
  */
 export const doesAbilityHaveSlots = <T, G>(ability: Ability<T, G>): boolean => {
   // Ability traces represent an ability:slot connection
-  return (ability.traces.length === 0)
+  return (ability.traces.length !== 0)
 }
 
 /**
