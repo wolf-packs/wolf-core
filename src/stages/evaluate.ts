@@ -6,10 +6,10 @@ import {
 import {
   getAbilitiesCompleteOnCurrentTurn, getFilledSlotsOnCurrentTurn,
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
-  getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots, getSlotRecords
+  getAbilityStatus, getUnfilledEnabledSlots, getSlotRecords
 } from '../selectors'
 import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
-import { getAbilitySlots } from '../helpers';
+import { getAbilitySlots, getAbilityByName } from '../helpers';
 import { getTraceBySlotId } from '../helpers/trace';
 import { fulfillSlot } from './fillSlot';
 const logState = require('debug')('wolf:s3:enterState')
@@ -383,7 +383,7 @@ function getMissingSlotsOnSlotStatus<T, G>(
   focusedAbility: string
 ): SlotId[] {
   const { abilities, slots } = flow
-  const ability = getTargetAbility(abilities, focusedAbility)
+  const ability = getAbilityByName(abilities, focusedAbility)
   const state = getState()
   if (!ability) {
     return []
@@ -410,7 +410,7 @@ function getUnfilledSlots<T, G>(
   focusedAbility: string
 ): Slot<G>[] {
   const { abilities, slots } = flow
-  const ability = getTargetAbility(abilities, focusedAbility)
+  const ability = getAbilityByName(abilities, focusedAbility)
   if (!ability) {
     // ability is undefined - exit
     return []
@@ -435,7 +435,7 @@ function getNextAbility<T, G>(
   convoStorageLayer: G,
   state: WolfState
 ): NextAbilityResult | null {
-  const completedAbility = getTargetAbility(abilities, abilityName)
+  const completedAbility = getAbilityByName(abilities, abilityName)
 
   if (completedAbility && completedAbility.nextAbility) {
     const nextAbilityResult = completedAbility.nextAbility(convoStorageLayer, state)
