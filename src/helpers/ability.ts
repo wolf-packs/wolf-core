@@ -9,7 +9,7 @@ import { getSlotByName } from './slot'
  */
 export const doesAbilityHaveSlots = <T, G>(ability: Ability<T, G>): boolean => {
   // Ability traces represent an ability:slot connection
-  return (ability.traces.length !== 0)
+  return (ability.traces && ability.traces.length !== 0)
 }
 
 /**
@@ -28,5 +28,13 @@ export const getAbilitySlots = <T, G>(slots: Slot<G>[], ability: Ability<T, G>):
  * @param abilityName 
  * @param abilities 
  */
-export const getAbilityByName =
-  <T, G>(abilityName: string, abilities: Ability<T, G>[]) => abilities.find(ability => ability.name === abilityName)
+export const getAbilityByName = <T, G>(
+  abilities: Ability<T, G>[],
+  abilityName: string
+): Ability<T, G> => {
+  const abilityFound = abilities.find(ability => ability.name === abilityName)
+  if (!abilityFound) {
+    throw new Error(`Could not find ability with abilityName: ${abilityName} within abilities array`)
+  }
+  return abilityFound
+}
