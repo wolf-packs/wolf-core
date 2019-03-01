@@ -1,6 +1,6 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
-import { StorageLayer, AllSyncStorageLayer, Trace } from '../../types'
+import { AllSyncStorageLayer } from '../../types'
 
 const defaultStore: UserConvoState = {
   animalName: null,
