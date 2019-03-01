@@ -1,5 +1,7 @@
 import { Store, AnyAction } from 'redux'
 
+import { SlotRecord } from './slot'
+
 export type WolfStore = Store<WolfState, AnyAction>
 
 /**
@@ -11,6 +13,7 @@ export interface WolfState {
   messageData: MessageData,
   slotStatus: SlotStatus[],
   slotData: SlotData[],
+  slotRecords: SlotRecord[],
   abilityStatus: AbilityStatus[],
   promptedSlotStack: PromptSlot[],
   focusedAbility: string | null,

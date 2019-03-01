@@ -1,7 +1,7 @@
 import { SlotRecord } from './slot';
 import { Promiseable } from './generic';
 
-export interface Trace<G, S = string> {
+export interface Trace<G> {
     slotName: string,
-    getValue?: (records: SlotRecord<S>[], convoStorageLayer: G) => Promiseable<G | null>
+    getValue?: <S>(records: SlotRecord[], convoStorageLayer: G) => Promiseable<S | null>
 }

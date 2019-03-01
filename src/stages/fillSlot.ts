@@ -360,13 +360,14 @@ export default async function fillSlot<T, G>(
  * Run slot onFill() and return dispatch actions to
  * add message to output queue and store the submittedValue into the pendingData state.
  */
-async function fulfillSlot<T, G>(
+export async function fulfillSlot<T, G>(
   convoStorageLayer: G,
   flow: Flow<T, G>,
-  message: string,
+  slotValue: any,
   slotName: string,
   abilityName: string,
-  getState: () => WolfState
+  getState: () => WolfState,
+  shouldDispatchOnFillMessage: boolean = true
 ): Promise<Action[]> {
   const { slots, abilities } = flow
   log('in fulfillSlot()..')
@@ -438,24 +439,26 @@ async function fulfillSlot<T, G>(
         // actions.push(removeSlotData({ slotName, abilityName }))
       }
     }
-    actions.push(fillSlotAction(slotName, abilityName, message))
+    actions.push(fillSlotAction(slotName, abilityName, slotValue))
     if (slot.onFill) {
       log('slot.onFill exists.. run slot.onFill()')
-      const fillString = await slot.onFill(message, convoStorageLayer, setSlotFuncs, confirmFuncs)
+      const onFillMessage = await slot.onFill(slotValue, convoStorageLayer, setSlotFuncs, confirmFuncs)
       actions.push(removeSlotFromOnFillStack({ slotName, abilityName }))
 
-      if (fillString) {
-        log('slot.onFill() return string: %s', fillString)
-        const message: OutputMessageItem = {
-          message: fillString,
-          type: OutputMessageType.slotFillMessage,
-          slotName: slot.name,
-          abilityName: abilityName
-        }
+      if (shouldDispatchOnFillMessage) {
+        if (onFillMessage) {
+          log('slot.onFill() return string: %s', onFillMessage)
+          const message: OutputMessageItem = {
+            message: onFillMessage,
+            type: OutputMessageType.slotFillMessage,
+            slotName: slot.name,
+            abilityName: abilityName
+          }
 
-        // Add onFill message to output message queue
-        // Add slot data to pendingData state
-        actions.push(addMessage(message))
+          // Add onFill message to output message queue
+          // Add slot data to pendingData state
+          actions.push(addMessage(message))
+        }
       }
     }
     // remove prompted slot from stack
@@ -613,7 +616,8 @@ async function checkValidatorAndFill<T, G>(
   store: Store<WolfState>,
   convoStorageLayer: G,
   flow: Flow<T, G>,
-  match: PotentialSlotMatch<G>): Promise<SlotId | null> {
+  match: PotentialSlotMatch<G>
+): Promise<SlotId | null> {
   log('in checkValidatorAndFill()..')
   const { dispatch, getState } = store
   const validatorResult = await runSlotValidator(
@@ -659,8 +663,8 @@ async function runSlotValidator<G>(
   convoStorageLayer: G,
   slot: Slot<G>,
   submittedValue: any,
-  messageData: MessageData):
-  Promise<ValidateResult> {
+  messageData: MessageData
+): Promise<ValidateResult>{
   if (!slot.validate) {
     // Default to true validation if no validation function is defined
     return {
@@ -685,8 +689,9 @@ function isEntityPresent(value: MessageData) {
  * For each entity, check if the `entity.name` and `ability` given matches with any slot
  * in the `abilities`
  */
-function getPotentialMatches<T, G>
-  (entities: Entity[], targetAbility: Ability<T, G>, slots: Slot<G>[]): PotentialSlotMatch<G>[] {
+function getPotentialMatches<T, G>(
+  entities: Entity[], targetAbility: Ability<T, G>, slots: Slot<G>[]
+): PotentialSlotMatch<G>[] {
   const traceMatches = targetAbility.traces.filter((trace) => entities.find((entity) => entity.name === trace.slotName))
 
   const matches = traceMatches.map((trace) => {
