@@ -14,11 +14,11 @@ import {
 } from '../actions'
 import {
   getPromptedSlotId, isPromptStatus, isFocusedAbilitySet,
-  getSlotTurnCount, getTargetAbility, getRequestingSlotIdFromCurrentSlotId,
+  getSlotTurnCount, getRequestingSlotIdFromCurrentSlotId,
   getMessageData, getFocusedAbility, getDefaultAbility, getRunOnFillStack,
   getFilledSlotsOnCurrentTurn
 } from '../selectors'
-import { doesAbilityHaveSlots, getSlotByName } from '../helpers'
+import { doesAbilityHaveSlots, getSlotByName, getAbilityByName } from '../helpers'
 const logState = require('debug')('wolf:s2:enterState')
 const log = require('debug')('wolf:s2')
 
@@ -160,7 +160,7 @@ export default async function fillSlot<T, G>(
 
   if (focusedAbility) {
     log('there is a focused ability, %s', focusedAbility)
-    const ability = getTargetAbility(abilities, focusedAbility)
+    const ability = getAbilityByName(abilities, focusedAbility)
     // ensure ability has slots which are represented in abilities as traces
     if (ability && !doesAbilityHaveSlots<T, G>(ability)) {
       log('the focused ability has no slots, marking it completed, and exit stage')
@@ -203,7 +203,7 @@ export default async function fillSlot<T, G>(
   if (focusedAbility) {
     log('starting to look for potential matches in %s which is the focused ability', focusedAbility)
     // get ability match
-    const ability = getTargetAbility(abilities, focusedAbility)
+    const ability = getAbilityByName(abilities, focusedAbility)
     // ABILITY EXISTS AND HAS SLOTS TO CHECK..
     if (ability) {
       log('%s ability Found in abilities.ts', ability.name)
@@ -263,7 +263,7 @@ export default async function fillSlot<T, G>(
   if (message.intent) {
     log('there is intent in the messageData')
     // get ability match
-    const ability = getTargetAbility(abilities, message.intent)
+    const ability = getAbilityByName(abilities, message.intent)
 
     // ensure ability has slots
     if (ability && !doesAbilityHaveSlots<T, G>(ability)) {
@@ -664,7 +664,7 @@ async function runSlotValidator<G>(
   slot: Slot<G>,
   submittedValue: any,
   messageData: MessageData
-): Promise<ValidateResult>{
+): Promise<ValidateResult> {
   if (!slot.validate) {
     // Default to true validation if no validation function is defined
     return {

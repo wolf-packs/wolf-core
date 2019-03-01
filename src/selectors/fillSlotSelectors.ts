@@ -22,13 +22,6 @@ export const getSlotTurnCount = (state: WolfState, slotId: SlotId): number => {
   return 0
 }
 
-export const getTargetAbility = <T, G>(
-  abilities: Ability<T, G>[],
-  targetAbility: string
-): Ability<T, G> | undefined => {
-  return abilities.find((ability) => ability.name === targetAbility)
-}
-
 export const getRequestingSlotIdFromCurrentSlotId = (state: WolfState, slotId: SlotId): SlotId => {
   const slotIndex = findIndexOfSlotIdsBySlotId(state.slotStatus, slotId)
   const slot: SlotStatus = state.slotStatus[slotIndex]
