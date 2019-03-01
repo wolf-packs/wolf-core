@@ -8,7 +8,7 @@ import {
   getPromptedSlotStack, getFocusedAbility, getDefaultAbility, getSlotStatus,
   getTargetAbility, getAbilityStatus, getUnfilledEnabledSlots, getSlotRecords
 } from '../selectors'
-import { fillSlot as fillSlotAction, setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage, setMessageData } from '../actions'
+import { setFocusedAbility, addSlotToPromptedStack, abilityCompleted, addMessage } from '../actions'
 import { getAbilitySlots } from '../helpers';
 import { getTraceBySlotId } from '../helpers/trace';
 import { fulfillSlot } from './fillSlot';
@@ -36,7 +36,7 @@ export default async function evaluate<T, G>(
   const state = getState()
   logState(state)
 
-  const { abilities, slots } = flow
+  const { abilities } = flow
 
   log('check if any abilities are marked to run onComplete this turn (identified by s2 or s3)..')
   // Check if ability is marked to run onComplete this turn
