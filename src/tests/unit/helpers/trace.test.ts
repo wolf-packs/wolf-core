@@ -28,8 +28,10 @@ describe('getTraceBySlotId function', () => {
       abilityName: 'ability4'
     }
 
-    // const actual = traceHelpers.getTraceBySlotId(abilities, slotId)
-    expect(traceHelpers.getTraceBySlotId(abilities, slotId)).toThrowError(
+    function runGetSlotByName() {
+      traceHelpers.getTraceBySlotId(abilities, slotId)
+    }
+    expect(runGetSlotByName).toThrowError(
       `Could not find ability with abilityName: ${slotId.abilityName} within abilities array`
     )
   })
@@ -54,8 +56,10 @@ describe('getTraceBySlotId function', () => {
       abilityName: 'ability3'
     }
 
-    const actual = traceHelpers.getTraceBySlotId(abilities, slotId)
-    expect(actual).toThrowError(
+    function runGetSlotByName() {
+      traceHelpers.getTraceBySlotId(abilities, slotId)
+    }
+    expect(runGetSlotByName).toThrowError(
       `Cannot find trace object. There is no slot called ${slotId.slotName} in the ${slotId.abilityName} ability`
     )
   })
