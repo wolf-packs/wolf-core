@@ -1,81 +1,72 @@
-// import * as wolf from '../../..'
-// // import { WolfStorage } from '../../..'
-// import abilities from './abilities'
-// import nlp from './nlp'
-// import * as express from 'express'
-// import * as bodyParser from 'body-parser'
-// import * as uuid from 'uuid/v1'
+import * as wolf from '../../../src/'
+import abilities, { StorageLayerType, UserState } from './abilities'
+import nlp from './nlp'
+import * as express from 'express'
+import * as bodyParser from 'body-parser'
+import slots from './slots';
 
-// interface PersistedState<T> {
-//   wolfState: wolf.WolfStateStorage,
-//   conversationState: T
-// }
+const port = 8000
+const server = express()
+const jsonBodyParser = bodyParser.json()
 
-// const port = 8000
-// const server = express()
-// const jsonBodyParser = bodyParser.json()
-// const persistentStorage = new Map()
+const getInitialWolfState = (): wolf.WolfState => {
+  return {
+    messageData: { entities: [], intent: null, rawText: '' },
+    slotStatus: [],
+    slotData: [],
+    abilityStatus: [],
+    promptedSlotStack: [],
+    focusedAbility: null,
+    outputMessageQueue: [],
+    filledSlotsOnCurrentTurn: [],
+    abilitiesCompleteOnCurrentTurn: [],
+    defaultAbility: null,
+    runOnFillStack: []
+  }
+}
 
-// // first middleware loads in conversation session data
-// const inMemoryMiddleware = <T>(container: Map<string, PersistedState<T>>) =>
-//   async (req, res, next) => {
-//     // get the conversation and wolf state by conservationId
-//     const conversationId = req.body.conversationId
-//     const result = container.get(conversationId)
-//     const {
-//       wolfState: oldWolfState,
-//       conversationState: oldConversationState
-//     } = result ? result : { wolfState: null, conversationState: {} }
+const defaultStore: UserState = {
+  alarms: []
+}
 
-//     res.locals.wolfState = oldWolfState
-//     res.locals.conversationState = oldConversationState
-//     res.locals.conversationId = conversationId
-//     next()
-//   }
+const createStorage = <T>(initial: T): StorageLayerType<T> => {
+  let data = initial
+  return {
+    read: () => data,
+    save: (newData: T) => {
+      data = newData
+    }
+  }
+}
 
-// // second middleware executes wolf with the state data
-// const botResponse = async (req, res, next) => {
-//   const message = req.body.message
-//   const wolfState = res.locals.wolfState
-//   const conversationState = res.locals.conversationState
-//   const userMessageData = () => nlp(message)
-//   const abilitiesGetter = () => abilities
-//   const defaultAbility = 'listAbility'
+const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
+const convoStorage = createStorage(defaultStore)
 
-//   // run Wolf
-//   const { wolfResult, retrieveWolfState, retrieveConversationState } = await wolf.run<any>(
-//     conversationState, wolfState, userMessageData, abilitiesGetter, defaultAbility)
+const flow: wolf.Flow<UserState, StorageLayerType<UserState>> = {
+  abilities,
+  slots
+}
 
-//   // retrieve state to be persisted through conversation
-//   const updatedState = retrieveWolfState()
-//   const updatedConversationState = retrieveConversationState()
+// chatbot endpoint based on the conversation session (per conversationId)
+server.post('/messages', jsonBodyParser, async (req, res) => {
+  const wolfResult = await wolf.run(
+    wolfStorage,
+    convoStorage,
+    () => nlp(req.body.message),
+    () => flow,
+    'listAbility'
+  )
 
-//   res.locals.wolfState = updatedState
-//   res.locals.conversationState = updatedConversationState
+  let outputMessage
+  wolfResult.messageStringArray.forEach(_ => outputMessage += _)
 
-//   res.send(`${JSON.stringify(wolfResult.messageStringArray)}`)
-// }
+  res.send(outputMessage)
+})
 
-// // third middleware saves the updated state data back into persistent storage
-// const saveMiddleware = <T>(container: Map<string, PersistedState<T>>) =>
-//   (req, res, next) => {
-//     // save the conversation and wolf state by conversationId
-//     const { wolfState, conversationState, conversationId } = res.locals
-//     container.set(conversationId, { wolfState, conversationState })
-//   }
+server.post('*', jsonBodyParser, (req, res) => {
+  res.send('Please use /messages')
+})
 
-// // issues a new conversationId unique to the conversation session
-// server.post('/conversations', (req, res) => {
-//   res.send({ conversationId: uuid() })
-// })
-
-// // chatbot endpoint based on the conversation session (per conversationId)
-// server.post('/messages', jsonBodyParser, inMemoryMiddleware(persistentStorage),
-//   botResponse, saveMiddleware(persistentStorage))
-// server.post('*', jsonBodyParser, (req, res) => {
-//   res.send('Please use /messages')
-// })
-
-// server.listen(port, () => {
-//   console.log(`listening on localhost:${port}..`)
-// })
+server.listen(port, () => {
+  console.log(`listening on localhost:${port}..`)
+})
