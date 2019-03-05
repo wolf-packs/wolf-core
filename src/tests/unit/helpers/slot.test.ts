@@ -15,9 +15,7 @@ describe('getSlotByName function', () => {
     function runGetSlotByName() {
       slotHelpers.getSlotByName(slots, slotName)
     }
-    expect(runGetSlotByName).toThrowError(
-      `No slot exists given the slot name: ${slotName}`
-    )
+    expect(() => slotHelpers.getSlotByName(slots, slotName)).toThrow()
   })
 
   test('when slot does not exist', () => {
@@ -30,9 +28,7 @@ describe('getSlotByName function', () => {
     function runGetSlotByName() {
       slotHelpers.getSlotByName(slots, slotName)
     }
-    expect(runGetSlotByName).toThrowError(
-      `No slot exists given the slot name: ${slotName}`
-    )
+    expect(() => slotHelpers.getSlotByName(slots, slotName)).toThrow()
   })
 
   test('when slot exists', () => {
