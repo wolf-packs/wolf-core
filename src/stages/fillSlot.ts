@@ -210,6 +210,7 @@ export default async function fillSlot<T, G>(
       // find slot matches
       const slotMatchesFocusedAbility: PotentialSlotMatch<G>[] =
         getPotentialMatches(message.entities, ability, slots)
+      log('potential slot matches found: %o', slotMatchesFocusedAbility)
 
       // process potential slot
       for (const match of slotMatchesFocusedAbility) {
@@ -219,18 +220,20 @@ export default async function fillSlot<T, G>(
           // add to slotFillArr
           slotFillArr.push({ slotName: checkValidFillResult.slotName, abilityName: checkValidFillResult.abilityName })
 
-          log('exiting stage')
-          return Promise.resolve()
+          log('slot match verified and filled.. moving to next potential match if available.')
+          continue
         }
         log('match is not valid for %s', match.slot.name)
         // validator failed
         matchNotValid = { slotName: match.slot.name, abilityName: match.abilityName, value: match.entity }
       }
 
+      log('All matches, if any have been checked (validate and filled).')
+
       // Check if there are matches
       if (slotMatchesFocusedAbility.length > 0) {
         log('%s matched in focused ability!', slotMatchesFocusedAbility.map(_ => _.slot.name).join(', '))
-        // set potential match found flag
+        // set potential match found flagk
         potentialMatchFoundFlag = true
 
         // Exit through alternative slot match route..
@@ -295,8 +298,8 @@ export default async function fillSlot<T, G>(
           // add to slotFillArr
           slotFillArr.push({ slotName: checkValAndFillResult.slotName, abilityName: checkValAndFillResult.abilityName })
 
-          log('exiting stage')
-          return Promise.resolve()
+          log('slot match verified and filled.. moving to next potential match if available.')
+          continue
         }
         log('match is not valid for %s', match.slot.name)
         // validator failed
