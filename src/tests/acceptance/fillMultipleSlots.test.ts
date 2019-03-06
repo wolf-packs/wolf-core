@@ -57,8 +57,10 @@ const testCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
     {
       input: [{
         message: 'hey I am Gabby and I would like a pepperoni pizza',
-        entities: [{ name: 'firstName', text: 'Gabby', value: 'Gabby' }, 
-                   { name: 'order', text: 'pepperoni pizza', value: 'pepperoni pizza' } ],
+        entities: [
+          { name: 'firstName', text: 'Gabby', value: 'Gabby' }, 
+          { name: 'order', text: 'pepperoni pizza', value: 'pepperoni pizza' } 
+        ],
         intent: 'customerOrder'
       }],
       expected: {
