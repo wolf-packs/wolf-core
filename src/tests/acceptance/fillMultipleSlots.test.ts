@@ -66,14 +66,16 @@ const testCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   conversationTurns: [
     {
       input: [{
-        message: 'hey I am Gabby and I would like a pepporoni pizza',
-        entities: [{ name: 'firstName', text: 'hey I am Gabby and I would like a pepporoni pizza', value: 'Gabby' }, 
-                   { name: 'order', text: 'hey I am Gabby and I would like a pepporoni pizza', value: 'pepporoni pizza' } ],
+        message: 'hey I am Gabby and I would like a pepperoni pizza',
+        entities: [
+          { name: 'firstName', text: 'hey I am Gabby and I would like a pepperoni pizza', value: 'Gabby' },
+          { name: 'order', text: 'hey I am Gabby and I would like a pepperoni pizza', value: 'pepperoni pizza' }
+        ],
         intent: 'customerOrder'
       }],
       expected: {
-        message: ['Ok I got a pepporoni pizza for Gabby'],
-        state: {firstName: 'Gabby', order: 'pepporoni pizza' }
+        message: ['Ok I got a pepperoni pizza for Gabby'],
+        state: { firstName: 'Gabby', order: 'pepperoni pizza' }
       }
     }
   ]
