@@ -3,8 +3,8 @@ import { WolfState } from './state'
 /**
  * Factory type for the StorageLayer object 
  */
-export interface StorageLayerFactory<K, T> {
-  (key: K, initial?: T): StorageLayer<T>
+export interface StorageLayerFactory<K, T, G extends StorageLayer<T>> {
+  (key: K, initial?: T): G
 }
 
 /**
