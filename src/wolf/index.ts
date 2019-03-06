@@ -15,7 +15,7 @@ import { fillSlot as fillSlotAction, enableSlot, disableSlot, setSlotDone, addSl
  * Returns the default Wolf State that should be initialized onto the conversation state
  * at the beginning of every conversation. This is meant for Wolf usage only.
  */
-export const getDefaultWolfState = () => {
+export const getDefaultWolfState = (): WolfState => {
   return {
     messageData: {
       rawText: '',
@@ -24,6 +24,7 @@ export const getDefaultWolfState = () => {
     },
     slotStatus: [],
     slotData: [],
+    slotRecords: [],
     abilityStatus: [],
     promptedSlotStack: [],
     focusedAbility: null,
