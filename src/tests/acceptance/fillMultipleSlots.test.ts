@@ -28,16 +28,6 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   traces: [
     {
       slotName: 'firstName',
-      getValue: (records) => {
-        // Search the slot records for an existing value for the slot 'firstName'
-        // If the slot has been filled within this conversation session.. utilize the value
-        // for this slot.
-        const result = records.find(record => record.slotName === 'firstName')
-        if (!result) {
-          return null
-        }
-        return result.value
-      }
     },
     {
       slotName: 'order'
@@ -66,14 +56,14 @@ const testCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
   conversationTurns: [
     {
       input: [{
-        message: 'hey I am Gabby and I would like a pepporoni pizza',
-        entities: [{ name: 'firstName', text: 'hey I am Gabby and I would like a pepporoni pizza', value: 'Gabby' }, 
-                   { name: 'order', text: 'hey I am Gabby and I would like a pepporoni pizza', value: 'pepporoni pizza' } ],
+        message: 'hey I am Gabby and I would like a pepperoni pizza',
+        entities: [{ name: 'firstName', text: 'Gabby', value: 'Gabby' }, 
+                   { name: 'order', text: 'pepperoni pizza', value: 'pepperoni pizza' } ],
         intent: 'customerOrder'
       }],
       expected: {
-        message: ['Ok I got a pepporoni pizza for Gabby'],
-        state: {firstName: 'Gabby', order: 'pepporoni pizza' }
+        message: ['Ok I got a pepperoni pizza for Gabby'],
+        state: {firstName: 'Gabby', order: 'pepperoni pizza' }
       }
     }
   ]
