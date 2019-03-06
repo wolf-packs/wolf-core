@@ -1,6 +1,6 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest } from '../helpers'
-import { AllSyncStorageLayer } from '../../types'
+import { AllSyncStorageLayer, WolfStateStorage } from '../../types'
 
 const defaultStore: UserConvoState = {
   animalName: null,
@@ -84,7 +84,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   }
 }]
 
-const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
+const wolfStorage: WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
 const optionalSlotPropertyTestCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {

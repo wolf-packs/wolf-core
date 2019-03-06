@@ -1,5 +1,5 @@
 import * as wolf from '../..'
-import { WolfState, AllSyncStorageLayer, StorageLayer, Flow } from '../../types'
+import { WolfState, AllSyncStorageLayer, StorageLayer, Flow, WolfStateStorage } from '../../types'
 
 export interface ConversationTurn<T> {
   input: wolf.NlpResult[],
@@ -9,7 +9,7 @@ export interface ConversationTurn<T> {
 export interface TestCase<T, G> {
   description: string,
   flow: Flow<T, G>,
-  wolfStorage: wolf.WolfStateStorage,
+  wolfStorage: WolfStateStorage,
   convoStorage: G,
   defaultAbility: string,
   conversationTurns: ConversationTurn<T>[]

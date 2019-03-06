@@ -15,7 +15,6 @@ export {
   OutputMessageType,
   OutputMessageItem,
   IncomingSlotData,
-  WolfStateStorage,
   StorageLayer,
   AllAsyncStorageLayer,
   OnlyReadAsyncStorageLayer,

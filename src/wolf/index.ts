@@ -1,8 +1,8 @@
 import { Middleware, Store, createStore, applyMiddleware, compose as composeFunc } from 'redux'
 import rootReducer from '../reducers'
 import {
-  NlpResult, Ability, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable,
-  WolfStore, WolfStateStorage, StorageLayer, AnyObject, Flow
+  NlpResult, WolfState, IncomingSlotData, SetSlotDataFunctions, Promiseable,
+  WolfStore, WolfStateStorage, AnyObject, Flow
 } from '../types'
 import intake from '../stages/intake'
 import fillSlot from '../stages/fillSlot'
