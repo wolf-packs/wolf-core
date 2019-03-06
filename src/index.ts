@@ -22,7 +22,9 @@ export {
   OnlySaveAsyncStorageLayer,
   AllSyncStorageLayer,
   StorageLayerFactory,
-  WolfState
+  WolfState,
+  Flow,
+  SlotRecord
 } from './types'
 
 // Stages
