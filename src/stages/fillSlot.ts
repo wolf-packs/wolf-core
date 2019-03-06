@@ -233,7 +233,7 @@ export default async function fillSlot<T, G>(
       // Check if there are matches
       if (slotMatchesFocusedAbility.length > 0) {
         log('%s matched in focused ability!', slotMatchesFocusedAbility.map(_ => _.slot.name).join(', '))
-        // set potential match found flagk
+        // set potential match found flag
         potentialMatchFoundFlag = true
 
         // Exit through alternative slot match route..
