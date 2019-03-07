@@ -1,6 +1,6 @@
 import * as wolf from '../..'
 import { getInitialWolfState, createStorage, TestCase, runTest, StorageLayerType } from '../helpers'
-import { StorageLayer } from '../../types';
+import { WolfStateStorage } from '../../types'
 
 interface UserConvoState {
   firstName: string | null,
@@ -117,7 +117,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
   }
 }] as wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[]
 
-const wolfStorage: wolf.WolfStateStorage = createStorage(getInitialWolfState())
+const wolfStorage: WolfStateStorage = createStorage(getInitialWolfState())
 const convoStorage = createStorage(defaultStore)
 
 const testCase: TestCase<UserConvoState, StorageLayerType<UserConvoState>> = {
