@@ -1,11 +1,5 @@
 import * as mathHelpers from '../../../../src/helpers/math'
-import { SlotId, AllSyncStorageLayer } from '../../../types';
-
-interface MockUserState {
-  firstName: string,
-  lastName: string,
-  age: number
-}
+import { SlotId } from '../../../types';
 
 describe('randomElement function', () => {
   test('when array is empty', () => {
