@@ -45,14 +45,14 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
     traces: [
         {
             slotName: 'firstName',
-            getValue: (records) =>{
+            getValue: (records) => {
                 const result = records.find(record => record.slotName === 'firstName')
                 console.log("in getVal with result as " + result)
                 if (!result) {
-                  return null
+                    return null
                 }
                 return result.value
-              }
+            }
         },
         {
             slotName: 'order'
