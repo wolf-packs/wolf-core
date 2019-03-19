@@ -136,7 +136,8 @@ export default async function fillSlot<T, G>(
           dispatch(removeSlotFromPromptedStack({ slotName, abilityName }))
           log('exiting stage')
           // Original prompted slot filled.. exit
-          return Promise.resolve()
+          if(message.entities.length == 1)   // or utilize if (!isEntityPresent(message) )
+            return Promise.resolve() //GABBY NOTE: in the pizza example this would be wrong; needs to check for other slots
         }
         // Payload not valid for current slot..
         // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
