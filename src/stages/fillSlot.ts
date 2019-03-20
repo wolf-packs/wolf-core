@@ -115,22 +115,20 @@ export default async function fillSlot<T, G>(
       if (message.rawText) {
         log('user said: %s', message.rawText)
 
-        const slotValue = message.entities.find(x => {
-          if (x.name === slotName)
-            return x.value
-        })
+        const slotEntity = message.entities.find(x => (x.name === slotName))
+        const slotValue = (slotEntity ? slotEntity.value : message.rawText)
 
-        // if there slotValue is defined, run validator on slotValue
-        // if there are no entities and slotValue is undefined, run validator on rawText
-        if (slotValue || message.entities.length === 0) {
-          validatorResult = await runSlotValidator(convoStorageLayer, promptedSlot, slotValue || message.rawText, message)
+        // if slotEntity is defined, run validator and onFill on slotEntity.value
+        // if there are no entities or slotEntity is undefined, run validator and onFill on message.rawText
+        if (slotEntity || message.entities.length === 0) {
+          validatorResult = await runSlotValidator(convoStorageLayer, promptedSlot, slotValue, message)
 
           if (validatorResult.isValid) {
             log('users response was valid according to the prompted slots validator')
             const fulfillSlotResult = await fulfillSlot(
               convoStorageLayer,
               flow,
-              message.rawText,
+              slotValue,
               slotName,
               abilityName,
               getState
