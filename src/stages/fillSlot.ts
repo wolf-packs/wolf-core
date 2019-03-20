@@ -114,38 +114,52 @@ export default async function fillSlot<T, G>(
     if (promptedSlot) {
       if (message.rawText) {
         log('user said: %s', message.rawText)
-        validatorResult = await runSlotValidator(convoStorageLayer, promptedSlot, message.rawText, message)
 
-        if (validatorResult.isValid) {
-          log('users response was valid according to the prompted slots validator')
-          const fulfillSlotResult = await fulfillSlot(
-            convoStorageLayer,
-            flow,
-            message.rawText,
-            slotName,
-            abilityName,
-            getState
-          )
-          fulfillSlotResult.forEach(dispatch)
-          log('so fulfill the slot by running these actions: %O', fulfillSlotResult)
+        const slotValue = message.entities.find(x => {
+          if (x.name === slotName)
+            return x.value
+        })
 
-          // add to slotFillArr
-          slotFillArr.push({ slotName, abilityName })
+        // if there slotValue is defined, run validator on slotValue
+        // if there are no entities and slotValue is undefined, run validator on rawText
+        if (slotValue || message.entities.length === 0) {
+          validatorResult = await runSlotValidator(convoStorageLayer, promptedSlot, slotValue || message.rawText, message)
 
-          // remove prompted slot
-          dispatch(removeSlotFromPromptedStack({ slotName, abilityName }))
-          
-          if (message.entities.length === 1 && message.entities[0].name === slotName){
-            log('Because one entity is detected. No more slots to fill...exiting stage')
-            // Because one entity is detected. No more slots to fill.... exit
-            return Promise.resolve()
+          if (validatorResult.isValid) {
+            log('users response was valid according to the prompted slots validator')
+            const fulfillSlotResult = await fulfillSlot(
+              convoStorageLayer,
+              flow,
+              message.rawText,
+              slotName,
+              abilityName,
+              getState
+            )
+            fulfillSlotResult.forEach(dispatch)
+            log('so fulfill the slot by running these actions: %O', fulfillSlotResult)
+
+            // add to slotFillArr
+            slotFillArr.push({ slotName, abilityName })
+
+            // remove prompted slot
+            dispatch(removeSlotFromPromptedStack({ slotName, abilityName }))
+
+            if (message.entities.length <= 1) {
+              log('Because one or none entity is detected. No more slots to fill...exiting stage')
+              // Because one entity is detected. No more slots to fill.... exit
+              return Promise.resolve()
+            }
           }
         }
-        // Payload not valid for current slot..
-        // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
-        // Save validator reason to create output message if necessary later in stage
-        promptedSlotReason = validatorResult
-        matchNotValid = { slotName, abilityName, value: message.rawText }
+
+          // Payload not valid for current slot..
+          // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
+          // Save validator reason to create output message if necessary later in stage
+          promptedSlotReason = validatorResult || null
+          matchNotValid = { slotName, abilityName, value: message.rawText }
+          log('in runRetryCheck().., matchNotValid: %O,'
+    , matchNotValid)
+        
       }
     }
   }
@@ -523,6 +537,7 @@ async function runRetryCheck<T, G>(
     // add slot to stack
     const slotId: SlotId = { slotName: slotName, abilityName: abilityName }
     dispatch(addSlotToPromptedStack(slotId, PromptSlotReason.retry))
+    dispatch(setSlotPrompted(slotId, false))
 
     log('exiting runRetryCheck()..')
     return
