@@ -150,14 +150,12 @@ export default async function fillSlot<T, G>(
           }
         }
 
-          // Payload not valid for current slot..
-          // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
-          // Save validator reason to create output message if necessary later in stage
-          promptedSlotReason = validatorResult || null
-          matchNotValid = { slotName, abilityName, value: message.rawText }
-          log('in runRetryCheck().., matchNotValid: %O,'
-    , matchNotValid)
-        
+        // Payload not valid for current slot..
+        // Do not add reason to output queue yet.. identified entity may fill this slot later in stage
+        // Save validator reason to create output message if necessary later in stage
+        promptedSlotReason = validatorResult || null
+        matchNotValid = { slotName, abilityName, value: message.rawText }
+        log('in runRetryCheck().., matchNotValid: %O,', matchNotValid)
       }
     }
   }
