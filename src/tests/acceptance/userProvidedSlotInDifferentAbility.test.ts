@@ -31,7 +31,7 @@ const abilities: wolf.Ability<UserConvoState, StorageLayerType<UserConvoState>>[
             slotName: 'firstName'
         }
     ],
-  //  nextAbility: () => ({abilityName: 'customerOrder'}),
+    nextAbility: () => ({abilityName: 'customerOrder'}),
     onComplete: (submittedData, convoStorageLayer) => {
         const convoState = convoStorageLayer.read()
         const newState = {
