@@ -30,10 +30,10 @@ Wolf takes the guesswork out of complex conversation flows, and allows you to de
 An ability is a logical unit that contains a collection of relationships to slot(s) and runs a user defined function when all required slots are filled. An ability also has other features like kicking off another ability once it is completed to allow for more complex flows.
 
 ## Slot
-A slot is structure that represents any piece of information that is required from the user and obtained through conversation or a system. This can be the user's name, address, etc.. A slot has a few properties which allows Wolf to dynamically search for possible matches including query, validate and retry.
+A slot is structure that represents any piece of information that is required from the user and obtained through conversation or a system. This can be the user's name, address, etc.. A slot has a few properties which allows Wolf to dynamically search for possible matches including query, validate and retry. Since slots and abilities are separate constructs, this allows multiple abilities to utilize the same slot in a reusable fashion.
 
 ## Trace
-
+A trace is structure that lives within an ability which describes the relationship between the ability and slot. Traces contain information instructing Wolf to utilize slots as-is or specify slot properties to override. This allows each ability:slot relationship to be unique and highly customizable.
 
 # Contribution
 Any and all contributions are welcome! From reporting bugs, feature requests to code updates, please refer to [Wolf Wiki] for contribution information including "How to Contribute" and "Code of Conduct".
