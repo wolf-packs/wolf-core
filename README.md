@@ -3,7 +3,7 @@
 
 [![npm version](https://badge.fury.io/js/wolf-core.svg)](https://badge.fury.io/js/wolf-core) [![Build Status](https://travis-ci.org/wolf-packs/wolf-core.svg?branch=master)](https://travis-ci.org/wolf-packs/wolf-core)
 
-Wolf allows you, the developer, to define a bot conversation with ease. There is one configuration point, which is hot-loadable, enabling you to change the bot behavior while the node process is still running. Wolf facilitates information gathering, either by asking a question or accepting a piece of information parsed by NLU. Wolf achieves this abstraction with three concepts: Abilities, Slots and Traces. All concepts rely on user defined functions, so the developer has full control on the processes that run.
+Wolf allows you, the developer, to define a bot conversation with ease. There is one configuration point, which is hot-loadable, enabling you to change the bot behavior while the node process is still running. Wolf facilitates information gathering, either by asking a question or accepting a piece of information parsed by NLU. Wolf achieves this abstraction with three concepts: Abilities, Slots and Traces. All concepts rely on user defined functions, so the developer has full control of the conversation logic.
 
 _See Purpose section below for more information._
 
