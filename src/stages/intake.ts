@@ -25,6 +25,8 @@ export default function intake(
   // MessageDataArr derived from user nlpResults
   // Create the messageData array
   const messageDataArr: MessageData[] = nlpResults.map(nlpResult => {
+    // TODO: Can be refactored to have syntax
+    // TODO: Revisit how we are taking in NLP Result (like providing a lib for common NLP providers)
     return {
       rawText: nlpResult.message,
       intent: nlpResult.intent,
@@ -32,6 +34,7 @@ export default function intake(
     }
   })
 
+  // TODO: better empty value handling (shouldn't have nonsensical empty values, should be null or undefined)
   // Default empty MessageData object
   // This default object is utilized if the incoming nlpResults array is empty
   let messageData: MessageData = {
@@ -40,6 +43,7 @@ export default function intake(
     entities: []
   }
 
+  // TODO: Implement multi intent handling
   // If at least one nlpResult is present, capture first element data
   // This is temp code. Future development will require the full messageDataArr to be saved onto WolfState
   if (messageDataArr.length > 0) {

@@ -68,11 +68,14 @@ export const makeWolfStoreCreator = (
  * @param convoStorage User conversation state storage layer. Read/save will be made available
  * to user functions in slot and abilities
  * @param userMessageData An array of Natural Language Processing results
+ * // TODO: update getFlowFunc to include more detail: such as the possibility to incorporate backend or 3rd party ability, given that it is an async func.
  * @param getFlowFunc Flow is made up of Abilities and Slots and are used to define the bot conversation flow
+ * // TODO: discussion: is this the best place for defaultAbility to be in the run function argument?
  * @param defaultAbility Ability that will be used as the fallback if no ability is determined from the userMessageData
  * @param storeCreator Optional redux store creator, can be used with redux dev tools
+ * // TODO: potentially change the function name (should be read as "get SlotDataFunctions")
  * @param getSlotDataFunc Optional getter function to retrieve slot data
- * @returns Wolf's result containing an array of output messages
+ * @returns Wolf's result containing an array of output messages (to respond to the user)
  */
 export const run = async <T extends AnyObject, G>(
   wolfStorage: WolfStateStorage,
@@ -81,7 +84,7 @@ export const run = async <T extends AnyObject, G>(
   getFlowFunc: () => Promiseable<Flow<T, G>>,
   defaultAbility: string,
   storeCreator?: (wolfStateFromConvoState: { [key: string]: any } | null) => Store<WolfState>,
-  getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]>
+  getSlotDataFunc?: (setSlotFuncs: SetSlotDataFunctions) => Promiseable<IncomingSlotData[]> // (setSlotFuncs) => { if (user.name == 'hao' ) {setSlotFuncs.fulfillSlot('profile', 'food', 'chinese food')} }
 ) => {
   // invoke user async functions
   const [wolfState, nlpResultArr, flow] = await Promise.all([
@@ -117,6 +120,7 @@ export const run = async <T extends AnyObject, G>(
     }) : []
   intake(wolfStore, nlpResultArr, incomingSlotData, defaultAbility)
   await fillSlot(wolfStore, convoStorage, flow)
+  // TODO: swap argument order in `evaluate` method
   await evaluate(wolfStore, flow, convoStorage)
   const executeResult = await execute(wolfStore, convoStorage, flow)
 

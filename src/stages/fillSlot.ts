@@ -84,7 +84,7 @@ export default async function fillSlot<T, G>(
   logState(getState())
 
   const { slots, abilities } = flow
-
+  
   log('first wolf checks to see if there is anything in the runOnFillStack')
   const runOnFillStack = getRunOnFillStack(getState())
   if (runOnFillStack) {
